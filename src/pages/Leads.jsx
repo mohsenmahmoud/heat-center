@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Search, Plus, X, Phone, MessageCircle, ChevronRight, Trash2, Edit3, Filter } from 'lucide-react'
 import useStore from '../store/useStore'
 
@@ -265,6 +266,7 @@ export default function Leads() {
   const leads = useStore((s) => s.leads)
   const addLead = useStore((s) => s.addLead)
   const updateLead = useStore((s) => s.updateLead)
+  const location = useLocation()
 
   const [search, setSearch] = useState('')
   const [filterStage, setFilterStage] = useState('')
@@ -274,6 +276,18 @@ export default function Leads() {
   const [editLead, setEditLead] = useState(null)
   const [selectedLead, setSelectedLead] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    const state = location.state
+    if (!state) return
+    if (state.filterStage) { setFilterStage(state.filterStage); setShowFilters(true) }
+    if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
+    if (state.openAdd) setShowAddModal(true)
+    if (state.openLeadId) {
+      const lead = leads.find((l) => l.id === state.openLeadId)
+      if (lead) setSelectedLead(lead)
+    }
+  }, [location.state])
 
   const filtered = useMemo(() => {
     return leads.filter((l) => {

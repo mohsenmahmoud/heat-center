@@ -86,7 +86,10 @@ export default function KPIs() {
     conversions: acc.conversions + rep[period].conversions,
     revenue: acc.revenue + rep[period].revenue,
     calls: acc.calls + rep[period].calls,
-  }), { leads: 0, conversions: 0, revenue: 0, calls: 0 })
+    whatsapp: acc.whatsapp + (rep[period].whatsapp || 0),
+    trialsBooked: acc.trialsBooked + (rep[period].trialsBooked || 0),
+    trialsAttended: acc.trialsAttended + (rep[period].trialsAttended || 0),
+  }), { leads: 0, conversions: 0, revenue: 0, calls: 0, whatsapp: 0, trialsBooked: 0, trialsAttended: 0 })
 
   const teamRate = totals.leads ? Math.round((totals.conversions / totals.leads) * 100) : 0
 
@@ -104,6 +107,40 @@ export default function KPIs() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Daily Targets */}
+      {kpis.targets && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <h3 className="font-bold text-gray-800 mb-4">🎯 التارجت اليومي للفريق</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {[
+              { label: 'مكالمات', key: 'calls', color: 'blue', actual: totals.calls },
+              { label: 'واتساب', key: 'whatsapp', color: 'green', actual: totals.whatsapp || 0 },
+              { label: 'تم التواصل', key: 'contacts', color: 'amber', actual: totals.contacts || 0 },
+              { label: 'تريال محجوز', key: 'trialsBooked', color: 'indigo', actual: totals.trialsBooked || 0 },
+              { label: 'حضر التريال', key: 'trialsAttended', color: 'pink', actual: totals.trialsAttended || 0 },
+              { label: 'إغلاق صفقة', key: 'closed', color: 'emerald', actual: totals.conversions },
+              { label: 'إيراد (ج)', key: 'revenue', color: 'purple', actual: totals.revenue, isRevenue: true },
+            ].map(({ label, key, color, actual, isRevenue }) => {
+              const target = kpis.targets[key] || 0
+              const pct = target ? Math.min(Math.round((actual / target) * 100), 100) : 0
+              const colorMap = { blue: 'bg-blue-500', green: 'bg-green-500', amber: 'bg-amber-500', indigo: 'bg-indigo-500', pink: 'bg-pink-500', emerald: 'bg-emerald-500', purple: 'bg-purple-500' }
+              const textMap = { blue: 'text-blue-600', green: 'text-green-600', amber: 'text-amber-600', indigo: 'text-indigo-600', pink: 'text-pink-600', emerald: 'text-emerald-600', purple: 'text-purple-600' }
+              return (
+                <div key={key} className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 mb-1">{label}</p>
+                  <p className={`text-lg font-bold ${textMap[color]}`}>{isRevenue ? `${(actual/1000).toFixed(1)}k` : actual}</p>
+                  <p className="text-xs text-gray-400">/ {isRevenue ? `${(target/1000).toFixed(0)}k` : target}</p>
+                  <div className="bg-gray-200 rounded-full h-1.5 mt-2">
+                    <div className={`${colorMap[color]} h-1.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{pct}%</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Period Selector */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-800">أداء فريق المبيعات</h2>
@@ -158,7 +195,7 @@ export default function KPIs() {
               <Tooltip contentStyle={{ fontFamily: 'Tajawal', borderRadius: '8px' }} />
               <Legend formatter={(v) => <span style={{ fontFamily: 'Tajawal', fontSize: 12 }}>{v}</span>} />
               {kpis.reps.map((rep, i) => (
-                <Line key={rep.id} type="monotone" dataKey={rep.name.split(' ')[0]} stroke={REP_COLORS[i]} strokeWidth={2} dot={{ r: 3 }} />
+                <Line key={rep.id} type="monotone" dataKey={rep.name} stroke={REP_COLORS[i]} strokeWidth={2} dot={{ r: 3 }} />
               ))}
             </LineChart>
           </ResponsiveContainer>

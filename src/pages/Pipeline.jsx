@@ -1,31 +1,34 @@
 import { useState, useRef } from 'react'
-import { Phone, MessageCircle, ChevronDown, User, StickyNote, X, Check } from 'lucide-react'
+import { Phone, MessageCircle, ChevronDown, User, StickyNote, X, Check, PhoneOff } from 'lucide-react'
 import useStore from '../store/useStore'
 import { openWhatsApp } from '../utils/phone'
 
-const STAGES = ['جديد', 'تم التواصل', 'موعد محجوز', 'عرض تقديمي', 'متابعة', 'تم التسجيل', 'لم يتم']
+const STAGES = ['ليد جديد', 'لا يرد', 'تم التواصل', 'متابعة', 'مهتم', 'تفاوض', 'تريال محجوز', 'حضر التريال', 'تم التسجيل', 'غير مهتم']
 
 const STAGE_CONFIG = {
-  'جديد': { color: 'bg-blue-500', light: 'bg-blue-50 border-blue-200', badge: 'bg-blue-100 text-blue-700', header: 'bg-blue-500' },
-  'تم التواصل': { color: 'bg-amber-500', light: 'bg-amber-50 border-amber-200', badge: 'bg-amber-100 text-amber-700', header: 'bg-amber-500' },
-  'موعد محجوز': { color: 'bg-orange-500', light: 'bg-orange-50 border-orange-200', badge: 'bg-orange-100 text-orange-700', header: 'bg-orange-500' },
-  'عرض تقديمي': { color: 'bg-purple-500', light: 'bg-purple-50 border-purple-200', badge: 'bg-purple-100 text-purple-700', header: 'bg-purple-500' },
-  'متابعة': { color: 'bg-cyan-500', light: 'bg-cyan-50 border-cyan-200', badge: 'bg-cyan-100 text-cyan-700', header: 'bg-cyan-500' },
-  'تم التسجيل': { color: 'bg-green-500', light: 'bg-green-50 border-green-200', badge: 'bg-green-100 text-green-700', header: 'bg-green-500' },
-  'لم يتم': { color: 'bg-red-500', light: 'bg-red-50 border-red-200', badge: 'bg-red-100 text-red-700', header: 'bg-red-500' },
+  'ليد جديد':    { header: 'bg-blue-500',   light: 'bg-blue-50 border-blue-200' },
+  'لا يرد':      { header: 'bg-slate-500',  light: 'bg-slate-50 border-slate-200' },
+  'تم التواصل':  { header: 'bg-amber-500',  light: 'bg-amber-50 border-amber-200' },
+  'متابعة':      { header: 'bg-cyan-500',   light: 'bg-cyan-50 border-cyan-200' },
+  'مهتم':        { header: 'bg-orange-500', light: 'bg-orange-50 border-orange-200' },
+  'تفاوض':       { header: 'bg-purple-500', light: 'bg-purple-50 border-purple-200' },
+  'تريال محجوز': { header: 'bg-indigo-500', light: 'bg-indigo-50 border-indigo-200' },
+  'حضر التريال': { header: 'bg-pink-500',   light: 'bg-pink-50 border-pink-200' },
+  'تم التسجيل':  { header: 'bg-green-500',  light: 'bg-green-50 border-green-200' },
+  'غير مهتم':    { header: 'bg-red-500',    light: 'bg-red-50 border-red-200' },
 }
 
 const SOURCE_COLORS = {
   Facebook: 'bg-blue-500',
   Instagram: 'bg-pink-500',
   WhatsApp: 'bg-green-500',
-  Referral: 'bg-purple-500',
-  Website: 'bg-gray-500',
+  B2B: 'bg-purple-500',
+  Organic: 'bg-gray-500',
 }
 
 function MoveMenu({ lead, onMove, onClose }) {
   return (
-    <div className="absolute top-full left-0 z-20 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-36">
+    <div className="absolute top-full left-0 z-20 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-40">
       {STAGES.filter((s) => s !== lead.stage).map((stage) => (
         <button key={stage} onClick={() => { onMove(lead.id, stage); onClose() }}
           className="w-full text-right px-4 py-2 text-sm hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition-colors">
@@ -39,7 +42,6 @@ function MoveMenu({ lead, onMove, onClose }) {
 function QuickNote({ lead, onClose }) {
   const addActivity = useStore((s) => s.addActivity)
   const [text, setText] = useState('')
-  const ref = useRef()
 
   const save = () => {
     const t = text.trim()
@@ -51,20 +53,19 @@ function QuickNote({ lead, onClose }) {
   return (
     <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-2.5 space-y-2">
       <textarea
-        ref={ref}
         autoFocus
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save() }}
         rows={2}
-        placeholder={`ملاحظة في "${lead.stage}"... (Ctrl+Enter للحفظ)`}
+        placeholder={`ملاحظة في "${lead.stage}"...`}
         className="w-full border border-amber-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
       />
       <div className="flex gap-1.5">
         <button onClick={save} disabled={!text.trim()} className="flex-1 flex items-center justify-center gap-1 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-colors">
           <Check size={11} /> حفظ
         </button>
-        <button onClick={onClose} className="flex items-center justify-center gap-1 px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs transition-colors">
+        <button onClick={onClose} className="flex items-center justify-center px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs transition-colors">
           <X size={11} />
         </button>
       </div>
@@ -74,9 +75,11 @@ function QuickNote({ lead, onClose }) {
 
 function LeadCard({ lead }) {
   const moveLead = useStore((s) => s.moveLead)
+  const incrementNoAnswer = useStore((s) => s.incrementNoAnswer)
   const [showMenu, setShowMenu] = useState(false)
   const [showNote, setShowNote] = useState(false)
   const days = Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 86400000)
+  const firstStudent = lead.students?.[0] || {}
 
   const handleCall = (e) => {
     e.stopPropagation()
@@ -85,7 +88,12 @@ function LeadCard({ lead }) {
 
   const handleWa = (e) => {
     e.stopPropagation()
-    openWhatsApp(lead.phone)
+    openWhatsApp(lead.whatsappPhone || lead.phone)
+  }
+
+  const handleNoAnswer = (e) => {
+    e.stopPropagation()
+    incrementNoAnswer(lead.id)
   }
 
   return (
@@ -93,31 +101,36 @@ function LeadCard({ lead }) {
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs">
+          <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">
             {lead.name[0]}
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800 leading-tight">{lead.name}</p>
-            <p className="text-xs text-gray-500">{lead.childName} · {lead.childAge} سنة</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-bold text-gray-800 leading-tight">{lead.name}</p>
+              {lead.noAnswerCount > 0 && (
+                <span className="bg-red-100 text-red-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{lead.noAnswerCount}×</span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">{firstStudent.name} · {firstStudent.age} سنة</p>
           </div>
         </div>
-        <span className={`inline-block w-2.5 h-2.5 rounded-full mt-1 ${SOURCE_COLORS[lead.source]}`} title={lead.source} />
+        <div className="flex flex-col items-end gap-1">
+          <span className={`inline-block w-2.5 h-2.5 rounded-full ${SOURCE_COLORS[lead.source] || 'bg-gray-400'}`} title={lead.source} />
+          {lead.leadType === 'B2B' && <span className="text-xs bg-purple-100 text-purple-600 px-1.5 rounded-full font-bold">B2B</span>}
+        </div>
       </div>
 
-      {/* Course & Value */}
+      {/* Track & value */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{lead.courseInterest}</span>
-        <span className="text-xs font-bold text-green-600">{lead.value?.toLocaleString()} ج</span>
+        <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{firstStudent.track || '—'}</span>
+        {lead.value ? <span className="text-xs font-bold text-green-600">{Number(lead.value).toLocaleString()} ج</span> : null}
       </div>
-
-      {/* Phone */}
-      <p className="text-xs text-gray-400 font-mono mb-3">{lead.phone}</p>
 
       {/* Rep & Days */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1 text-xs text-gray-500">
           <User size={11} />
-          <span className="truncate max-w-20">{lead.assignedTo.split(' ')[0]}</span>
+          <span>{lead.assignedTo}</span>
         </div>
         <span className={`text-xs px-2 py-0.5 rounded-full ${days > 7 ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
           {days} يوم
@@ -125,21 +138,24 @@ function LeadCard({ lead }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-1.5 relative">
+      <div className="flex gap-1 relative">
         <button onClick={handleCall} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs transition-colors">
-          <Phone size={12} /> اتصال
+          <Phone size={11} /> اتصال
+        </button>
+        <button onClick={handleNoAnswer} className="flex items-center justify-center px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs transition-colors" title="لا يرد">
+          <PhoneOff size={11} />
         </button>
         <button onClick={handleWa} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs transition-colors">
-          <MessageCircle size={12} /> واتس
+          <MessageCircle size={11} /> واتس
         </button>
         <button onClick={(e) => { e.stopPropagation(); setShowNote(!showNote) }}
-          className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs transition-colors ${showNote ? 'bg-amber-200 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 text-amber-600'}`}>
-          <StickyNote size={12} />
+          className={`flex items-center justify-center px-2 py-1.5 rounded-lg text-xs transition-colors ${showNote ? 'bg-amber-200 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 text-amber-600'}`}>
+          <StickyNote size={11} />
         </button>
         <div className="relative">
           <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu) }}
-            className="flex items-center justify-center gap-1 py-1.5 px-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs transition-colors">
-            <ChevronDown size={12} />
+            className="flex items-center justify-center px-2 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs transition-colors">
+            <ChevronDown size={11} />
           </button>
           {showMenu && (
             <>
@@ -158,15 +174,16 @@ export default function Pipeline() {
   const leads = useStore((s) => s.leads)
 
   const stageLeads = (stage) => leads.filter((l) => l.stage === stage)
-  const stageValue = (stage) => stageLeads(stage).reduce((s, l) => s + (l.value || 0), 0)
+  const stageValue = (stage) => stageLeads(stage).reduce((s, l) => s + (Number(l.value) || 0), 0)
+  const totalRevenue = leads.filter(l => l.stage === 'تم التسجيل').reduce((s, l) => s + (Number(l.value) || 0), 0)
 
   return (
     <div className="p-6 h-full">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-bold text-gray-800">مسار المبيعات (Kanban)</h2>
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span>إجمالي العملاء: <strong className="text-gray-800">{leads.length}</strong></span>
-          <span>الإيرادات المتوقعة: <strong className="text-green-600">{leads.reduce((s, l) => s + (l.value || 0), 0).toLocaleString()} ج</strong></span>
+          <span>إجمالي الليدز: <strong className="text-gray-800">{leads.length}</strong></span>
+          <span>الإيرادات المحصلة: <strong className="text-green-600">{totalRevenue.toLocaleString()} ج</strong></span>
         </div>
       </div>
 
@@ -174,28 +191,22 @@ export default function Pipeline() {
         {STAGES.map((stage) => {
           const config = STAGE_CONFIG[stage]
           const stageList = stageLeads(stage)
+          const val = stageValue(stage)
           return (
-            <div key={stage} className="flex-shrink-0 w-56">
-              {/* Column Header */}
-              <div className={`${config.header} text-white rounded-t-xl px-3 py-2.5 mb-0`}>
+            <div key={stage} className="flex-shrink-0 w-52">
+              <div className={`${config.header} text-white rounded-t-xl px-3 py-2.5`}>
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm">{stage}</span>
-                  <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                    {stageList.length}
-                  </span>
+                  <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-bold">{stageList.length}</span>
                 </div>
-                <p className="text-white/80 text-xs mt-0.5">{stageValue(stage).toLocaleString()} ج</p>
+                {val > 0 && <p className="text-white/80 text-xs mt-0.5">{val.toLocaleString()} ج</p>}
               </div>
-
-              {/* Cards */}
               <div className={`${config.light} border border-t-0 rounded-b-xl p-2 space-y-2 min-h-64`}>
                 {stageList.map((lead) => (
                   <LeadCard key={lead.id} lead={lead} />
                 ))}
                 {stageList.length === 0 && (
-                  <div className="text-center py-8 text-gray-300 text-xs">
-                    <p>لا يوجد عملاء</p>
-                  </div>
+                  <div className="text-center py-8 text-gray-300 text-xs">لا يوجد ليدز</div>
                 )}
               </div>
             </div>

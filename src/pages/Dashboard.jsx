@@ -7,15 +7,18 @@ import {
 import { Users, TrendingUp, DollarSign, Phone, UserPlus, Award, ArrowLeft } from 'lucide-react'
 import useStore from '../store/useStore'
 
-const STAGES = ['جديد', 'تم التواصل', 'موعد محجوز', 'عرض تقديمي', 'متابعة', 'تم التسجيل', 'لم يتم']
+const STAGES = ['ليد جديد', 'لا يرد', 'تم التواصل', 'متابعة', 'مهتم', 'تفاوض', 'تريال محجوز', 'حضر التريال', 'تم التسجيل', 'غير مهتم']
 const STAGE_COLORS = {
-  'جديد': '#3b82f6',
-  'تم التواصل': '#f59e0b',
-  'موعد محجوز': '#f97316',
-  'عرض تقديمي': '#8b5cf6',
-  'متابعة': '#06b6d4',
-  'تم التسجيل': '#10b981',
-  'لم يتم': '#ef4444',
+  'ليد جديد':    '#3b82f6',
+  'لا يرد':      '#64748b',
+  'تم التواصل':  '#f59e0b',
+  'متابعة':      '#06b6d4',
+  'مهتم':        '#f97316',
+  'تفاوض':       '#8b5cf6',
+  'تريال محجوز': '#6366f1',
+  'حضر التريال': '#ec4899',
+  'تم التسجيل':  '#10b981',
+  'غير مهتم':    '#ef4444',
 }
 const SOURCE_COLORS = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444']
 
@@ -80,8 +83,9 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   const enrolled = useMemo(() => leads.filter((l) => l.stage === 'تم التسجيل'), [leads])
+  const trialsBooked = useMemo(() => leads.filter((l) => l.stage === 'تريال محجوز' || l.stage === 'حضر التريال'), [leads])
   const convRate = leads.length ? Math.round((enrolled.length / leads.length) * 100) : 0
-  const totalRevenue = enrolled.reduce((s, l) => s + (l.value || 0), 0)
+  const totalRevenue = enrolled.reduce((s, l) => s + (Number(l.value) || 0), 0)
   const today = new Date().toISOString().split('T')[0]
   const followUpsToday = leads.filter((l) => l.followUpDate === today).length
 
@@ -127,8 +131,8 @@ export default function Dashboard() {
           onClick={() => navigate('/leads')}
         />
         <StatCard
-          icon={Award} label="تم التسجيل" value={enrolled.length} sub="كليك لعرض المسجلين" color="bg-green-500"
-          onClick={() => navigate('/leads', { state: { filterStage: 'تم التسجيل' } })}
+          icon={Award} label="تريال محجوز" value={trialsBooked.length} sub="كليك لعرض التريالز" color="bg-indigo-500"
+          onClick={() => navigate('/leads', { state: { filterStage: 'تريال محجوز' } })}
         />
         <StatCard
           icon={TrendingUp} label="معدل التحويل" value={`${convRate}%`} sub="كليك لمؤشرات الأداء" color="bg-amber-500"

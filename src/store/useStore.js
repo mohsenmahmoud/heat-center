@@ -6,151 +6,224 @@ const initialLeads = [
     id: '1',
     name: 'أحمد محمد السيد',
     phone: '01012345678',
-    childName: 'يوسف أحمد',
-    childAge: 10,
+    whatsappPhone: '01012345678',
+    email: '',
+    parentType: 'أب',
+    leadType: 'B2C',
+    b2bSource: '',
     source: 'Facebook',
-    stage: 'جديد',
-    notes: '',
-    assignedTo: 'سارة عبد الله',
+    stage: 'ليد جديد',
+    assignedTo: 'ميادة',
     createdAt: '2026-06-01T09:00:00Z',
-    value: '',
     followUpDate: '',
-    courseInterest: 'Game Design',
+    students: [{ name: 'يوسف', age: '10', track: 'Scratch', onlineOffline: 'أونلاين', gradeLevel: 'الصف الخامس' }],
+    value: '',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '2',
     name: 'منى حسن إبراهيم',
     phone: '01123456789',
-    childName: 'ريم حسن',
-    childAge: 8,
+    whatsappPhone: '01123456789',
+    email: 'mona@gmail.com',
+    parentType: 'أم',
+    leadType: 'B2C',
+    b2bSource: '',
     source: 'Instagram',
     stage: 'تم التواصل',
-    notes: '',
-    assignedTo: 'محمد خالد',
+    assignedTo: 'هاجر',
     createdAt: '2026-05-28T10:30:00Z',
+    followUpDate: '2026-06-15',
+    students: [{ name: 'ريم', age: '8', track: 'Scratch', onlineOffline: 'أونلاين', gradeLevel: 'الصف الثالث' }],
     value: '',
-    followUpDate: '',
-    courseInterest: 'Scratch',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '3',
     name: 'طارق عبد الرحمن',
     phone: '01554567890',
-    childName: 'عمر طارق',
-    childAge: 14,
-    source: 'Referral',
-    stage: 'موعد محجوز',
-    notes: '',
-    assignedTo: 'نورا أحمد',
+    whatsappPhone: '01554567890',
+    email: '',
+    parentType: 'أب',
+    leadType: 'B2C',
+    b2bSource: '',
+    source: 'Facebook',
+    stage: 'تريال محجوز',
+    assignedTo: 'أسماء',
     createdAt: '2026-05-25T14:00:00Z',
+    followUpDate: '2026-06-13',
+    students: [{ name: 'عمر', age: '14', track: 'Web Development', onlineOffline: 'أونلاين', gradeLevel: 'الصف الثامن' }],
     value: '',
-    followUpDate: '',
-    courseInterest: 'Python',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '4',
     name: 'هدى سمير علي',
     phone: '01005678901',
-    childName: 'لينا سمير',
-    childAge: 12,
-    source: 'Website',
-    stage: 'عرض تقديمي',
-    notes: '',
-    assignedTo: 'سارة عبد الله',
+    whatsappPhone: '01005678901',
+    email: '',
+    parentType: 'أم',
+    leadType: 'B2C',
+    b2bSource: '',
+    source: 'WhatsApp',
+    stage: 'مهتم',
+    assignedTo: 'ميادة',
     createdAt: '2026-05-20T11:00:00Z',
+    followUpDate: '2026-06-12',
+    students: [
+      { name: 'لينا', age: '12', track: 'Web Development', onlineOffline: 'أونلاين', gradeLevel: 'الصف السادس' },
+      { name: 'سارة', age: '10', track: 'Scratch', onlineOffline: 'أونلاين', gradeLevel: 'الصف الرابع' },
+    ],
     value: '',
-    followUpDate: '',
-    courseInterest: 'Web Development',
+    paymentType: '',
+    discount: 'خصم أخوات 10%',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '5',
     name: 'كريم محمود عثمان',
     phone: '01226789012',
-    childName: 'آدم كريم',
-    childAge: 9,
-    source: 'WhatsApp',
-    stage: 'متابعة',
-    notes: '',
-    assignedTo: 'محمد خالد',
+    whatsappPhone: '01226789012',
+    email: '',
+    parentType: 'أب',
+    leadType: 'B2C',
+    b2bSource: '',
+    source: 'Facebook',
+    stage: 'لا يرد',
+    assignedTo: 'هاجر',
     createdAt: '2026-05-18T15:30:00Z',
-    value: '',
     followUpDate: '',
-    courseInterest: 'Scratch',
+    students: [{ name: 'آدم', age: '9', track: 'Scratch', onlineOffline: 'أوف لاين', gradeLevel: 'الصف الرابع' }],
+    value: '',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 3,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '6',
     name: 'رانيا فاروق النجار',
     phone: '01067890123',
-    childName: 'مريم فاروق',
-    childAge: 11,
+    whatsappPhone: '01067890123',
+    email: 'rania@gmail.com',
+    parentType: 'أم',
+    leadType: 'B2C',
+    b2bSource: '',
     source: 'Facebook',
     stage: 'تم التسجيل',
-    notes: '',
-    assignedTo: 'نورا أحمد',
+    assignedTo: 'أسماء',
     createdAt: '2026-05-15T09:00:00Z',
-    value: '',
     followUpDate: '',
-    courseInterest: 'Python',
+    students: [{ name: 'مريم', age: '11', track: 'AI', onlineOffline: 'أونلاين', gradeLevel: 'الصف الخامس' }],
+    value: '3000',
+    paymentType: 'كاش',
+    discount: 'خصم كاش 15%',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '7',
     name: 'سامي عادل حسين',
     phone: '01118901234',
-    childName: 'زياد سامي',
-    childAge: 15,
-    source: 'Instagram',
+    whatsappPhone: '01118901234',
+    email: '',
+    parentType: 'أب',
+    leadType: 'B2B',
+    b2bSource: 'مدرسة المنهل',
+    source: 'B2B',
     stage: 'تم التسجيل',
-    notes: '',
-    assignedTo: 'أمير يوسف',
+    assignedTo: 'غادة',
     createdAt: '2026-05-12T13:00:00Z',
-    value: '',
     followUpDate: '',
-    courseInterest: 'Web Development',
+    students: [{ name: 'زياد', age: '15', track: 'Web Development', onlineOffline: 'أوف لاين', gradeLevel: 'الصف التاسع' }],
+    value: '4000',
+    paymentType: 'تقسيط',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '8',
     name: 'ليلى حمدي صالح',
     phone: '01099012345',
-    childName: 'كريم حمدي',
-    childAge: 7,
-    source: 'Referral',
-    stage: 'لم يتم',
-    notes: '',
-    assignedTo: 'سارة عبد الله',
+    whatsappPhone: '01099012345',
+    email: '',
+    parentType: 'أم',
+    leadType: 'B2C',
+    b2bSource: '',
+    source: 'Instagram',
+    stage: 'غير مهتم',
+    assignedTo: 'ميادة',
     createdAt: '2026-05-10T10:00:00Z',
-    value: '',
     followUpDate: '',
-    courseInterest: 'Scratch',
+    students: [{ name: 'كريم', age: '7', track: 'Scratch', onlineOffline: 'أونلاين', gradeLevel: 'الصف الأول' }],
+    value: '',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 1,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '9',
     name: 'عمرو جمال الدين',
     phone: '01280123456',
-    childName: 'سلمى عمرو',
-    childAge: 13,
-    source: 'Website',
-    stage: 'جديد',
-    notes: '',
-    assignedTo: 'أمير يوسف',
+    whatsappPhone: '01280123456',
+    email: '',
+    parentType: 'أب',
+    leadType: 'B2C',
+    b2bSource: '',
+    source: 'Organic',
+    stage: 'حضر التريال',
+    assignedTo: 'غادة',
     createdAt: '2026-06-07T16:00:00Z',
+    followUpDate: '2026-06-14',
+    students: [{ name: 'سلمى', age: '13', track: 'Mobile Development', onlineOffline: 'أونلاين', gradeLevel: 'الصف السابع' }],
     value: '',
-    followUpDate: '',
-    courseInterest: 'Robotics',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
   {
     id: '10',
     name: 'داليا وائل منصور',
     phone: '01031234567',
-    childName: 'تامر وائل',
-    childAge: 16,
+    whatsappPhone: '01031234567',
+    email: '',
+    parentType: 'أم',
+    leadType: 'B2C',
+    b2bSource: '',
     source: 'Facebook',
-    stage: 'تم التواصل',
-    notes: '',
-    assignedTo: 'محمد خالد',
+    stage: 'تفاوض',
+    assignedTo: 'هاجر',
     createdAt: '2026-06-05T11:00:00Z',
+    followUpDate: '2026-06-12',
+    students: [{ name: 'تامر', age: '16', track: 'AI', onlineOffline: 'أونلاين', gradeLevel: 'الصف العاشر' }],
     value: '',
-    followUpDate: '',
-    courseInterest: 'Python',
+    paymentType: '',
+    discount: '',
+    noAnswerCount: 0,
+    callRecordLink: '',
+    notes: '',
   },
 ]
 
@@ -173,7 +246,7 @@ const initialTemplates = [
   },
   {
     id: 't2',
-    name: 'تأكيد الموعد',
+    name: 'تأكيد موعد التريال',
     category: 'موعد',
     content: `مرحباً {اسم_الوالد} 😊
 
@@ -191,7 +264,7 @@ const initialTemplates = [
   },
   {
     id: 't3',
-    name: 'رسالة بعد الـ Demo',
+    name: 'متابعة بعد التريال',
     category: 'متابعة',
     content: `السلام عليكم {اسم_الوالد} 🌺
 
@@ -205,139 +278,73 @@ const initialTemplates = [
   },
   {
     id: 't4',
-    name: 'متابعة بعد يومين',
-    category: 'متابعة',
-    content: `أهلاً {اسم_الوالد} 👋
-
-أردت فقط أن أطمئن عليكم وأعرف إذا كان عندكم أي تساؤلات بعد جلسة {اسم_الطفل} التجريبية.
-
-كثيراً من الأهل يسألوننا عن:
-✅ هل البرمجة مناسبة لعمر طفلهم؟
-✅ كم تستغرق الكورسات؟
-✅ ما الفرق بين الكورسات؟
-
-أنا هنا للإجابة على أي سؤال 🙂
-
-ما رأيك في {اسم_الطفل}، هل كان متحمساً؟`,
-  },
-  {
-    id: 't5',
     name: 'عرض خاص',
     category: 'عروض',
     content: `🎉 عرض خاص لـ {اسم_الوالد}!
 
 بمناسبة اهتمامكم ببرامج بنيان، يسعدنا تقديم عرض حصري لطفلكم {اسم_الطفل}:
 
-🔥 خصم 15% على كورس {اسم_الكورس}
-🎁 جلسة متابعة مجانية إضافية
+🔥 خصم 15% عند الدفع كاش
+🎁 خصم 10% لأكثر من طالب
 ⏳ العرض ساري حتى: {التاريخ}
 
 لا تفوّت هذه الفرصة لمنح طفلك أفضل بداية في عالم التكنولوجيا!
 
 للتسجيل الآن، رد بـ "نعم" وسنكمل الإجراءات فوراً 🚀`,
   },
-  {
-    id: 't6',
-    name: 'رسالة الوالدين المهتمين',
-    category: 'ترحيب',
-    content: `السلام عليكم {اسم_الوالد} 🌟
-
-شكراً على اهتمامك ببرامج بنيان لتعليم البرمجة!
-
-🎯 لماذا بنيان مختلفة؟
-• مناهج مصممة خصيصاً للأطفال العرب
-• مدربون متخصصون وذوو خبرة
-• بيئة تعلم ممتعة وتفاعلية
-• شهادات معتمدة دولياً
-• فصول صغيرة (لا تزيد عن 8 طلاب)
-
-طفلكم {اسم_الطفل} في عمر {عمر_الطفل} سنوات - الوقت المثالي!
-
-هل تريد جدولة جلسة تجريبية مجانية؟`,
-  },
-  {
-    id: 't7',
-    name: 'تذكير بالجلسة التجريبية',
-    category: 'موعد',
-    content: `تذكير 🔔
-
-{اسم_الوالد}، جلستكم التجريبية غداً!
-
-📅 {التاريخ} الساعة {الوقت}
-👦 للطفل: {اسم_الطفل}
-💻 الكورس: {اسم_الكورس}
-
-تأكد من:
-✅ اتصال إنترنت جيد (إذا أونلاين)
-✅ حاسوب أو تابلت جاهز
-✅ الطفل مرتاح ومستعد
-
-نتطلع لرؤيتكم! أي استفسار لا تتردد 😊`,
-  },
-  {
-    id: 't8',
-    name: 'رسالة التسجيل النهائي',
-    category: 'تسجيل',
-    content: `🎉 مبروك {اسم_الوالد}!
-
-تم تسجيل {اسم_الطفل} بنجاح في كورس {اسم_الكورس} مع بنيان! 🚀
-
-التفاصيل:
-📅 بداية الكورس: {التاريخ}
-⏰ الوقت: {الوقت}
-💻 رابط الجلسة سيُرسل قبل 30 دقيقة
-
-سيصلكم قريباً:
-✅ تأكيد التسجيل عبر الإيميل
-✅ المواد التعليمية الأولية
-✅ رابط مجموعة أولياء الأمور
-
-نحن متحمسون لرحلة {اسم_الطفل} مع البرمجة! 💡`,
-  },
 ]
 
 const initialKpis = {
+  targets: {
+    calls: 60,
+    whatsapp: 45,
+    contacts: 30,
+    trialsBooked: 15,
+    trialsAttended: 12,
+    closed: 6,
+    revenue: 18000,
+  },
   reps: [
     {
       id: 'r1',
-      name: 'سارة عبد الله',
-      avatar: 'سع',
-      monthly: { leads: 18, conversions: 7, revenue: 16500, calls: 45 },
-      weekly: { leads: 5, conversions: 2, revenue: 4500, calls: 12 },
-      quarterly: { leads: 52, conversions: 21, revenue: 51000, calls: 130 },
+      name: 'ميادة',
+      avatar: 'مي',
+      monthly: { leads: 18, conversions: 5, revenue: 15000, calls: 48, whatsapp: 35, trialsBooked: 9, trialsAttended: 7 },
+      weekly: { leads: 5, conversions: 1, revenue: 3500, calls: 12, whatsapp: 9, trialsBooked: 2, trialsAttended: 2 },
+      quarterly: { leads: 52, conversions: 15, revenue: 45000, calls: 140, whatsapp: 105, trialsBooked: 27, trialsAttended: 21 },
     },
     {
       id: 'r2',
-      name: 'محمد خالد',
-      avatar: 'مخ',
-      monthly: { leads: 15, conversions: 5, revenue: 13000, calls: 38 },
-      weekly: { leads: 4, conversions: 1, revenue: 2800, calls: 10 },
-      quarterly: { leads: 44, conversions: 16, revenue: 40000, calls: 112 },
+      name: 'هاجر',
+      avatar: 'هج',
+      monthly: { leads: 15, conversions: 4, revenue: 12000, calls: 42, whatsapp: 30, trialsBooked: 7, trialsAttended: 5 },
+      weekly: { leads: 4, conversions: 1, revenue: 3000, calls: 10, whatsapp: 8, trialsBooked: 2, trialsAttended: 1 },
+      quarterly: { leads: 44, conversions: 12, revenue: 36000, calls: 126, whatsapp: 90, trialsBooked: 21, trialsAttended: 15 },
     },
     {
       id: 'r3',
-      name: 'نورا أحمد',
-      avatar: 'نأ',
-      monthly: { leads: 20, conversions: 9, revenue: 22000, calls: 52 },
-      weekly: { leads: 6, conversions: 3, revenue: 7200, calls: 14 },
-      quarterly: { leads: 58, conversions: 26, revenue: 64000, calls: 148 },
+      name: 'أسماء',
+      avatar: 'أس',
+      monthly: { leads: 20, conversions: 7, revenue: 21000, calls: 55, whatsapp: 42, trialsBooked: 12, trialsAttended: 10 },
+      weekly: { leads: 6, conversions: 2, revenue: 6000, calls: 14, whatsapp: 11, trialsBooked: 3, trialsAttended: 2 },
+      quarterly: { leads: 60, conversions: 21, revenue: 63000, calls: 165, whatsapp: 126, trialsBooked: 36, trialsAttended: 30 },
     },
     {
       id: 'r4',
-      name: 'أمير يوسف',
-      avatar: 'أي',
-      monthly: { leads: 12, conversions: 4, revenue: 10500, calls: 30 },
-      weekly: { leads: 3, conversions: 1, revenue: 2500, calls: 8 },
-      quarterly: { leads: 36, conversions: 12, revenue: 31500, calls: 90 },
+      name: 'غادة',
+      avatar: 'غا',
+      monthly: { leads: 12, conversions: 3, revenue: 9000, calls: 36, whatsapp: 27, trialsBooked: 6, trialsAttended: 4 },
+      weekly: { leads: 3, conversions: 1, revenue: 2500, calls: 9, whatsapp: 7, trialsBooked: 1, trialsAttended: 1 },
+      quarterly: { leads: 36, conversions: 9, revenue: 27000, calls: 108, whatsapp: 81, trialsBooked: 18, trialsAttended: 12 },
     },
   ],
   chartData: [
-    { month: 'يناير', سارة: 5, محمد: 3, نورا: 6, أمير: 2 },
-    { month: 'فبراير', سارة: 6, محمد: 4, نورا: 7, أمير: 3 },
-    { month: 'مارس', سارة: 5, محمد: 5, نورا: 8, أمير: 4 },
-    { month: 'أبريل', سارة: 7, محمد: 4, نورا: 9, أمير: 3 },
-    { month: 'مايو', سارة: 8, محمد: 6, نورا: 10, أمير: 4 },
-    { month: 'يونيو', سارة: 7, محمد: 5, نورا: 9, أمير: 4 },
+    { month: 'يناير', ميادة: 3, هاجر: 2, أسماء: 4, غادة: 2 },
+    { month: 'فبراير', ميادة: 4, هاجر: 3, أسماء: 5, غادة: 2 },
+    { month: 'مارس', ميادة: 4, هاجر: 3, أسماء: 6, غادة: 3 },
+    { month: 'أبريل', ميادة: 5, هاجر: 4, أسماء: 7, غادة: 3 },
+    { month: 'مايو', ميادة: 5, هاجر: 4, أسماء: 7, غادة: 3 },
+    { month: 'يونيو', ميادة: 5, هاجر: 4, أسماء: 7, غادة: 3 },
   ],
 }
 
@@ -352,9 +359,9 @@ const useStore = create(
       activities: initialActivities,
 
       addLead: (lead) => {
-        const newLead = { ...lead, id: Date.now().toString(), createdAt: new Date().toISOString() }
+        const newLead = { ...lead, id: Date.now().toString(), createdAt: new Date().toISOString(), noAnswerCount: 0 }
         set((state) => ({ leads: [newLead, ...state.leads] }))
-        get().addActivity({ type: 'new_lead', leadId: newLead.id, leadName: newLead.name, description: 'تم إضافة عميل جديد', rep: newLead.assignedTo })
+        get().addActivity({ type: 'new_lead', leadId: newLead.id, leadName: newLead.name, description: 'تم إضافة ليد جديد', rep: newLead.assignedTo, stage: newLead.stage })
       },
 
       updateLead: (id, updates) => {
@@ -373,7 +380,18 @@ const useStore = create(
           set((state) => ({
             leads: state.leads.map((l) => (l.id === id ? { ...l, stage: newStage } : l)),
           }))
-          get().addActivity({ type: 'stage_change', leadId: id, leadName: lead.name, description: `تم نقل إلى مرحلة: ${newStage}`, rep: lead.assignedTo, fromStage: lead.stage, stage: newStage })
+          get().addActivity({ type: 'stage_change', leadId: id, leadName: lead.name, description: `تم نقل إلى: ${newStage}`, rep: lead.assignedTo, fromStage: lead.stage, stage: newStage })
+        }
+      },
+
+      incrementNoAnswer: (id) => {
+        const lead = get().leads.find((l) => l.id === id)
+        if (lead) {
+          const newCount = (lead.noAnswerCount || 0) + 1
+          set((state) => ({
+            leads: state.leads.map((l) => l.id === id ? { ...l, noAnswerCount: newCount, stage: 'لا يرد' } : l),
+          }))
+          get().addActivity({ type: 'no_answer', leadId: id, leadName: lead.name, description: `لا يرد — المحاولة ${newCount}`, rep: lead.assignedTo, stage: 'لا يرد' })
         }
       },
 
@@ -394,10 +412,10 @@ const useStore = create(
 
       addActivity: (activity) => {
         const newActivity = { ...activity, id: 'a' + Date.now(), createdAt: new Date().toISOString() }
-        set((state) => ({ activities: [newActivity, ...state.activities.slice(0, 49)] }))
+        set((state) => ({ activities: [newActivity, ...state.activities.slice(0, 99)] }))
       },
     }),
-    { name: 'bonyan-crm-storage' }
+    { name: 'bonyan-crm-v2' }
   )
 )
 

@@ -426,7 +426,7 @@ const useStore = create(
       },
 
       login: (username, password) => {
-        const users = get().users || initialUsers
+        const users = (get().users?.length ? get().users : initialUsers)
         const user = users.find((u) => u.username === username && u.password === password && u.active)
         if (user) { set({ currentUser: user }); return true }
         return false
@@ -455,9 +455,14 @@ const useStore = create(
       version: 3,
       migrate: (old) => ({
         ...old,
-        users: old.users || initialUsers,
+        users: (old.users?.length ? old.users : initialUsers),
         currentUser: null,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && (!state.users || state.users.length === 0)) {
+          state.users = initialUsers
+        }
+      },
     }
   )
 )

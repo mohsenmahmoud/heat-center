@@ -128,7 +128,11 @@ function LeadDetail({ lead, onClose, onEdit }) {
   const deleteLead = useStore((s) => s.deleteLead)
   const addActivity = useStore((s) => s.addActivity)
   const activities = useStore((s) => s.activities)
-  const leadActivities = activities.filter((a) => a.leadId === lead.id).slice(0, 8)
+  const leadActivities = activities.filter((a) => a.leadId === lead.id)
+
+  const [newNote, setNewNote] = useState('')
+  const [saving, setSaving] = useState(false)
+  const noteRef = useRef()
 
   const days = Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 86400000)
 
@@ -149,25 +153,49 @@ function LeadDetail({ lead, onClose, onEdit }) {
     }
   }
 
+  const handleSaveNote = () => {
+    const text = newNote.trim()
+    if (!text) return
+    setSaving(true)
+    addActivity({ type: 'note', leadId: lead.id, leadName: lead.name, description: text, rep: lead.assignedTo })
+    setNewNote('')
+    setTimeout(() => { setSaving(false); noteRef.current?.focus() }, 300)
+  }
+
+  const handleNoteKey = (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSaveNote()
+  }
+
   const activityIcons = { call: '📞', whatsapp: '💬', stage_change: '🔄', note: '📝', enrollment: '🎉', new_lead: '👤' }
+  const activityColors = {
+    call: 'bg-blue-100 text-blue-600',
+    whatsapp: 'bg-green-100 text-green-600',
+    stage_change: 'bg-purple-100 text-purple-600',
+    note: 'bg-amber-100 text-amber-600',
+    enrollment: 'bg-emerald-100 text-emerald-600',
+    new_lead: 'bg-gray-100 text-gray-600',
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full overflow-y-auto">
+      <div className="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full">
+
         {/* Header */}
-        <div className="bg-gradient-to-l from-amber-500 to-amber-600 p-5 text-white">
+        <div className="bg-gradient-to-l from-amber-500 to-amber-600 p-5 text-white flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-bold text-xl">{lead.name}</h3>
               <p className="text-amber-100 text-sm mt-1">{lead.phone}</p>
-              <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white`}>{lead.stage}</span>
+              <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white">{lead.stage}</span>
             </div>
             <button onClick={onClose} className="text-white/80 hover:text-white p-1"><X size={22} /></button>
           </div>
         </div>
 
-        <div className="p-5 space-y-5 flex-1">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+
           {/* Child Info */}
           <div className="bg-blue-50 rounded-xl p-4">
             <h4 className="text-xs font-bold text-blue-600 uppercase mb-2">بيانات الطفل</h4>
@@ -201,12 +229,15 @@ function LeadDetail({ lead, onClose, onEdit }) {
             )}
           </div>
 
-          {lead.notes && (
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-              <p className="text-xs font-bold text-amber-600 mb-1">ملاحظات</p>
-              <p className="text-sm text-gray-700">{lead.notes}</p>
-            </div>
-          )}
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={handleCall} className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-xl transition-colors text-sm font-medium">
+              <Phone size={16} /> اتصال
+            </button>
+            <button onClick={handleWhatsApp} className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-xl transition-colors text-sm font-medium">
+              <MessageCircle size={16} /> واتساب
+            </button>
+          </div>
 
           {/* Move Stage */}
           <div>
@@ -221,38 +252,59 @@ function LeadDetail({ lead, onClose, onEdit }) {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={handleCall} className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-xl transition-colors text-sm font-medium">
-              <Phone size={16} /> اتصال
-            </button>
-            <button onClick={handleWhatsApp} className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-xl transition-colors text-sm font-medium">
-              <MessageCircle size={16} /> واتساب
+          {/* ── Add Note ── */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="text-sm font-bold text-amber-700 mb-2">📝 إضافة ملاحظة متابعة</p>
+            <textarea
+              ref={noteRef}
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              onKeyDown={handleNoteKey}
+              rows={3}
+              placeholder="اكتب ملاحظة عن المتابعة... (Ctrl+Enter للحفظ)"
+              className="w-full border border-amber-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
+            />
+            <button
+              onClick={handleSaveNote}
+              disabled={!newNote.trim() || saving}
+              className="mt-2 w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white font-bold py-2 rounded-lg text-sm transition-colors"
+            >
+              {saving ? 'تم الحفظ ✓' : 'حفظ الملاحظة'}
             </button>
           </div>
 
-          {/* Activity Log */}
+          {/* ── Activity & Notes Log ── */}
           <div>
-            <p className="text-sm font-bold text-gray-700 mb-2">سجل النشاط</p>
-            <div className="space-y-2">
-              {leadActivities.length === 0 && <p className="text-sm text-gray-400">لا توجد نشاطات بعد</p>}
-              {leadActivities.map((act) => (
-                <div key={act.id} className="flex items-start gap-2 text-sm py-2 border-b border-gray-50 last:border-0">
-                  <span>{activityIcons[act.type] || '📌'}</span>
-                  <div>
-                    <p className="text-gray-700">{act.description}</p>
-                    <p className="text-xs text-gray-400">{new Date(act.createdAt).toLocaleString('ar-EG')}</p>
-                  </div>
+            <p className="text-sm font-bold text-gray-700 mb-3">سجل المتابعات والملاحظات</p>
+            {leadActivities.length === 0
+              ? <p className="text-sm text-gray-400 text-center py-4">لا توجد نشاطات بعد</p>
+              : (
+                <div className="space-y-2">
+                  {leadActivities.map((act) => (
+                    <div key={act.id} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${activityColors[act.type] || 'bg-gray-100'}`}>
+                        {activityIcons[act.type] || '📌'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-800 leading-snug">{act.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs text-gray-400">{act.rep?.split(' ')[0]}</p>
+                          <span className="text-gray-300">·</span>
+                          <p className="text-xs text-gray-400">{new Date(act.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )
+            }
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="border-t p-4 flex gap-3">
+        {/* Footer */}
+        <div className="border-t p-4 flex gap-3 flex-shrink-0">
           <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl text-sm font-bold transition-colors">
-            <Edit3 size={16} /> تعديل
+            <Edit3 size={16} /> تعديل البيانات
           </button>
           <button onClick={handleDelete} className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors">
             <Trash2 size={16} />

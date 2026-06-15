@@ -777,6 +777,9 @@ export default function Leads() {
   useEffect(() => {
     const state = location.state
     if (!state) return
+    // reset all nav-driven filters first so switching between them works
+    setFilterStage(''); setFilterSource(''); setFilterRep('')
+    setFilterFollowUpToday(false); setFilterNewToday(false)
     if (state.filterStage) { setFilterStage(state.filterStage); setShowFilters(true) }
     if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
     if (state.filterRep) { setFilterRep(state.filterRep); setShowFilters(true) }
@@ -787,7 +790,7 @@ export default function Leads() {
       const lead = leads.find((l) => l.id === state.openLeadId)
       if (lead) setSelectedLead(lead)
     }
-  }, [location.state])
+  }, [location.key])
 
   const filtered = useMemo(() => {
     return leads.filter((l) => {

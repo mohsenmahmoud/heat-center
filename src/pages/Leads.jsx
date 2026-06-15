@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { Search, Plus, X, Phone, MessageCircle, ChevronRight, Trash2, Edit3, Filter, Download, Upload, CheckCircle, AlertCircle } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import useStore from '../store/useStore'
+import { openWhatsApp } from '../utils/phone'
 
 const STAGES = ['جديد', 'تم التواصل', 'موعد محجوز', 'عرض تقديمي', 'متابعة', 'تم التسجيل', 'لم يتم']
 const SOURCES = ['Facebook', 'Instagram', 'WhatsApp', 'Referral', 'Website']
@@ -138,8 +139,7 @@ function LeadDetail({ lead, onClose, onEdit }) {
 
   const handleWhatsApp = () => {
     addActivity({ type: 'whatsapp', leadId: lead.id, leadName: lead.name, description: 'تم فتح محادثة واتساب', rep: lead.assignedTo })
-    const phone = lead.phone.replace(/[^0-9]/g, '')
-    window.open(`https://wa.me/2${phone}`)
+    openWhatsApp(lead.phone)
   }
 
   const handleDelete = () => {

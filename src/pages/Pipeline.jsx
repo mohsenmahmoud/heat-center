@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Phone, MessageCircle, ChevronDown, User } from 'lucide-react'
 import useStore from '../store/useStore'
+import { openWhatsApp } from '../utils/phone'
 
 const STAGES = ['جديد', 'تم التواصل', 'موعد محجوز', 'عرض تقديمي', 'متابعة', 'تم التسجيل', 'لم يتم']
 
@@ -47,8 +48,7 @@ function LeadCard({ lead }) {
 
   const handleWa = (e) => {
     e.stopPropagation()
-    const phone = lead.phone.replace(/[^0-9]/g, '')
-    window.open(`https://wa.me/2${phone}`)
+    openWhatsApp(lead.phone)
   }
 
   return (

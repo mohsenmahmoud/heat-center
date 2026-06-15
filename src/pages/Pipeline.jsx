@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Phone, MessageCircle, ChevronDown, User } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Phone, MessageCircle, ChevronDown, User, StickyNote, X, Check } from 'lucide-react'
 import useStore from '../store/useStore'
 import { openWhatsApp } from '../utils/phone'
 
@@ -36,9 +36,46 @@ function MoveMenu({ lead, onMove, onClose }) {
   )
 }
 
+function QuickNote({ lead, onClose }) {
+  const addActivity = useStore((s) => s.addActivity)
+  const [text, setText] = useState('')
+  const ref = useRef()
+
+  const save = () => {
+    const t = text.trim()
+    if (!t) return
+    addActivity({ type: 'note', leadId: lead.id, leadName: lead.name, description: t, rep: lead.assignedTo, stage: lead.stage })
+    onClose()
+  }
+
+  return (
+    <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-2.5 space-y-2">
+      <textarea
+        ref={ref}
+        autoFocus
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save() }}
+        rows={2}
+        placeholder={`ملاحظة في "${lead.stage}"... (Ctrl+Enter للحفظ)`}
+        className="w-full border border-amber-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
+      />
+      <div className="flex gap-1.5">
+        <button onClick={save} disabled={!text.trim()} className="flex-1 flex items-center justify-center gap-1 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-colors">
+          <Check size={11} /> حفظ
+        </button>
+        <button onClick={onClose} className="flex items-center justify-center gap-1 px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs transition-colors">
+          <X size={11} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function LeadCard({ lead }) {
   const moveLead = useStore((s) => s.moveLead)
   const [showMenu, setShowMenu] = useState(false)
+  const [showNote, setShowNote] = useState(false)
   const days = Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 86400000)
 
   const handleCall = (e) => {
@@ -95,9 +132,13 @@ function LeadCard({ lead }) {
         <button onClick={handleWa} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs transition-colors">
           <MessageCircle size={12} /> واتس
         </button>
+        <button onClick={(e) => { e.stopPropagation(); setShowNote(!showNote) }}
+          className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs transition-colors ${showNote ? 'bg-amber-200 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 text-amber-600'}`}>
+          <StickyNote size={12} />
+        </button>
         <div className="relative">
           <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu) }}
-            className="flex items-center justify-center gap-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg text-xs transition-colors">
+            className="flex items-center justify-center gap-1 py-1.5 px-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs transition-colors">
             <ChevronDown size={12} />
           </button>
           {showMenu && (
@@ -108,6 +149,7 @@ function LeadCard({ lead }) {
           )}
         </div>
       </div>
+      {showNote && <QuickNote lead={lead} onClose={() => setShowNote(false)} />}
     </div>
   )
 }

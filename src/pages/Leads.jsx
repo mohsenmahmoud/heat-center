@@ -123,6 +123,90 @@ function LeadModal({ lead, onClose, onSave }) {
   )
 }
 
+const STAGE_BADGE = {
+  'جديد': 'bg-blue-100 text-blue-700 border-blue-200',
+  'تم التواصل': 'bg-amber-100 text-amber-700 border-amber-200',
+  'موعد محجوز': 'bg-orange-100 text-orange-700 border-orange-200',
+  'عرض تقديمي': 'bg-purple-100 text-purple-700 border-purple-200',
+  'متابعة': 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  'تم التسجيل': 'bg-green-100 text-green-700 border-green-200',
+  'لم يتم': 'bg-red-100 text-red-700 border-red-200',
+}
+
+function StageNotesView({ activities, currentStage, activityIcons, activityColors }) {
+  const [collapsed, setCollapsed] = useState({})
+
+  // Build a map: stage → activities (sorted oldest first)
+  const byStage = useMemo(() => {
+    const map = {}
+    // Walk chronologically to assign stage to activities without explicit stage
+    const sorted = [...activities].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    let trackedStage = currentStage // fallback
+    // Find first stage_change to guess initial stage
+    const firstChange = sorted.find((a) => a.type === 'stage_change' && a.fromStage)
+    if (firstChange) trackedStage = firstChange.fromStage
+
+    sorted.forEach((act) => {
+      const stage = act.stage || (act.type === 'stage_change' && act.fromStage ? act.fromStage : trackedStage)
+      if (act.type === 'stage_change' && act.stage) trackedStage = act.stage
+      if (!map[stage]) map[stage] = []
+      map[stage].push(act)
+    })
+    return map
+  }, [activities, currentStage])
+
+  const stagesWithData = STAGES.filter((s) => byStage[s]?.length)
+
+  if (stagesWithData.length === 0) return <p className="text-sm text-gray-400 text-center py-4">لا توجد نشاطات بعد</p>
+
+  return (
+    <div className="space-y-3">
+      {stagesWithData.map((stage) => {
+        const acts = byStage[stage]
+        const isOpen = !collapsed[stage]
+        const noteCount = acts.filter((a) => a.type === 'note').length
+        const isCurrent = stage === currentStage
+        return (
+          <div key={stage} className={`border rounded-xl overflow-hidden ${STAGE_BADGE[stage]?.replace('text-', 'border-').split(' ')[2] || 'border-gray-200'}`}>
+            <button
+              onClick={() => setCollapsed((p) => ({ ...p, [stage]: !p[stage] }))}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-right ${STAGE_BADGE[stage]?.split(' ').slice(0, 2).join(' ') || 'bg-gray-100 text-gray-700'}`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm">{stage}</span>
+                {isCurrent && <span className="text-xs bg-white/50 px-1.5 py-0.5 rounded-full font-medium">الحالية</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs opacity-70">{noteCount} ملاحظة · {acts.length} نشاط</span>
+                <span className="text-xs">{isOpen ? '▲' : '▼'}</span>
+              </div>
+            </button>
+            {isOpen && (
+              <div className="bg-white p-2 space-y-1.5">
+                {acts.map((act) => (
+                  <div key={act.id} className="flex items-start gap-2.5 bg-gray-50 rounded-lg p-2.5">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${activityColors[act.type] || 'bg-gray-100'}`}>
+                      {activityIcons[act.type] || '📌'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-800 leading-snug">{act.description}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-xs text-gray-400">{act.rep?.split(' ')[0]}</p>
+                        <span className="text-gray-300">·</span>
+                        <p className="text-xs text-gray-400">{new Date(act.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function LeadDetail({ lead, onClose, onEdit }) {
   const moveLead = useStore((s) => s.moveLead)
   const deleteLead = useStore((s) => s.deleteLead)
@@ -133,6 +217,7 @@ function LeadDetail({ lead, onClose, onEdit }) {
   const [newNote, setNewNote] = useState('')
   const [saving, setSaving] = useState(false)
   const noteRef = useRef()
+  const [logTab, setLogTab] = useState('stages') // 'stages' | 'timeline'
 
   const days = Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 86400000)
 
@@ -157,7 +242,7 @@ function LeadDetail({ lead, onClose, onEdit }) {
     const text = newNote.trim()
     if (!text) return
     setSaving(true)
-    addActivity({ type: 'note', leadId: lead.id, leadName: lead.name, description: text, rep: lead.assignedTo })
+    addActivity({ type: 'note', leadId: lead.id, leadName: lead.name, description: text, rep: lead.assignedTo, stage: lead.stage })
     setNewNote('')
     setTimeout(() => { setSaving(false); noteRef.current?.focus() }, 300)
   }
@@ -275,28 +360,43 @@ function LeadDetail({ lead, onClose, onEdit }) {
 
           {/* ── Activity & Notes Log ── */}
           <div>
-            <p className="text-sm font-bold text-gray-700 mb-3">سجل المتابعات والملاحظات</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-gray-700">سجل المتابعات والملاحظات</p>
+              <div className="flex bg-gray-100 rounded-lg p-0.5 text-xs">
+                <button onClick={() => setLogTab('stages')} className={`px-2.5 py-1 rounded-md transition-colors font-medium ${logTab === 'stages' ? 'bg-white shadow text-amber-700' : 'text-gray-500'}`}>
+                  حسب المرحلة
+                </button>
+                <button onClick={() => setLogTab('timeline')} className={`px-2.5 py-1 rounded-md transition-colors font-medium ${logTab === 'timeline' ? 'bg-white shadow text-amber-700' : 'text-gray-500'}`}>
+                  الكل
+                </button>
+              </div>
+            </div>
+
             {leadActivities.length === 0
               ? <p className="text-sm text-gray-400 text-center py-4">لا توجد نشاطات بعد</p>
-              : (
-                <div className="space-y-2">
-                  {leadActivities.map((act) => (
-                    <div key={act.id} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
-                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${activityColors[act.type] || 'bg-gray-100'}`}>
-                        {activityIcons[act.type] || '📌'}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-800 leading-snug">{act.description}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-xs text-gray-400">{act.rep?.split(' ')[0]}</p>
-                          <span className="text-gray-300">·</span>
-                          <p className="text-xs text-gray-400">{new Date(act.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              : logTab === 'timeline'
+                ? (
+                  <div className="space-y-2">
+                    {leadActivities.map((act) => (
+                      <div key={act.id} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
+                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${activityColors[act.type] || 'bg-gray-100'}`}>
+                          {activityIcons[act.type] || '📌'}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-800 leading-snug">{act.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-gray-400">{act.rep?.split(' ')[0]}</p>
+                            <span className="text-gray-300">·</span>
+                            <p className="text-xs text-gray-400">{new Date(act.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )
+                    ))}
+                  </div>
+                )
+                : (
+                  <StageNotesView activities={leadActivities} currentStage={lead.stage} activityIcons={activityIcons} activityColors={activityColors} />
+                )
             }
           </div>
         </div>

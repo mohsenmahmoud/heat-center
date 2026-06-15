@@ -380,7 +380,7 @@ const useStore = create(
           set((state) => ({
             leads: state.leads.map((l) => (l.id === id ? { ...l, stage: newStage } : l)),
           }))
-          get().addActivity({ type: 'stage_change', leadId: id, leadName: lead.name, description: `تم نقل إلى مرحلة: ${newStage}`, rep: lead.assignedTo })
+          get().addActivity({ type: 'stage_change', leadId: id, leadName: lead.name, description: `تم نقل إلى مرحلة: ${newStage}`, rep: lead.assignedTo, fromStage: lead.stage, stage: newStage })
         }
       },
 

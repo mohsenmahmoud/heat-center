@@ -48,14 +48,16 @@ export default function Header({ pathname }) {
       <div className="flex items-center gap-4">
         {/* Quick Stats */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm">
+          <button onClick={() => navigate('/leads', { state: { filterNewToday: true } })}
+            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer">
             <UserPlus size={16} />
             <span className="font-medium">{newToday} جديد اليوم</span>
-          </div>
-          <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-2 rounded-lg text-sm">
+          </button>
+          <button onClick={() => navigate('/leads', { state: { filterFollowUpToday: true } })}
+            className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer">
             <Clock size={16} />
             <span className="font-medium">{followUpsToday} متابعة</span>
-          </div>
+          </button>
         </div>
 
         {/* User info + logout */}

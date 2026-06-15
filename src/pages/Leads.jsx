@@ -766,6 +766,7 @@ export default function Leads() {
   const [filterSource, setFilterSource] = useState('')
   const [filterRep, setFilterRep] = useState('')
   const [filterFollowUpToday, setFilterFollowUpToday] = useState(false)
+  const [filterNewToday, setFilterNewToday] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [editLead, setEditLead] = useState(null)
   const [selectedLead, setSelectedLead] = useState(null)
@@ -780,6 +781,7 @@ export default function Leads() {
     if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
     if (state.filterRep) { setFilterRep(state.filterRep); setShowFilters(true) }
     if (state.filterFollowUpToday) { setFilterFollowUpToday(true); setShowFilters(true) }
+    if (state.filterNewToday) { setFilterNewToday(true); setShowFilters(true) }
     if (state.openAdd) setShowAddModal(true)
     if (state.openLeadId) {
       const lead = leads.find((l) => l.id === state.openLeadId)
@@ -797,9 +799,10 @@ export default function Leads() {
       const matchRep = !filterRep || l.assignedTo === filterRep
       const today = new Date().toISOString().split('T')[0]
       const matchFollowUp = !filterFollowUpToday || l.followUpDate === today
-      return matchSearch && matchStage && matchSource && matchRep && matchFollowUp
+      const matchNewToday = !filterNewToday || l.createdAt?.startsWith(today)
+      return matchSearch && matchStage && matchSource && matchRep && matchFollowUp && matchNewToday
     })
-  }, [leads, search, filterStage, filterSource, filterRep, filterFollowUpToday])
+  }, [leads, search, filterStage, filterSource, filterRep, filterFollowUpToday, filterNewToday])
 
   const allChecked = filtered.length > 0 && filtered.every((l) => checkedIds.has(l.id))
   const someChecked = checkedIds.size > 0

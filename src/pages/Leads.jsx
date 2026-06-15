@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
-import { Search, Plus, X, Phone, MessageCircle, ChevronRight, Trash2, Edit3, Filter } from 'lucide-react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+import { Search, Plus, X, Phone, MessageCircle, ChevronRight, Trash2, Edit3, Filter, Download, Upload, CheckCircle, AlertCircle } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import useStore from '../store/useStore'
 
 const STAGES = ['جديد', 'تم التواصل', 'موعد محجوز', 'عرض تقديمي', 'متابعة', 'تم التسجيل', 'لم يتم']
@@ -261,10 +263,211 @@ function LeadDetail({ lead, onClose, onEdit }) {
   )
 }
 
+// ─── Template columns ────────────────────────────────────────────────────────
+const TEMPLATE_HEADERS = [
+  'اسم ولي الأمر *',
+  'رقم الهاتف *',
+  'اسم الطفل *',
+  'عمر الطفل * (6-17)',
+  'المصدر (Facebook/Instagram/WhatsApp/Referral/Website)',
+  'المرحلة (جديد/تم التواصل/موعد محجوز/عرض تقديمي/متابعة/تم التسجيل/لم يتم)',
+  'الكورس (Scratch/Python/Web Development/Game Design/Robotics)',
+  'القيمة بالجنيه',
+  'تاريخ المتابعة (YYYY-MM-DD)',
+  'مسؤول المتابعة (سارة عبد الله/محمد خالد/نورا أحمد/أمير يوسف)',
+  'ملاحظات',
+]
+
+const TEMPLATE_EXAMPLE = [
+  'أحمد محمد',
+  '01012345678',
+  'يوسف',
+  '10',
+  'Facebook',
+  'جديد',
+  'Python',
+  '2500',
+  '2026-06-20',
+  'سارة عبد الله',
+  'مهتم جداً بالبرمجة',
+]
+
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS, TEMPLATE_EXAMPLE])
+
+  // Column widths
+  ws['!cols'] = TEMPLATE_HEADERS.map((h) => ({ wch: Math.max(h.length, 20) }))
+
+  // Style header row
+  TEMPLATE_HEADERS.forEach((_, i) => {
+    const cell = XLSX.utils.encode_cell({ r: 0, c: i })
+    if (!ws[cell]) return
+    ws[cell].s = { font: { bold: true }, fill: { fgColor: { rgb: 'F59E0B' } } }
+  })
+
+  XLSX.utils.book_append_sheet(wb, ws, 'بنيان CRM - قالب الاستيراد')
+  XLSX.writeFile(wb, 'bonyan_crm_template.xlsx')
+}
+
+function parseImportedFile(file, onSuccess, onError) {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+
+      if (rows.length < 2) { onError('الملف فاضي أو لا يحتوي على بيانات'); return }
+
+      const dataRows = rows.slice(1).filter((r) => r[0] || r[1])
+      const leads = dataRows.map((r) => ({
+        name: String(r[0] || '').trim(),
+        phone: String(r[1] || '').trim(),
+        childName: String(r[2] || '').trim(),
+        childAge: parseInt(r[3]) || 10,
+        source: SOURCES.includes(r[4]) ? r[4] : 'Facebook',
+        stage: STAGES.includes(r[5]) ? r[5] : 'جديد',
+        courseInterest: COURSES.includes(r[6]) ? r[6] : 'Scratch',
+        value: parseInt(r[7]) || 2000,
+        followUpDate: String(r[8] || '').trim() || null,
+        assignedTo: REPS.includes(r[9]) ? r[9] : REPS[0],
+        notes: String(r[10] || '').trim(),
+      })).filter((l) => l.name && l.phone)
+
+      if (leads.length === 0) { onError('لم يتم العثور على بيانات صالحة'); return }
+      onSuccess(leads)
+    } catch {
+      onError('خطأ في قراءة الملف - تأكد إنه Excel أو CSV')
+    }
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+function ImportModal({ onClose, onImport }) {
+  const fileRef = useRef()
+  const [status, setStatus] = useState(null) // null | 'preview' | 'error'
+  const [preview, setPreview] = useState([])
+  const [errorMsg, setErrorMsg] = useState('')
+  const [importing, setImporting] = useState(false)
+
+  const handleFile = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    parseImportedFile(
+      file,
+      (leads) => { setPreview(leads); setStatus('preview'); setErrorMsg('') },
+      (msg) => { setStatus('error'); setErrorMsg(msg) }
+    )
+  }
+
+  const handleConfirm = () => {
+    setImporting(true)
+    preview.forEach((lead) => onImport(lead))
+    setTimeout(() => { setImporting(false); onClose() }, 500)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h3 className="font-bold text-gray-800 text-lg">استيراد عملاء من Excel</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Step 1 - Download template */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="font-bold text-amber-800 mb-1">الخطوة 1: نزّل القالب</p>
+            <p className="text-sm text-amber-700 mb-3">نزّل الملف، ملّيه بالبيانات، وارفعه تاني</p>
+            <button
+              onClick={downloadTemplate}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+            >
+              <Download size={16} /> تحميل قالب Excel
+            </button>
+          </div>
+
+          {/* Step 2 - Upload */}
+          <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-amber-300 transition-colors">
+            <p className="font-bold text-gray-700 mb-1">الخطوة 2: ارفع الملف المعبي</p>
+            <p className="text-sm text-gray-400 mb-4">Excel (.xlsx, .xls) أو CSV</p>
+            <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="hidden" />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-2 mx-auto bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors"
+            >
+              <Upload size={16} /> اختر الملف
+            </button>
+          </div>
+
+          {/* Error */}
+          {status === 'error' && (
+            <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+              <AlertCircle size={20} />
+              <p className="text-sm font-medium">{errorMsg}</p>
+            </div>
+          )}
+
+          {/* Preview */}
+          {status === 'preview' && preview.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 text-green-700 mb-3">
+                <CheckCircle size={18} />
+                <p className="font-bold">تم قراءة {preview.length} عميل - راجع البيانات:</p>
+              </div>
+              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-52 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="text-right px-3 py-2 font-bold text-gray-600">الاسم</th>
+                      <th className="text-right px-3 py-2 font-bold text-gray-600">الهاتف</th>
+                      <th className="text-right px-3 py-2 font-bold text-gray-600">الطفل</th>
+                      <th className="text-right px-3 py-2 font-bold text-gray-600">المرحلة</th>
+                      <th className="text-right px-3 py-2 font-bold text-gray-600">الكورس</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.map((l, i) => (
+                      <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                        <td className="px-3 py-2 font-medium text-gray-800">{l.name}</td>
+                        <td className="px-3 py-2 text-gray-500 font-mono">{l.phone}</td>
+                        <td className="px-3 py-2 text-gray-600">{l.childName} ({l.childAge})</td>
+                        <td className="px-3 py-2"><span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{l.stage}</span></td>
+                        <td className="px-3 py-2 text-gray-600">{l.courseInterest}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={handleConfirm}
+                  disabled={importing}
+                  className="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <CheckCircle size={16} />
+                  {importing ? 'جاري الاستيراد...' : `استيراد ${preview.length} عميل`}
+                </button>
+                <button onClick={onClose} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl transition-colors">
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Leads() {
   const leads = useStore((s) => s.leads)
   const addLead = useStore((s) => s.addLead)
   const updateLead = useStore((s) => s.updateLead)
+  const deleteLead = useStore((s) => s.deleteLead)
+  const location = useLocation()
 
   const [search, setSearch] = useState('')
   const [filterStage, setFilterStage] = useState('')
@@ -274,6 +477,46 @@ export default function Leads() {
   const [editLead, setEditLead] = useState(null)
   const [selectedLead, setSelectedLead] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [checkedIds, setCheckedIds] = useState(new Set())
+
+  const allChecked = filtered.length > 0 && filtered.every((l) => checkedIds.has(l.id))
+  const someChecked = checkedIds.size > 0
+
+  const toggleCheck = (id, e) => {
+    e.stopPropagation()
+    setCheckedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleAll = () => {
+    if (allChecked) {
+      setCheckedIds(new Set())
+    } else {
+      setCheckedIds(new Set(filtered.map((l) => l.id)))
+    }
+  }
+
+  const handleBulkDelete = () => {
+    if (!window.confirm(`هل أنت متأكد من حذف ${checkedIds.size} عميل؟`)) return
+    checkedIds.forEach((id) => deleteLead(id))
+    setCheckedIds(new Set())
+  }
+
+  useEffect(() => {
+    const state = location.state
+    if (!state) return
+    if (state.filterStage) { setFilterStage(state.filterStage); setShowFilters(true) }
+    if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
+    if (state.openAdd) setShowAddModal(true)
+    if (state.openLeadId) {
+      const lead = leads.find((l) => l.id === state.openLeadId)
+      if (lead) setSelectedLead(lead)
+    }
+  }, [location.state])
 
   const filtered = useMemo(() => {
     return leads.filter((l) => {
@@ -320,6 +563,9 @@ export default function Leads() {
           <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? 'bg-amber-50 border-amber-300 text-amber-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
             <Filter size={16} /> فلترة
           </button>
+          <button onClick={() => setShowImport(true)} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors">
+            <Upload size={16} /> استيراد Excel
+          </button>
           <button onClick={() => { setEditLead(null); setShowAddModal(true) }} className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors">
             <Plus size={16} /> عميل جديد
           </button>
@@ -347,9 +593,20 @@ export default function Leads() {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="text-sm text-gray-500">
-        عرض <span className="font-bold text-gray-800">{filtered.length}</span> من {leads.length} عميل
+      {/* Stats + Bulk Actions */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-500">
+          عرض <span className="font-bold text-gray-800">{filtered.length}</span> من {leads.length} عميل
+          {someChecked && <span className="mr-2 text-amber-600 font-bold">· تم تحديد {checkedIds.size}</span>}
+        </div>
+        {someChecked && (
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+          >
+            <Trash2 size={15} /> حذف {checkedIds.size} عميل
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -358,6 +615,14 @@ export default function Leads() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+                  />
+                </th>
                 <th className="text-right px-4 py-3 font-bold text-gray-600">ولي الأمر</th>
                 <th className="text-right px-4 py-3 font-bold text-gray-600">الطفل</th>
                 <th className="text-right px-4 py-3 font-bold text-gray-600">الهاتف</th>
@@ -373,7 +638,15 @@ export default function Leads() {
                 const today = new Date().toISOString().split('T')[0]
                 const overdue = lead.followUpDate && lead.followUpDate < today
                 return (
-                  <tr key={lead.id} className="border-b border-gray-50 hover:bg-amber-50/30 cursor-pointer transition-colors" onClick={() => setSelectedLead(lead)}>
+                  <tr key={lead.id} className={`border-b border-gray-50 transition-colors cursor-pointer ${checkedIds.has(lead.id) ? 'bg-amber-50' : 'hover:bg-amber-50/30'}`} onClick={() => setSelectedLead(lead)}>
+                    <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={checkedIds.has(lead.id)}
+                        onChange={(e) => toggleCheck(lead.id, e)}
+                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs">
@@ -404,7 +677,7 @@ export default function Leads() {
                 )
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">لا توجد نتائج</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-gray-400">لا توجد نتائج</td></tr>
               )}
             </tbody>
           </table>
@@ -424,6 +697,12 @@ export default function Leads() {
           lead={leads.find((l) => l.id === selectedLead.id) || selectedLead}
           onClose={() => setSelectedLead(null)}
           onEdit={handleEdit}
+        />
+      )}
+      {showImport && (
+        <ImportModal
+          onClose={() => setShowImport(false)}
+          onImport={addLead}
         />
       )}
     </div>

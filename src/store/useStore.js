@@ -350,6 +350,14 @@ const initialKpis = {
 
 const initialActivities = []
 
+const initialUsers = [
+  { id: 'u0', name: 'المدير', username: 'admin', password: 'bonyan2024', role: 'admin', repName: '', active: true },
+  { id: 'u1', name: 'ميادة', username: 'mayadah', password: 'mayadah123', role: 'agent', repName: 'ميادة', active: true },
+  { id: 'u2', name: 'هاجر', username: 'hajer', password: 'hajer123', role: 'agent', repName: 'هاجر', active: true },
+  { id: 'u3', name: 'أسماء', username: 'asmaa', password: 'asmaa123', role: 'agent', repName: 'أسماء', active: true },
+  { id: 'u4', name: 'غادة', username: 'ghada', password: 'ghada123', role: 'agent', repName: 'غادة', active: true },
+]
+
 const useStore = create(
   persist(
     (set, get) => ({
@@ -357,6 +365,8 @@ const useStore = create(
       templates: initialTemplates,
       kpis: initialKpis,
       activities: initialActivities,
+      users: initialUsers,
+      currentUser: null,
 
       addLead: (lead) => {
         const newLead = { ...lead, id: Date.now().toString(), createdAt: new Date().toISOString(), noAnswerCount: 0 }
@@ -414,8 +424,41 @@ const useStore = create(
         const newActivity = { ...activity, id: 'a' + Date.now(), createdAt: new Date().toISOString() }
         set((state) => ({ activities: [newActivity, ...state.activities.slice(0, 99)] }))
       },
+
+      login: (username, password) => {
+        const users = get().users || initialUsers
+        const user = users.find((u) => u.username === username && u.password === password && u.active)
+        if (user) { set({ currentUser: user }); return true }
+        return false
+      },
+
+      logout: () => set({ currentUser: null }),
+
+      addUser: (user) => {
+        const newUser = { ...user, id: 'u' + Date.now(), active: true }
+        set((state) => ({ users: [...(state.users || initialUsers), newUser] }))
+      },
+
+      updateUser: (id, updates) => {
+        set((state) => ({ users: (state.users || initialUsers).map((u) => u.id === id ? { ...u, ...updates } : u) }))
+        // update currentUser if it's the same user
+        const cu = get().currentUser
+        if (cu && cu.id === id) set({ currentUser: { ...cu, ...updates } })
+      },
+
+      deleteUser: (id) => {
+        set((state) => ({ users: (state.users || initialUsers).filter((u) => u.id !== id) }))
+      },
     }),
-    { name: 'bonyan-crm-v2' }
+    {
+      name: 'bonyan-crm-v3',
+      version: 3,
+      migrate: (old) => ({
+        ...old,
+        users: old.users || initialUsers,
+        currentUser: null,
+      }),
+    }
   )
 )
 

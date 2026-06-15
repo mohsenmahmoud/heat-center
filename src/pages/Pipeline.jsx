@@ -171,7 +171,10 @@ function LeadCard({ lead }) {
 }
 
 export default function Pipeline() {
-  const leads = useStore((s) => s.leads)
+  const allLeads = useStore((s) => s.leads)
+  const currentUser = useStore((s) => s.currentUser)
+  const isAdmin = currentUser?.role === 'admin'
+  const leads = isAdmin ? allLeads : allLeads.filter((l) => l.assignedTo === currentUser?.repName)
 
   const stageLeads = (stage) => leads.filter((l) => l.stage === stage)
   const stageValue = (stage) => stageLeads(stage).reduce((s, l) => s + (Number(l.value) || 0), 0)

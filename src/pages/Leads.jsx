@@ -752,7 +752,10 @@ function ImportModal({ onClose, onImport }) {
 
 // ─── Main Leads Page ──────────────────────────────────────────────────────────
 export default function Leads() {
-  const leads = useStore((s) => s.leads)
+  const allLeads = useStore((s) => s.leads)
+  const currentUser = useStore((s) => s.currentUser)
+  const isAdmin = currentUser?.role === 'admin'
+  const leads = isAdmin ? allLeads : allLeads.filter((l) => l.assignedTo === currentUser?.repName)
   const addLead = useStore((s) => s.addLead)
   const updateLead = useStore((s) => s.updateLead)
   const deleteLead = useStore((s) => s.deleteLead)

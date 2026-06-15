@@ -1,16 +1,30 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, GitBranch, MessageSquare, BarChart3, BookOpen, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Users, GitBranch, MessageSquare, BarChart3, BookOpen, ChevronRight, UserCog } from 'lucide-react'
+import useStore from '../store/useStore'
 
-const navItems = [
+const agentNav = [
+  { to: '/', icon: LayoutDashboard, label: 'مهامي اليوم' },
+  { to: '/leads', icon: Users, label: 'ليدزي' },
+  { to: '/pipeline', icon: GitBranch, label: 'خط الإنتاج' },
+  { to: '/templates', icon: MessageSquare, label: 'قوالب الرسائل' },
+  { to: '/playbook', icon: BookOpen, label: 'دليل المبيعات' },
+]
+
+const adminNav = [
   { to: '/', icon: LayoutDashboard, label: 'لوحة التحكم' },
   { to: '/leads', icon: Users, label: 'العملاء المحتملون' },
   { to: '/pipeline', icon: GitBranch, label: 'خط الإنتاج' },
   { to: '/templates', icon: MessageSquare, label: 'قوالب الرسائل' },
   { to: '/kpis', icon: BarChart3, label: 'مؤشرات الأداء' },
   { to: '/playbook', icon: BookOpen, label: 'دليل المبيعات' },
+  { to: '/users', icon: UserCog, label: 'إدارة الحسابات' },
 ]
 
 export default function Sidebar() {
+  const currentUser = useStore((s) => s.currentUser)
+  const isAdmin = currentUser?.role === 'admin'
+  const navItems = isAdmin ? adminNav : agentNav
+
   return (
     <aside className="w-64 min-h-screen bg-[#1e1b4b] flex flex-col shadow-xl">
       {/* Logo */}
@@ -55,8 +69,8 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-indigo-800">
         <div className="bg-indigo-900 rounded-xl p-3 text-center">
-          <p className="text-indigo-300 text-xs">بنيان CRM</p>
-          <p className="text-indigo-400 text-xs mt-1">v1.0.0</p>
+          <p className="text-indigo-300 text-xs">{currentUser?.name}</p>
+          <p className="text-indigo-400 text-xs mt-0.5">{isAdmin ? 'مدير النظام' : 'مندوب مبيعات'}</p>
         </div>
       </div>
     </aside>

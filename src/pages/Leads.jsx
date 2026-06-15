@@ -480,6 +480,29 @@ export default function Leads() {
   const [showImport, setShowImport] = useState(false)
   const [checkedIds, setCheckedIds] = useState(new Set())
 
+  useEffect(() => {
+    const state = location.state
+    if (!state) return
+    if (state.filterStage) { setFilterStage(state.filterStage); setShowFilters(true) }
+    if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
+    if (state.openAdd) setShowAddModal(true)
+    if (state.openLeadId) {
+      const lead = leads.find((l) => l.id === state.openLeadId)
+      if (lead) setSelectedLead(lead)
+    }
+  }, [location.state])
+
+  const filtered = useMemo(() => {
+    return leads.filter((l) => {
+      const q = search.toLowerCase()
+      const matchSearch = !q || l.name.includes(q) || l.childName.includes(q) || l.phone.includes(q)
+      const matchStage = !filterStage || l.stage === filterStage
+      const matchSource = !filterSource || l.source === filterSource
+      const matchRep = !filterRep || l.assignedTo === filterRep
+      return matchSearch && matchStage && matchSource && matchRep
+    })
+  }, [leads, search, filterStage, filterSource, filterRep])
+
   const allChecked = filtered.length > 0 && filtered.every((l) => checkedIds.has(l.id))
   const someChecked = checkedIds.size > 0
 
@@ -505,29 +528,6 @@ export default function Leads() {
     checkedIds.forEach((id) => deleteLead(id))
     setCheckedIds(new Set())
   }
-
-  useEffect(() => {
-    const state = location.state
-    if (!state) return
-    if (state.filterStage) { setFilterStage(state.filterStage); setShowFilters(true) }
-    if (state.filterSource) { setFilterSource(state.filterSource); setShowFilters(true) }
-    if (state.openAdd) setShowAddModal(true)
-    if (state.openLeadId) {
-      const lead = leads.find((l) => l.id === state.openLeadId)
-      if (lead) setSelectedLead(lead)
-    }
-  }, [location.state])
-
-  const filtered = useMemo(() => {
-    return leads.filter((l) => {
-      const q = search.toLowerCase()
-      const matchSearch = !q || l.name.includes(q) || l.childName.includes(q) || l.phone.includes(q)
-      const matchStage = !filterStage || l.stage === filterStage
-      const matchSource = !filterSource || l.source === filterSource
-      const matchRep = !filterRep || l.assignedTo === filterRep
-      return matchSearch && matchStage && matchSource && matchRep
-    })
-  }, [leads, search, filterStage, filterSource, filterRep])
 
   const handleSaveLead = (data) => {
     if (editLead) {

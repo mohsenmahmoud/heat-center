@@ -257,21 +257,79 @@ export const projectTypes = [
 export interface CaseStudy {
   title: string
   projectType: string
+  location: string
+  scope: string
   serviceId: ServiceId
   image: string
 }
 
 // Placeholder project cards — swap `image` with a real project photo and
-// update the title once client details are ready to publish.
+// update title/location/scope once client details are ready to publish.
 export const caseStudies: CaseStudy[] = [
-  { title: 'مشروع فيلا خاصة', projectType: 'فلل خاصة', serviceId: 'central-heating', image: '/images/services/central-heating.svg' },
-  { title: 'مشروع كمباوند سكني', projectType: 'كمباوندات سكنية', serviceId: 'underfloor-heating', image: '/images/services/underfloor-heating.svg' },
-  { title: 'مشروع منشأة فندقية', projectType: 'فنادق ومنشآت سياحية', serviceId: 'central-boilers', image: '/images/services/central-boilers.svg' },
-  { title: 'مشروع مبنى إداري', projectType: 'مبانٍ إدارية وتجارية', serviceId: 'solar-heaters', image: '/images/services/solar-heaters.svg' },
-  { title: 'مشروع فيلا خاصة', projectType: 'فلل خاصة', serviceId: 'pool-heating', image: '/images/services/pool-heating.svg' },
-  { title: 'مشروع كمباوند سكني', projectType: 'كمباوندات سكنية', serviceId: 'plumbing', image: '/images/services/plumbing.svg' },
-  { title: 'مشروع منشأة فندقية', projectType: 'فنادق ومنشآت سياحية', serviceId: 'solar-energy', image: '/images/services/solar-energy.svg' },
-  { title: 'مشروع مبنى إداري', projectType: 'مبانٍ إدارية وتجارية', serviceId: 'central-heating', image: '/images/services/central-heating.svg' },
+  {
+    title: 'مشروع فيلا خاصة',
+    projectType: 'فلل خاصة',
+    location: 'القاهرة الكبرى',
+    scope: 'تصميم وتركيب شبكة تدفئة مركزية بالمياه الساخنة ورادياتير حائطي لكامل الفيلا.',
+    serviceId: 'central-heating',
+    image: '/images/services/central-heating.svg',
+  },
+  {
+    title: 'مشروع كمباوند سكني',
+    projectType: 'كمباوندات سكنية',
+    location: 'القاهرة الكبرى',
+    scope: 'تنفيذ نظام تدفئة أرضية موحّد لعدد من الوحدات السكنية بنفس معايير الجودة.',
+    serviceId: 'underfloor-heating',
+    image: '/images/services/underfloor-heating.svg',
+  },
+  {
+    title: 'مشروع منشأة فندقية',
+    projectType: 'فنادق ومنشآت سياحية',
+    location: 'القاهرة الكبرى',
+    scope: 'توريد وتركيب غلاية مركزية بقدرة كبيرة لتأمين مياه ساخنة مستمرة على مدار الساعة.',
+    serviceId: 'central-boilers',
+    image: '/images/services/central-boilers.svg',
+  },
+  {
+    title: 'مشروع مبنى إداري',
+    projectType: 'مبانٍ إدارية وتجارية',
+    location: 'القاهرة الكبرى',
+    scope: 'تركيب منظومة سخانات شمسية لتغطية احتياج المبنى من المياه الساخنة وتقليل استهلاك الكهرباء.',
+    serviceId: 'solar-heaters',
+    image: '/images/services/solar-heaters.svg',
+  },
+  {
+    title: 'مشروع فيلا خاصة',
+    projectType: 'فلل خاصة',
+    location: 'القاهرة الكبرى',
+    scope: 'تركيب نظام تسخين لحمام سباحة خاص لإطالة موسم الاستخدام على مدار العام.',
+    serviceId: 'pool-heating',
+    image: '/images/services/pool-heating.svg',
+  },
+  {
+    title: 'مشروع كمباوند سكني',
+    projectType: 'كمباوندات سكنية',
+    location: 'القاهرة الكبرى',
+    scope: 'أعمال تأسيس صحي وسباكة كاملة بمواسير بولي إيثيلين معتمدة أوروبيًا.',
+    serviceId: 'plumbing',
+    image: '/images/services/plumbing.svg',
+  },
+  {
+    title: 'مشروع منشأة فندقية',
+    projectType: 'فنادق ومنشآت سياحية',
+    location: 'القاهرة الكبرى',
+    scope: 'حلول طاقة شمسية تكميلية لخفض الاعتماد على الشبكة الكهربائية للمنشأة.',
+    serviceId: 'solar-energy',
+    image: '/images/services/solar-energy.svg',
+  },
+  {
+    title: 'مشروع مبنى إداري',
+    projectType: 'مبانٍ إدارية وتجارية',
+    location: 'القاهرة الكبرى',
+    scope: 'تصميم وتنفيذ شبكة تدفئة مركزية موزّعة على جميع طوابق المبنى الإداري.',
+    serviceId: 'central-heating',
+    image: '/images/services/central-heating.svg',
+  },
 ]
 
 export const faqs = [

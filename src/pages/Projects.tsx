@@ -1,4 +1,4 @@
-import { Building2, Home as HomeIcon, Hotel, Landmark } from 'lucide-react'
+import { Building2, Home as HomeIcon, Hotel, Landmark, MapPin } from 'lucide-react'
 import Container from '../components/ui/Container'
 import PageHero from '../components/ui/PageHero'
 import SectionHeading from '../components/ui/SectionHeading'
@@ -49,21 +49,29 @@ export default function Projects() {
             description="نماذج من نوعية المشروعات التي ننفذها — الصور والتفاصيل الكاملة لكل مشروع قيد الإضافة."
           />
 
-          <div className="mt-14 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {caseStudies.map((project, i) => (
               <div
                 key={i}
-                className="group relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl border border-white/5"
+                className="flex flex-col overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03]"
               >
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/20 to-transparent" />
-                <div className="relative p-4">
-                  <p className="font-display text-sm font-bold text-white">{project.title}</p>
-                  <p className="mt-1 text-xs text-ink-300">{project.projectType}</p>
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-2 p-6">
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-ember-500/10 px-3 py-1 text-[11px] font-bold text-ember-400 ring-1 ring-inset ring-ember-500/20">
+                    {project.projectType}
+                  </span>
+                  <h3 className="font-display text-base font-bold text-white">{project.title}</h3>
+                  <p className="text-sm leading-relaxed text-ink-300">{project.scope}</p>
+                  <p className="mt-auto flex items-center gap-1.5 pt-3 text-xs text-ink-400">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {project.location}
+                  </p>
                 </div>
               </div>
             ))}

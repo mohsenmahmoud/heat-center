@@ -1,0 +1,36 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6b1d08" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#101b28"/>
+      <stop offset="100%" stop-color="#0a121c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.75" r="0.55">
+      <stop offset="0%" stop-color="#f2540e" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f2540e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+    
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+
+
+  <g>
+    <rect x="90" y="400" width="620" height="110" fill="#101b28" fill-opacity="0.7"/>
+    <line x1="90" y1="400" x2="710" y2="400" stroke="#ffa366" stroke-opacity="0.4" stroke-width="4"/>
+    <path d="M140 460 Q 200 420 260 460 T 380 460 T 500 460 T 620 460"
+          fill="none" stroke="#ff7a33" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <g stroke="#ffa366" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7">
+    <path d="M220 380 q16 -30 0 -60 q-16 -30 0 -60"/>
+    <path d="M340 380 q16 -30 0 -60 q-16 -30 0 -60"/>
+    <path d="M460 380 q16 -30 0 -60 q-16 -30 0 -60"/>
+    <path d="M580 380 q16 -30 0 -60 q-16 -30 0 -60"/>
+  </g>
+
+</svg>

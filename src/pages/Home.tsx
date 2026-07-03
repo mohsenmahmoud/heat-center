@@ -61,7 +61,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mx-auto mt-20 grid max-w-4xl grid-cols-2 gap-8 rounded-3xl border border-white/5 bg-white/[0.03] px-8 py-10 backdrop-blur sm:grid-cols-4">
+          <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
+            <img
+              src="/images/hero/home.svg"
+              alt="هيت سنتر — حلول التدفئة المركزية والطاقة الشمسية"
+              className="aspect-[3/2] w-full object-cover sm:aspect-[12/5]"
+            />
+          </div>
+
+          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-8 rounded-3xl border border-white/5 bg-white/[0.03] px-8 py-10 backdrop-blur sm:grid-cols-4">
             {stats.map((s) => (
               <StatCounter key={s.label} value={s.value} suffix={s.suffix} label={s.label} />
             ))}

@@ -67,7 +67,7 @@ export const services: Service[] = [
       'مقاومة كاملة للصدأ وعمر تشغيلي طويل',
     ],
     accent: 'ember',
-    image: '/images/services/central-heating.jpg',
+    image: '/images/services/central-heating.svg',
   },
   {
     id: 'underfloor-heating',
@@ -83,7 +83,7 @@ export const services: Service[] = [
       'لا تشغل أي مساحة ظاهرة، مثالية للتصميمات المفتوحة',
     ],
     accent: 'ember',
-    image: '/images/services/underfloor-heating.jpg',
+    image: '/images/services/underfloor-heating.svg',
   },
   {
     id: 'central-boilers',
@@ -99,7 +99,7 @@ export const services: Service[] = [
       'أنظمة تحكم ذكية لضبط درجة الحرارة',
     ],
     accent: 'ember',
-    image: '/images/services/central-boilers.jpg',
+    image: '/images/services/central-boilers.svg',
   },
   {
     id: 'solar-heaters',
@@ -115,7 +115,7 @@ export const services: Service[] = [
       'حل مثالي لمناخ مصر المشمس على مدار العام',
     ],
     accent: 'ember',
-    image: '/images/services/solar-heaters.jpg',
+    image: '/images/services/solar-heaters.svg',
   },
   {
     id: 'pool-heating',
@@ -131,7 +131,7 @@ export const services: Service[] = [
       'إطالة موسم استخدام المسبح على مدار العام',
     ],
     accent: 'aqua',
-    image: '/images/services/pool-heating.jpg',
+    image: '/images/services/pool-heating.svg',
   },
   {
     id: 'plumbing',
@@ -147,7 +147,7 @@ export const services: Service[] = [
       'يناسب المشروعات السكنية والتجارية على حد سواء',
     ],
     accent: 'aqua',
-    image: '/images/services/plumbing.jpg',
+    image: '/images/services/plumbing.svg',
   },
   {
     id: 'solar-energy',
@@ -163,7 +163,7 @@ export const services: Service[] = [
       'حلول مصممة خصيصًا حسب طبيعة كل مشروع',
     ],
     accent: 'ember',
-    image: '/images/services/solar-energy.jpg',
+    image: '/images/services/solar-energy.svg',
   },
 ]
 

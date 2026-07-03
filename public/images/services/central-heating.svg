@@ -1,0 +1,48 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6b1d08" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#101b28"/>
+      <stop offset="100%" stop-color="#0a121c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.72" cy="0.28" r="0.55">
+      <stop offset="0%" stop-color="#f2540e" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f2540e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+    
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+
+
+  <g stroke="#ff7a33" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- wall baseboard -->
+    <line x1="120" y1="480" x2="680" y2="480" stroke="#ffa366" stroke-opacity="0.25" stroke-width="3"/>
+    <!-- radiator body -->
+    <rect x="260" y="300" width="280" height="170" rx="14" fill="#101b28" fill-opacity="0.6"/>
+    <rect x="260" y="300" width="280" height="170" rx="14"/>
+    <line x1="300" y1="310" x2="300" y2="460"/>
+    <line x1="340" y1="310" x2="340" y2="460"/>
+    <line x1="380" y1="310" x2="380" y2="460"/>
+    <line x1="420" y1="310" x2="420" y2="460"/>
+    <line x1="460" y1="310" x2="460" y2="460"/>
+    <line x1="500" y1="310" x2="500" y2="460"/>
+    <!-- feed pipes -->
+    <path d="M300 300 V255 H480 V300"/>
+    <circle cx="300" cy="255" r="9" fill="#f2540e" fill-opacity="0.5"/>
+    <circle cx="480" cy="255" r="9" fill="#f2540e" fill-opacity="0.5"/>
+    <line x1="330" y1="470" x2="330" y2="480"/>
+    <line x1="470" y1="470" x2="470" y2="480"/>
+  </g>
+  <g stroke="#ffa366" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.75">
+    <path d="M330 270 q14 -26 0 -52 q-14 -26 0 -52"/>
+    <path d="M400 260 q14 -26 0 -52 q-14 -26 0 -52"/>
+    <path d="M470 270 q14 -26 0 -52 q-14 -26 0 -52"/>
+  </g>
+
+</svg>

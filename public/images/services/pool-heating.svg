@@ -1,0 +1,42 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#123b5c" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#101b28"/>
+      <stop offset="100%" stop-color="#0a121c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.28" cy="0.28" r="0.55">
+      <stop offset="0%" stop-color="#1c87db" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1c87db" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+    
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+
+
+  <g stroke="#3fa6f5" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="110" y="330" width="500" height="150" rx="20" fill="#123b5c" fill-opacity="0.55"/>
+    <rect x="110" y="330" width="500" height="150" rx="20"/>
+    <path d="M150 390 Q 190 370 230 390 T 310 390 T 390 390 T 470 390 T 550 390"
+          stroke="#7bc7ff" stroke-width="6"/>
+    <path d="M150 430 Q 190 410 230 430 T 310 430 T 390 430 T 470 430 T 550 430"
+          stroke="#7bc7ff" stroke-width="6" opacity="0.6"/>
+  </g>
+  <g stroke="#ff7a33" fill="none" stroke-width="5" stroke-linecap="round">
+    <circle cx="640" cy="220" r="30" fill="#f2540e" fill-opacity="0.3"/>
+    <line x1="640" y1="168" x2="640" y2="150"/>
+    <line x1="594" y1="192" x2="580" y2="178"/>
+    <line x1="686" y1="192" x2="700" y2="178"/>
+    <line x1="572" y1="220" x2="554" y2="220"/>
+  </g>
+  <g stroke="#ffa366" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7">
+    <path d="M615 290 q10 -20 0 -40 q-10 -20 0 -40"/>
+  </g>
+
+</svg>

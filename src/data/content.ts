@@ -21,6 +21,7 @@ export const navLinks = [
   { label: 'من نحن', href: '/about' },
   { label: 'خدماتنا', href: '/services' },
   { label: 'أعمالنا', href: '/projects' },
+  { label: 'معرض الصور', href: '/gallery' },
   { label: 'الأسئلة الشائعة', href: '/faq' },
   { label: 'تواصل معنا', href: '/contact' },
 ]
@@ -167,6 +168,18 @@ export const services: Service[] = [
   },
 ]
 
+// Real project photos go here per category — just append more paths to each
+// array (e.g. '/images/gallery/central-heating/1.jpg') as they become available.
+export const galleryImages: Record<ServiceId, string[]> = {
+  'central-heating': ['/images/services/central-heating.svg'],
+  'underfloor-heating': ['/images/services/underfloor-heating.svg'],
+  'central-boilers': ['/images/services/central-boilers.svg'],
+  'solar-heaters': ['/images/services/solar-heaters.svg'],
+  'pool-heating': ['/images/services/pool-heating.svg'],
+  plumbing: ['/images/services/plumbing.svg'],
+  'solar-energy': ['/images/services/solar-energy.svg'],
+}
+
 export const whyUs = [
   {
     title: '8 سنوات خبرة و250+ مشروع',
@@ -239,6 +252,26 @@ export const projectTypes = [
     title: 'مبانٍ إدارية وتجارية',
     description: 'تصميم وتنفيذ أنظمة تدفئة مركزية للمكاتب والمنشآت التجارية.',
   },
+]
+
+export interface CaseStudy {
+  title: string
+  projectType: string
+  serviceId: ServiceId
+  image: string
+}
+
+// Placeholder project cards — swap `image` with a real project photo and
+// update the title once client details are ready to publish.
+export const caseStudies: CaseStudy[] = [
+  { title: 'مشروع فيلا خاصة', projectType: 'فلل خاصة', serviceId: 'central-heating', image: '/images/services/central-heating.svg' },
+  { title: 'مشروع كمباوند سكني', projectType: 'كمباوندات سكنية', serviceId: 'underfloor-heating', image: '/images/services/underfloor-heating.svg' },
+  { title: 'مشروع منشأة فندقية', projectType: 'فنادق ومنشآت سياحية', serviceId: 'central-boilers', image: '/images/services/central-boilers.svg' },
+  { title: 'مشروع مبنى إداري', projectType: 'مبانٍ إدارية وتجارية', serviceId: 'solar-heaters', image: '/images/services/solar-heaters.svg' },
+  { title: 'مشروع فيلا خاصة', projectType: 'فلل خاصة', serviceId: 'pool-heating', image: '/images/services/pool-heating.svg' },
+  { title: 'مشروع كمباوند سكني', projectType: 'كمباوندات سكنية', serviceId: 'plumbing', image: '/images/services/plumbing.svg' },
+  { title: 'مشروع منشأة فندقية', projectType: 'فنادق ومنشآت سياحية', serviceId: 'solar-energy', image: '/images/services/solar-energy.svg' },
+  { title: 'مشروع مبنى إداري', projectType: 'مبانٍ إدارية وتجارية', serviceId: 'central-heating', image: '/images/services/central-heating.svg' },
 ]
 
 export const faqs = [

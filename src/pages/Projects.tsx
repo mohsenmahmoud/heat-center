@@ -3,7 +3,7 @@ import Container from '../components/ui/Container'
 import PageHero from '../components/ui/PageHero'
 import SectionHeading from '../components/ui/SectionHeading'
 import { LinkButton } from '../components/ui/Button'
-import { projectTypes, stats } from '../data/content'
+import { caseStudies, projectTypes, stats } from '../data/content'
 
 const icons = [HomeIcon, Building2, Hotel, Landmark]
 
@@ -39,27 +39,32 @@ export default function Projects() {
         </Container>
       </section>
 
-      {/* GALLERY PLACEHOLDER GRID */}
+      {/* CASE STUDIES GRID */}
       <section className="relative bg-ink-900 py-24">
         <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
         <Container className="relative">
           <SectionHeading
             eyebrow="معرض الأعمال"
             title="لقطات من مشروعاتنا المنفذة"
-            description="صور حقيقية من مشروعاتنا قيد الإضافة — تواصل معنا للاطلاع على ملف أعمال مفصل بالمشروعات المنجزة."
+            description="نماذج من نوعية المشروعات التي ننفذها — الصور والتفاصيل الكاملة لكل مشروع قيد الإضافة."
           />
 
-          <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="mt-14 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {caseStudies.map((project, i) => (
               <div
                 key={i}
-                className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-ink-800 to-ink-950"
+                className="group relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl border border-white/5"
               >
-                <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
-                <div className="pointer-events-none absolute h-24 w-24 rounded-full bg-ember-500/10 blur-2xl transition-opacity duration-500 group-hover:bg-ember-500/25" />
-                <span className="relative font-display text-xs font-bold text-ink-500">
-                  صورة مشروع {i + 1}
-                </span>
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/20 to-transparent" />
+                <div className="relative p-4">
+                  <p className="font-display text-sm font-bold text-white">{project.title}</p>
+                  <p className="mt-1 text-xs text-ink-300">{project.projectType}</p>
+                </div>
               </div>
             ))}
           </div>

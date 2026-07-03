@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 import clsx from 'clsx'
@@ -11,7 +10,6 @@ export default function ServiceDetail() {
   const { id } = useParams<{ id: string }>()
   const index = services.findIndex((s) => s.id === id)
   const service = services[index]
-  const [imageFailed, setImageFailed] = useState(false)
 
   if (!service) {
     return <Navigate to="/services" replace />
@@ -66,34 +64,23 @@ export default function ServiceDetail() {
                 : 'bg-gradient-to-br from-aqua-900 via-ink-900 to-ink-950',
             )}
           >
-            {!imageFailed ? (
-              <img
-                src={service.image}
-                alt={service.title}
-                className="absolute inset-0 h-full w-full object-cover"
-                onError={() => setImageFailed(true)}
-              />
-            ) : (
-              <>
-                <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
-                <div
-                  className={clsx(
-                    'pointer-events-none absolute h-56 w-56 rounded-full blur-3xl',
-                    accent === 'ember' ? 'bg-ember-500/30' : 'bg-aqua-500/30',
-                  )}
-                />
-                <span
-                  className={clsx(
-                    'relative flex h-28 w-28 items-center justify-center rounded-3xl ring-1 ring-inset backdrop-blur',
-                    accent === 'ember'
-                      ? 'bg-ember-500/10 text-ember-400 ring-ember-500/30'
-                      : 'bg-aqua-500/10 text-aqua-400 ring-aqua-500/30',
-                  )}
-                >
-                  <ServiceIcon name={service.icon} className="h-12 w-12" strokeWidth={1.5} />
-                </span>
-              </>
-            )}
+            <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
+            <div
+              className={clsx(
+                'pointer-events-none absolute h-56 w-56 rounded-full blur-3xl',
+                accent === 'ember' ? 'bg-ember-500/30' : 'bg-aqua-500/30',
+              )}
+            />
+            <span
+              className={clsx(
+                'relative flex h-28 w-28 items-center justify-center rounded-3xl ring-1 ring-inset backdrop-blur',
+                accent === 'ember'
+                  ? 'bg-ember-500/10 text-ember-400 ring-ember-500/30'
+                  : 'bg-aqua-500/10 text-aqua-400 ring-aqua-500/30',
+              )}
+            >
+              <ServiceIcon name={service.icon} className="h-12 w-12" strokeWidth={1.5} />
+            </span>
           </div>
 
           <div className="flex flex-col gap-6">

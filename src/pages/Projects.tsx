@@ -14,7 +14,6 @@ export default function Projects() {
         eyebrow="أعمالنا"
         title="أكثر من 250 مشروعًا تتحدث عن نفسها"
         description="نفّذنا أنظمة تدفئة وتسخين لأنواع متعددة من المشروعات، من الفيلا الواحدة إلى الكمباوندات والمنشآت الكبرى، وكلها بنفس معايير الجودة والدقة."
-        image={{ src: '/images/pages/projects.svg', alt: 'مشروعات هيت سنتر' }}
       />
 
       <section className="relative bg-ink-950 pb-24">

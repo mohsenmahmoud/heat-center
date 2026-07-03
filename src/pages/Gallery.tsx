@@ -23,7 +23,6 @@ export default function Gallery() {
         eyebrow="معرض الصور"
         title="لقطات من مشروعاتنا حسب نوع الخدمة"
         description="تصفح كل صور أعمالنا المنفذة، وكل صورة موضّح جانبها الخدمة اللي بتنتمي ليها."
-        image={{ src: '/images/pages/gallery.svg', alt: 'معرض صور هيت سنتر' }}
       />
 
       <section className="relative bg-ink-950 pb-24">

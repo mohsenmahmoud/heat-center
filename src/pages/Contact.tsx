@@ -46,7 +46,6 @@ export default function Contact() {
         eyebrow="تواصل معنا"
         title="خلّينا نصمملك حل التدفئة المناسب"
         description="احجز معاينة ميدانية مجانية، أو اترك بياناتك وفريقنا هيتواصل معاك خلال وقت قصير."
-        image={{ src: '/images/pages/contact.svg', alt: 'تواصل مع هيت سنتر' }}
       />
 
       <section className="relative bg-ink-950 pb-24">

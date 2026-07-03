@@ -1,26 +1,31 @@
 {
-  "name": "bonyan-crm",
+  "name": "heat-center",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.0",
-    "zustand": "^4.5.0",
-    "recharts": "^2.10.0",
-    "lucide-react": "^0.344.0"
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.23.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "vite": "^5.1.0"
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "tailwindcss": "^4.3.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1"
   }
 }

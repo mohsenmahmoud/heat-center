@@ -1,0 +1,47 @@
+import Container from './Container'
+
+export default function PageHero({
+  eyebrow,
+  title,
+  description,
+  image,
+}: {
+  eyebrow: string
+  title: string
+  description?: string
+  image?: { src: string; alt: string }
+}) {
+  return (
+    <section className="relative overflow-hidden bg-ink-950 pb-20 pt-40 sm:pt-48">
+      <div className="bg-grid pointer-events-none absolute inset-0 opacity-50" />
+      <div className="bg-radial-ember pointer-events-none absolute inset-0" />
+      <div className="pointer-events-none absolute -right-24 top-10 h-80 w-80 rounded-full bg-ember-500/15 blur-3xl" />
+      <Container className="relative">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-bold text-ember-400 ring-1 ring-inset ring-ember-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-ember-500" />
+            {eyebrow}
+          </span>
+          <h1 className="text-balance font-display text-4xl font-extrabold text-white sm:text-5xl">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-balance text-base leading-relaxed text-ink-300 sm:text-lg">
+              {description}
+            </p>
+          )}
+        </div>
+
+        {image && (
+          <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="aspect-[4/3] w-full object-cover sm:aspect-[16/7]"
+            />
+          </div>
+        )}
+      </Container>
+    </section>
+  )
+}

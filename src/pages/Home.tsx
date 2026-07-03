@@ -63,9 +63,9 @@ export default function Home() {
 
           <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
             <img
-              src="/images/hero/home.svg"
-              alt="هيت سنتر — حلول التدفئة المركزية والطاقة الشمسية"
-              className="aspect-[3/2] w-full object-cover sm:aspect-[12/5]"
+              src="/images/hero/home.webp"
+              alt="تركيب سخان شمسي من هيت سنتر"
+              className="aspect-[4/3] w-full object-cover sm:aspect-[16/9]"
             />
           </div>
 

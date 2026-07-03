@@ -1,0 +1,43 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6b1d08" stop-opacity="0.5"/>
+      <stop offset="45%" stop-color="#101b28"/>
+      <stop offset="100%" stop-color="#0a121c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.3" r="0.6">
+      <stop offset="0%" stop-color="#f2540e" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f2540e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+
+
+  <g stroke="#ff7a33" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="300" y="250" width="200" height="190" fill="#101b28" fill-opacity="0.6"/>
+    <line x1="330" y1="280" x2="350" y2="280"/>
+    <line x1="370" y1="280" x2="390" y2="280"/>
+    <line x1="410" y1="280" x2="430" y2="280"/>
+    <line x1="450" y1="280" x2="470" y2="280"/>
+    <line x1="330" y1="315" x2="350" y2="315"/>
+    <line x1="370" y1="315" x2="390" y2="315"/>
+    <line x1="410" y1="315" x2="430" y2="315"/>
+    <line x1="450" y1="315" x2="470" y2="315"/>
+    <line x1="330" y1="350" x2="350" y2="350"/>
+    <line x1="370" y1="350" x2="390" y2="350"/>
+    <line x1="410" y1="350" x2="430" y2="350"/>
+    <line x1="450" y1="350" x2="470" y2="350"/>
+    <rect x="380" y="390" width="40" height="50" opacity="0.6"/>
+    <path d="M300 250 L400 210 L500 250 Z" fill="#101b28" fill-opacity="0.6"/>
+    <line x1="400" y1="210" x2="400" y2="185"/>
+    <path d="M392 185 h16 l-8 -14 Z" fill="#ff7a33" fill-opacity="0.6"/>
+    <line x1="250" y1="440" x2="550" y2="440" opacity="0.3"/>
+  </g>
+
+</svg>

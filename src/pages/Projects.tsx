@@ -24,14 +24,23 @@ export default function Projects() {
               return (
                 <div
                   key={p.title}
-                  className="group relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03] p-8"
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03]"
                 >
-                  <div className="pointer-events-none absolute -left-10 -top-10 h-32 w-32 rounded-full bg-ember-500/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-400 ring-1 ring-inset ring-ember-500/20">
-                    <Icon className="h-6 w-6" strokeWidth={1.75} />
-                  </span>
-                  <h3 className="font-display text-lg font-bold text-white">{p.title}</h3>
-                  <p className="text-sm leading-relaxed text-ink-300">{p.description}</p>
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="relative flex flex-col gap-4 p-8">
+                    <div className="pointer-events-none absolute -left-10 -top-10 h-32 w-32 rounded-full bg-ember-500/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-400 ring-1 ring-inset ring-ember-500/20">
+                      <Icon className="h-6 w-6" strokeWidth={1.75} />
+                    </span>
+                    <h3 className="font-display text-lg font-bold text-white">{p.title}</h3>
+                    <p className="text-sm leading-relaxed text-ink-300">{p.description}</p>
+                  </div>
                 </div>
               )
             })}

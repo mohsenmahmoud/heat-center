@@ -1,3 +1,7 @@
+// Prefixes public-folder asset paths with Vite's base URL (e.g. '/heat-center/'
+// on GitHub Pages) so they resolve correctly regardless of deploy path.
+export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
+
 export const siteConfig = {
   name: 'هيت سنتر',
   nameEn: 'Heat Center',
@@ -68,7 +72,7 @@ export const services: Service[] = [
       'مقاومة كاملة للصدأ وعمر تشغيلي طويل',
     ],
     accent: 'ember',
-    image: '/images/services/central-heating.svg',
+    image: asset('images/services/central-heating.svg'),
   },
   {
     id: 'underfloor-heating',
@@ -84,7 +88,7 @@ export const services: Service[] = [
       'لا تشغل أي مساحة ظاهرة، مثالية للتصميمات المفتوحة',
     ],
     accent: 'ember',
-    image: '/images/services/underfloor-heating.svg',
+    image: asset('images/services/underfloor-heating.svg'),
   },
   {
     id: 'central-boilers',
@@ -100,7 +104,7 @@ export const services: Service[] = [
       'أنظمة تحكم ذكية لضبط درجة الحرارة',
     ],
     accent: 'ember',
-    image: '/images/services/central-boilers.svg',
+    image: asset('images/services/central-boilers.svg'),
   },
   {
     id: 'solar-heaters',
@@ -116,7 +120,7 @@ export const services: Service[] = [
       'حل مثالي لمناخ مصر المشمس على مدار العام',
     ],
     accent: 'ember',
-    image: '/images/services/solar-heaters.svg',
+    image: asset('images/services/solar-heaters.svg'),
   },
   {
     id: 'pool-heating',
@@ -132,7 +136,7 @@ export const services: Service[] = [
       'إطالة موسم استخدام المسبح على مدار العام',
     ],
     accent: 'aqua',
-    image: '/images/services/pool-heating.svg',
+    image: asset('images/services/pool-heating.svg'),
   },
   {
     id: 'plumbing',
@@ -148,7 +152,7 @@ export const services: Service[] = [
       'يناسب المشروعات السكنية والتجارية على حد سواء',
     ],
     accent: 'aqua',
-    image: '/images/services/plumbing.svg',
+    image: asset('images/services/plumbing.svg'),
   },
   {
     id: 'solar-energy',
@@ -164,20 +168,20 @@ export const services: Service[] = [
       'حلول مصممة خصيصًا حسب طبيعة كل مشروع',
     ],
     accent: 'ember',
-    image: '/images/services/solar-energy.svg',
+    image: asset('images/services/solar-energy.svg'),
   },
 ]
 
 // Real project photos go here per category — just append more paths to each
 // array (e.g. '/images/gallery/central-heating/1.jpg') as they become available.
 export const galleryImages: Record<ServiceId, string[]> = {
-  'central-heating': ['/images/services/central-heating.svg'],
-  'underfloor-heating': ['/images/services/underfloor-heating.svg'],
-  'central-boilers': ['/images/services/central-boilers.svg'],
-  'solar-heaters': ['/images/services/solar-heaters.svg'],
-  'pool-heating': ['/images/services/pool-heating.svg'],
-  plumbing: ['/images/services/plumbing.svg'],
-  'solar-energy': ['/images/services/solar-energy.svg'],
+  'central-heating': [asset('images/services/central-heating.svg')],
+  'underfloor-heating': [asset('images/services/underfloor-heating.svg')],
+  'central-boilers': [asset('images/services/central-boilers.svg')],
+  'solar-heaters': [asset('images/services/solar-heaters.svg')],
+  'pool-heating': [asset('images/services/pool-heating.svg')],
+  plumbing: [asset('images/services/plumbing.svg')],
+  'solar-energy': [asset('images/services/solar-energy.svg')],
 }
 
 export const whyUs = [
@@ -239,18 +243,22 @@ export const projectTypes = [
   {
     title: 'فلل خاصة',
     description: 'أنظمة تدفئة وتسخين مخصصة تراعي خصوصية وتصميم كل فيلا.',
+    image: asset('images/project-types/villa.svg'),
   },
   {
     title: 'كمباوندات سكنية',
     description: 'حلول تدفئة متكاملة لأكثر من 40 كمباوند بمعايير تنفيذ موحدة وجودة عالية.',
+    image: asset('images/project-types/compound.svg'),
   },
   {
     title: 'فنادق ومنشآت سياحية',
     description: 'أنظمة تسخين مياه وتدفئة بقدرات كبيرة تلبي احتياج الضيافة على مدار الساعة.',
+    image: asset('images/project-types/hotel.svg'),
   },
   {
     title: 'مبانٍ إدارية وتجارية',
     description: 'تصميم وتنفيذ أنظمة تدفئة مركزية للمكاتب والمنشآت التجارية.',
+    image: asset('images/project-types/office.svg'),
   },
 ]
 
@@ -272,7 +280,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تصميم وتركيب شبكة تدفئة مركزية بالمياه الساخنة ورادياتير حائطي لكامل الفيلا.',
     serviceId: 'central-heating',
-    image: '/images/services/central-heating.svg',
+    image: asset('images/services/central-heating.svg'),
   },
   {
     title: 'مشروع كمباوند سكني',
@@ -280,7 +288,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تنفيذ نظام تدفئة أرضية موحّد لعدد من الوحدات السكنية بنفس معايير الجودة.',
     serviceId: 'underfloor-heating',
-    image: '/images/services/underfloor-heating.svg',
+    image: asset('images/services/underfloor-heating.svg'),
   },
   {
     title: 'مشروع منشأة فندقية',
@@ -288,7 +296,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'توريد وتركيب غلاية مركزية بقدرة كبيرة لتأمين مياه ساخنة مستمرة على مدار الساعة.',
     serviceId: 'central-boilers',
-    image: '/images/services/central-boilers.svg',
+    image: asset('images/services/central-boilers.svg'),
   },
   {
     title: 'مشروع مبنى إداري',
@@ -296,7 +304,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تركيب منظومة سخانات شمسية لتغطية احتياج المبنى من المياه الساخنة وتقليل استهلاك الكهرباء.',
     serviceId: 'solar-heaters',
-    image: '/images/services/solar-heaters.svg',
+    image: asset('images/services/solar-heaters.svg'),
   },
   {
     title: 'مشروع فيلا خاصة',
@@ -304,7 +312,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تركيب نظام تسخين لحمام سباحة خاص لإطالة موسم الاستخدام على مدار العام.',
     serviceId: 'pool-heating',
-    image: '/images/services/pool-heating.svg',
+    image: asset('images/services/pool-heating.svg'),
   },
   {
     title: 'مشروع كمباوند سكني',
@@ -312,7 +320,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'أعمال تأسيس صحي وسباكة كاملة بمواسير بولي إيثيلين معتمدة أوروبيًا.',
     serviceId: 'plumbing',
-    image: '/images/services/plumbing.svg',
+    image: asset('images/services/plumbing.svg'),
   },
   {
     title: 'مشروع منشأة فندقية',
@@ -320,7 +328,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'حلول طاقة شمسية تكميلية لخفض الاعتماد على الشبكة الكهربائية للمنشأة.',
     serviceId: 'solar-energy',
-    image: '/images/services/solar-energy.svg',
+    image: asset('images/services/solar-energy.svg'),
   },
   {
     title: 'مشروع مبنى إداري',
@@ -328,7 +336,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تصميم وتنفيذ شبكة تدفئة مركزية موزّعة على جميع طوابق المبنى الإداري.',
     serviceId: 'central-heating',
-    image: '/images/services/central-heating.svg',
+    image: asset('images/services/central-heating.svg'),
   },
 ]
 

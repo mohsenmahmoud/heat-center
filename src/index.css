@@ -1,28 +1,126 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-* {
-  font-family: 'Tajawal', sans-serif;
+@theme {
+  --font-sans: 'Tajawal', system-ui, sans-serif;
+  --font-display: 'Cairo', system-ui, sans-serif;
+
+  /* Ember — primary brand (heat / flame) */
+  --color-ember-50: #fff4ed;
+  --color-ember-100: #ffe6d5;
+  --color-ember-200: #ffc9a8;
+  --color-ember-300: #ffa366;
+  --color-ember-400: #ff7a33;
+  --color-ember-500: #f2540e;
+  --color-ember-600: #d93f04;
+  --color-ember-700: #b32f03;
+  --color-ember-800: #8a2404;
+  --color-ember-900: #6b1d08;
+  --color-ember-950: #3d0f05;
+
+  /* Ink — deep charcoal / navy (premium, technical) */
+  --color-ink-50: #f4f6f8;
+  --color-ink-100: #e4e8ec;
+  --color-ink-200: #c7cfd8;
+  --color-ink-300: #9fACba;
+  --color-ink-400: #6e8090;
+  --color-ink-500: #4c5e70;
+  --color-ink-600: #37475a;
+  --color-ink-700: #283647;
+  --color-ink-800: #182535;
+  --color-ink-900: #101b28;
+  --color-ink-950: #0a121c;
+
+  /* Aqua — cool accent for water / plumbing systems, used sparingly */
+  --color-aqua-50: #eef7ff;
+  --color-aqua-100: #d9eeff;
+  --color-aqua-200: #b0deff;
+  --color-aqua-300: #7bc7ff;
+  --color-aqua-400: #3fa6f5;
+  --color-aqua-500: #1c87db;
+  --color-aqua-600: #106bb5;
+  --color-aqua-700: #0e5590;
+  --color-aqua-800: #114670;
+  --color-aqua-900: #123b5c;
+
+  --color-sand-50: #fdfbf8;
+  --color-sand-100: #f7f1ea;
+
+  --shadow-ember: 0 20px 45px -18px rgba(217, 63, 4, 0.45);
+  --shadow-ink: 0 24px 60px -24px rgba(10, 18, 28, 0.55);
+
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 3.5s ease-in-out infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
-html, body {
-  direction: rtl;
+html {
+  scroll-behavior: smooth;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+body {
+  margin: 0;
+  background-color: var(--color-ink-950);
+  color: var(--color-ink-100);
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01' on;
+  -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+::selection {
+  background-color: var(--color-ember-500);
+  color: white;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.bg-grid {
+  background-image:
+    linear-gradient(to left, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to top, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.bg-radial-ember {
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(242, 84, 14, 0.35),
+    transparent 60%
+  );
+}
+
+.text-balance {
+  text-wrap: balance;
 }

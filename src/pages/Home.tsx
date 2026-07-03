@@ -13,7 +13,7 @@ import StatCounter from '../components/ui/StatCounter'
 import ServiceCard from '../components/ui/ServiceCard'
 import FAQItem from '../components/ui/FAQItem'
 import { LinkButton } from '../components/ui/Button'
-import { faqs, process, projectTypes, services, siteConfig, stats, whyUs } from '../data/content'
+import { asset, faqs, process, projectTypes, services, siteConfig, stats, whyUs } from '../data/content'
 
 export default function Home() {
   return (
@@ -63,7 +63,7 @@ export default function Home() {
 
           <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
             <img
-              src="/images/hero/home.webp"
+              src={asset('images/hero/home.webp')}
               alt="تركيب سخان شمسي من هيت سنتر"
               className="aspect-[4/3] w-full object-cover sm:aspect-[16/9]"
             />

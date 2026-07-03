@@ -13,6 +13,7 @@ export default function Services() {
         eyebrow="خدماتنا"
         title="منظومة متكاملة من حلول التدفئة والتسخين"
         description="من الاستشارة الأولى وحتى الصيانة الدورية، نغطي كل احتياجاتك فى التدفئة المركزية وتسخين المياه بمعدات أوروبية أصلية وفريق هندسي متخصص."
+        image={{ src: '/images/pages/services.svg', alt: 'خدمات هيت سنتر' }}
       />
 
       <section className="relative bg-ink-950 pb-24">

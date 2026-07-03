@@ -4,10 +4,12 @@ export default function PageHero({
   eyebrow,
   title,
   description,
+  image,
 }: {
   eyebrow: string
   title: string
   description?: string
+  image?: { src: string; alt: string }
 }) {
   return (
     <section className="relative overflow-hidden bg-ink-950 pb-20 pt-40 sm:pt-48">
@@ -29,6 +31,16 @@ export default function PageHero({
             </p>
           )}
         </div>
+
+        {image && (
+          <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="aspect-[4/3] w-full object-cover sm:aspect-[16/7]"
+            />
+          </div>
+        )}
       </Container>
     </section>
   )

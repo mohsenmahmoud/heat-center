@@ -11,6 +11,7 @@ export default function FAQ() {
         eyebrow="الأسئلة الشائعة"
         title="كل ما تريد معرفته عن التدفئة المركزية"
         description="جمعنا لك أكثر الأسئلة شيوعًا من عملائنا. لم تجد إجابتك؟ تواصل معنا مباشرة."
+        image={{ src: '/images/pages/faq.svg', alt: 'الأسئلة الشائعة' }}
       />
 
       <section className="relative bg-ink-950 pb-24">

@@ -113,7 +113,7 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <LinkButton to="/services#solar-heaters" variant="secondary" className="!bg-white !text-ember-600 shadow-none hover:!bg-white/90">
+              <LinkButton to="/services/solar-heaters" variant="secondary" className="!bg-white !text-ember-600 shadow-none hover:!bg-white/90">
                 اعرف أكثر عن السخانات الشمسية
               </LinkButton>
             </div>

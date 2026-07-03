@@ -55,10 +55,10 @@ export default function Footer() {
           <div>
             <h3 className="font-display text-sm font-bold text-white">خدماتنا</h3>
             <ul className="mt-4 flex flex-col gap-3">
-              {services.slice(0, 5).map((s) => (
+              {services.map((s) => (
                 <li key={s.id}>
                   <Link
-                    to={`/services#${s.id}`}
+                    to={`/services/${s.id}`}
                     className="text-sm text-ink-300 hover:text-ember-400"
                   >
                     {s.title}

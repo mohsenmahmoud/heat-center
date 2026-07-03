@@ -9,7 +9,7 @@ export default function ServiceCard({ service, index }: { service: Service; inde
 
   return (
     <Link
-      to={`/services#${service.id}`}
+      to={`/services/${service.id}`}
       className="group relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03] p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/10 hover:bg-white/[0.05]"
     >
       <span

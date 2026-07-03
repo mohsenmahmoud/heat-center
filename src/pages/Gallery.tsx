@@ -12,6 +12,10 @@ const allImages = services.flatMap((service) =>
   })),
 )
 
+function scrollToCategory(id: string) {
+  document.getElementById(`gallery-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 export default function Gallery() {
   return (
     <>
@@ -23,13 +27,35 @@ export default function Gallery() {
 
       <section className="relative bg-ink-950 pb-24">
         <Container>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-wrap justify-center gap-3">
+            {services.map((s) => {
+              const accent = s.accent === 'aqua' ? 'aqua' : 'ember'
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => scrollToCategory(s.id)}
+                  className={clsx(
+                    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-inset transition-colors',
+                    accent === 'ember'
+                      ? 'text-ember-400 ring-ember-500/20 hover:bg-ember-500/10'
+                      : 'text-aqua-400 ring-aqua-500/20 hover:bg-aqua-500/10',
+                  )}
+                >
+                  <ServiceIcon name={s.icon} className="h-4 w-4" />
+                  {s.title}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {allImages.map(({ src, key, service }) => {
               const accent = service.accent === 'aqua' ? 'aqua' : 'ember'
               return (
                 <div
                   key={key}
-                  className="flex flex-col overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03]"
+                  id={`gallery-${service.id}`}
+                  className="flex scroll-mt-28 flex-col overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03]"
                 >
                   <div
                     className={clsx(

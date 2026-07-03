@@ -36,7 +36,7 @@ export default function Navbar() {
           <BrandMark className="h-11 w-11 shrink-0" />
           <span className="flex flex-col leading-tight">
             <span className="font-display text-lg font-extrabold text-white">
-              {siteConfig.name}
+              {siteConfig.nameEn}
             </span>
             <span className="text-[11px] font-medium text-ember-400">{siteConfig.tagline}</span>
           </span>
@@ -63,10 +63,10 @@ export default function Navbar() {
         <div className="hidden items-center gap-3 lg:flex">
           <a
             href={`tel:${siteConfig.phone.replace(/\s/g, '')}`}
-            className="flex items-center gap-2 text-sm font-bold text-ink-100 hover:text-ember-400"
+            aria-label={siteConfig.phoneDisplay}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-ink-100 hover:text-ember-400"
           >
             <Phone className="h-4 w-4" />
-            {siteConfig.phoneDisplay}
           </a>
           <LinkButton to="/contact" className="!py-2.5">
             احجز معاينة مجانية

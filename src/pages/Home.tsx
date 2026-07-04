@@ -2,7 +2,6 @@ import {
   ArrowLeft,
   BadgeCheck,
   CalendarClock,
-  MessageCircle,
   ShieldCheck,
   Sparkles,
   Sun,
@@ -13,6 +12,7 @@ import StatCounter from '../components/ui/StatCounter'
 import ServiceCard from '../components/ui/ServiceCard'
 import FAQItem from '../components/ui/FAQItem'
 import { LinkButton } from '../components/ui/Button'
+import { WhatsAppIcon } from '../components/icons/SocialIcons'
 import { asset, faqs, process, projectTypes, services, siteConfig, stats, whyUs } from '../data/content'
 
 export default function Home() {
@@ -54,7 +54,7 @@ export default function Home() {
                 to={`https://wa.me/${siteConfig.whatsapp}`}
                 external
                 variant="secondary"
-                icon={<MessageCircle className="h-4 w-4" />}
+                icon={<WhatsAppIcon className="h-4 w-4" />}
               >
                 تواصل عبر واتساب
               </LinkButton>

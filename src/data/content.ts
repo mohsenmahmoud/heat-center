@@ -8,14 +8,14 @@ export const siteConfig = {
   tagline: 'أفضل حلول التدفئة المركزية في مصر',
   phone: '+20 100 000 0000',
   phoneDisplay: '01000000000',
-  whatsapp: '201000000000',
+  whatsapp: '201020014249',
   email: 'info@heat-center.com',
   address: 'القاهرة الجديدة، جمهورية مصر العربية',
   workHours: 'يوميًا من 9 صباحًا حتى 8 مساءً',
   social: {
-    facebook: '#',
+    facebook: 'https://www.facebook.com/Heatcenter1/',
     instagram: '#',
-    whatsapp: '#',
+    whatsapp: 'https://wa.me/201020014249',
     linkedin: '#',
   },
 }

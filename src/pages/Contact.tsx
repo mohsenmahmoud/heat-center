@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Clock, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react'
+import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react'
 import Container from '../components/ui/Container'
 import PageHero from '../components/ui/PageHero'
 import { Button, LinkButton } from '../components/ui/Button'
+import { WhatsAppIcon } from '../components/icons/SocialIcons'
 import { siteConfig } from '../data/content'
 
 const contactCards = [
@@ -13,7 +14,7 @@ const contactCards = [
     href: `tel:${siteConfig.phone.replace(/\s/g, '')}`,
   },
   {
-    icon: MessageCircle,
+    icon: WhatsAppIcon,
     title: 'واتساب',
     value: 'راسلنا مباشرة',
     href: `https://wa.me/${siteConfig.whatsapp}`,
@@ -161,7 +162,7 @@ export default function Contact() {
                   to={`https://wa.me/${siteConfig.whatsapp}`}
                   external
                   variant="secondary"
-                  icon={<MessageCircle className="h-4 w-4" />}
+                  icon={<WhatsAppIcon className="h-4 w-4" />}
                   className="justify-center"
                 >
                   تواصل سريع عبر واتساب

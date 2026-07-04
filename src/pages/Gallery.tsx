@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import Container from '../components/ui/Container'
 import PageHero from '../components/ui/PageHero'
 import ServiceIcon from '../components/icons/ServiceIcon'
-import { services, galleryImages } from '../data/content'
+import { services, galleryImages, serviceCategories } from '../data/content'
 
 const allImages = services.flatMap((service) =>
   galleryImages[service.id].map((src, i) => ({
@@ -27,25 +27,34 @@ export default function Gallery() {
 
       <section className="relative bg-ink-950 pb-24">
         <Container>
-          <div className="flex flex-wrap justify-center gap-3">
-            {services.map((s) => {
-              const accent = s.accent === 'aqua' ? 'aqua' : 'ember'
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => scrollToCategory(s.id)}
-                  className={clsx(
-                    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-inset transition-colors',
-                    accent === 'ember'
-                      ? 'text-ember-400 ring-ember-500/20 hover:bg-ember-500/10'
-                      : 'text-aqua-400 ring-aqua-500/20 hover:bg-aqua-500/10',
-                  )}
-                >
-                  <ServiceIcon name={s.icon} className="h-4 w-4" />
-                  {s.title}
-                </button>
-              )
-            })}
+          <div className="flex flex-col items-center gap-4">
+            {serviceCategories.map((category) => (
+              <div key={category.id} className="flex flex-wrap items-center justify-center gap-3">
+                {category.subServices.length > 1 && (
+                  <span className="text-xs font-bold uppercase tracking-wide text-ink-400">
+                    {category.title}
+                  </span>
+                )}
+                {category.subServices.map((s) => {
+                  const accent = s.accent === 'aqua' ? 'aqua' : 'ember'
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => scrollToCategory(s.id)}
+                      className={clsx(
+                        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-inset transition-colors',
+                        accent === 'ember'
+                          ? 'text-ember-400 ring-ember-500/20 hover:bg-ember-500/10'
+                          : 'text-aqua-400 ring-aqua-500/20 hover:bg-aqua-500/10',
+                      )}
+                    >
+                      <ServiceIcon name={s.icon} className="h-4 w-4" />
+                      {s.title}
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

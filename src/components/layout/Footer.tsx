@@ -3,7 +3,7 @@ import { Mail, MapPin, Phone, Clock } from 'lucide-react'
 import Container from '../ui/Container'
 import BrandMark from '../icons/BrandMark'
 import { FacebookIcon, InstagramIcon, LinkedinIcon } from '../icons/SocialIcons'
-import { navLinks, services, siteConfig } from '../../data/content'
+import { navLinks, serviceCategories, siteConfig } from '../../data/content'
 
 export default function Footer() {
   return (
@@ -54,17 +54,35 @@ export default function Footer() {
 
           <div>
             <h3 className="font-display text-sm font-bold text-white">خدماتنا</h3>
-            <ul className="mt-4 flex flex-col gap-3">
-              {services.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    to={`/services#${s.id}`}
-                    className="text-sm text-ink-300 hover:text-ember-400"
-                  >
-                    {s.title}
-                  </Link>
-                </li>
-              ))}
+            <ul className="mt-4 flex flex-col gap-4">
+              {serviceCategories.map((category) =>
+                category.subServices.length > 1 ? (
+                  <li key={category.id}>
+                    <span className="text-sm font-bold text-ink-100">{category.title}</span>
+                    <ul className="mt-2 flex flex-col gap-2 border-r border-white/10 pr-3">
+                      {category.subServices.map((s) => (
+                        <li key={s.id}>
+                          <Link
+                            to={`/services#${s.id}`}
+                            className="text-sm text-ink-300 hover:text-ember-400"
+                          >
+                            {s.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <li key={category.id}>
+                    <Link
+                      to={`/services#${category.subServices[0].id}`}
+                      className="text-sm font-bold text-ink-100 hover:text-ember-400"
+                    >
+                      {category.title}
+                    </Link>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 

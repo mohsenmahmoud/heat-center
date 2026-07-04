@@ -42,13 +42,14 @@ export type ServiceId =
   | 'underfloor-heating'
   | 'central-boilers'
   | 'solar-heaters'
+  | 'instant-heaters'
   | 'pool-heating'
   | 'plumbing'
   | 'solar-energy'
 
 export interface Service {
   id: ServiceId
-  icon: 'flame' | 'waves' | 'droplet' | 'sun' | 'pool' | 'pipe' | 'panel'
+  icon: 'flame' | 'waves' | 'droplet' | 'sun' | 'instant' | 'pool' | 'pipe' | 'panel'
   title: string
   short: string
   description: string
@@ -57,11 +58,11 @@ export interface Service {
   image: string
 }
 
-export const services: Service[] = [
+const centralHeatingServices: Service[] = [
   {
     id: 'central-heating',
     icon: 'flame',
-    title: 'التدفئة المركزية بالمياه الساخنة',
+    title: 'تدفئة حائطية',
     short: 'دفء متجانس في كل ركن من المنزل، بلا ضوضاء وبلا روائح احتراق داخلية.',
     description:
       'نصمم وننفذ شبكة تدفئة مركزية متكاملة تعتمد على الماء الساخن كوسيط لنقل الحرارة، وهي الطريقة الأعلى كفاءة عالميًا للحصول على دفء ثابت في جميع الغرف من مصدر واحد. نحدد لك أفضل توزيع للرادياتير الحائطي حسب مساحة ومعمارية كل غرفة، باستخدام رادياتير من الألومنيوم النقي أو الستانلس ستيل المعالج ضد الصدأ بتصميمات عصرية تتناسب مع ديكور منزلك.',
@@ -77,7 +78,7 @@ export const services: Service[] = [
   {
     id: 'underfloor-heating',
     icon: 'waves',
-    title: 'التدفئة تحت الأرضية',
+    title: 'تدفئة أرضية',
     short: 'حرارة تنبعث من الأرض بالتساوي دون الحاجة لأي وحدات ظاهرة على الحوائط.',
     description:
       'نظام تدفئة مخفي بالكامل داخل الأرضية باستخدام مواسير عالية الجودة موزّعة بدقة هندسية، ما يمنحك توزيعًا متجانسًا للحرارة من أسفل لأعلى بكفاءة عالية وتوفير ملحوظ في استهلاك الطاقة، مع الحفاظ على مساحات الجدران فارغة تمامًا لحرية أكبر في التصميم الداخلي.',
@@ -90,17 +91,20 @@ export const services: Service[] = [
     accent: 'ember',
     image: asset('images/services/underfloor-heating.svg'),
   },
+]
+
+const centralHeatingSourceServices: Service[] = [
   {
     id: 'central-boilers',
     icon: 'droplet',
-    title: 'الغلايات المركزية',
+    title: 'غلايات مركزية بالغاز الطبيعي',
     short: 'مياه ساخنة فورية ومستمرة على مدار اليوم لكل نقاط الاستخدام في المبنى.',
     description:
-      'نوفر ونركب غلايات مركزية بأحجام وقدرات تناسب الشقق والفلل والمنشآت الكبيرة والفنادق، لتأمين مياه ساخنة فورية ومستمرة دون انتظار ودون تفاوت في درجة الحرارة بين نقاط الاستخدام المختلفة، مع كفاءة احتراق عالية توفر في استهلاك الغاز أو الكهرباء.',
+      'نوفر ونركب غلايات مركزية تعمل بالغاز الطبيعي بأحجام وقدرات تناسب الشقق والفلل والمنشآت الكبيرة والفنادق، لتأمين مياه ساخنة فورية ومستمرة دون انتظار ودون تفاوت في درجة الحرارة بين نقاط الاستخدام المختلفة، مع كفاءة احتراق عالية توفر في استهلاك الغاز.',
     features: [
+      'تعمل بالغاز الطبيعي بكفاءة احتراق عالية',
       'مياه ساخنة فورية ومستمرة لجميع نقاط الاستخدام',
       'قدرات متعددة تناسب الشقق والفلل والمنشآت الكبيرة',
-      'كفاءة احتراق عالية توفر في فاتورة الطاقة',
       'أنظمة تحكم ذكية لضبط درجة الحرارة',
     ],
     accent: 'ember',
@@ -109,7 +113,7 @@ export const services: Service[] = [
   {
     id: 'solar-heaters',
     icon: 'sun',
-    title: 'السخانات الشمسية',
+    title: 'سخانات شمسية',
     short: 'وفّر حتى 89% من فاتورة الكهرباء بسخان شمسي عمره الافتراضي يتجاوز 20 عامًا.',
     description:
       'نقدم سخانات شمسية أوروبية الصنع بسعات تبدأ من 150 لترًا وحتى الأحجام الكبيرة للمنشآت، مصممة لتحويل أشعة الشمس الوفيرة في مصر إلى مياه ساخنة مجانًا طوال العام. توفر حتى 89% من استهلاك الكهرباء المخصص لتسخين المياه، بعمر افتراضي يتجاوز 20 عامًا وصيانة شبه معدومة.',
@@ -122,6 +126,25 @@ export const services: Service[] = [
     accent: 'ember',
     image: asset('images/services/solar-heaters.svg'),
   },
+  {
+    id: 'instant-heaters',
+    icon: 'instant',
+    title: 'سخانات مركزية فورية للأماكن المتوسطة أو الصغيرة',
+    short: 'مياه ساخنة فورية بوحدة مدمجة الحجم، حل عملي واقتصادي للشقق والمساحات الصغيرة.',
+    description:
+      'نوفر سخانات مركزية فورية مدمجة الحجم تناسب الشقق والمساحات المتوسطة والصغيرة التي لا تحتاج إلى غلاية مركزية كاملة، فتؤمن مياه ساخنة فورية لنقاط الاستخدام المختلفة بتكلفة تركيب أقل ووقت تنفيذ أسرع، مع نفس معايير الجودة والسلامة فى التشغيل.',
+    features: [
+      'وحدة مدمجة الحجم مناسبة للشقق والمساحات الصغيرة',
+      'تكلفة تركيب أقل ووقت تنفيذ أسرع من الغلايات الكبيرة',
+      'مياه ساخنة فورية دون الحاجة للانتظار',
+      'حل اقتصادي بنفس معايير الجودة والسلامة',
+    ],
+    accent: 'ember',
+    image: asset('images/services/instant-heaters.svg'),
+  },
+]
+
+const poolHeatingServices: Service[] = [
   {
     id: 'pool-heating',
     icon: 'pool',
@@ -138,6 +161,9 @@ export const services: Service[] = [
     accent: 'aqua',
     image: asset('images/services/pool-heating.svg'),
   },
+]
+
+const plumbingServices: Service[] = [
   {
     id: 'plumbing',
     icon: 'pipe',
@@ -154,6 +180,9 @@ export const services: Service[] = [
     accent: 'aqua',
     image: asset('images/services/plumbing.svg'),
   },
+]
+
+const solarEnergyServices: Service[] = [
   {
     id: 'solar-energy',
     icon: 'panel',
@@ -172,6 +201,54 @@ export const services: Service[] = [
   },
 ]
 
+export interface ServiceCategory {
+  id: string
+  title: string
+  icon: Service['icon']
+  accent: 'ember' | 'aqua'
+  subServices: Service[]
+}
+
+export const serviceCategories: ServiceCategory[] = [
+  {
+    id: 'central-heating-category',
+    title: 'التدفئة المركزية',
+    icon: 'flame',
+    accent: 'ember',
+    subServices: centralHeatingServices,
+  },
+  {
+    id: 'central-water-heating-category',
+    title: 'التسخين المركزي',
+    icon: 'droplet',
+    accent: 'ember',
+    subServices: centralHeatingSourceServices,
+  },
+  {
+    id: 'pool-heating-category',
+    title: 'تسخين حمامات السباحة',
+    icon: 'pool',
+    accent: 'aqua',
+    subServices: poolHeatingServices,
+  },
+  {
+    id: 'plumbing-category',
+    title: 'أعمال السباكة والتأسيس',
+    icon: 'pipe',
+    accent: 'aqua',
+    subServices: plumbingServices,
+  },
+  {
+    id: 'solar-energy-category',
+    title: 'حلول الطاقة الشمسية',
+    icon: 'panel',
+    accent: 'ember',
+    subServices: solarEnergyServices,
+  },
+]
+
+export const services: Service[] = serviceCategories.flatMap((c) => c.subServices)
+
 // Real project photos go here per category — just append more paths to each
 // array (e.g. '/images/gallery/central-heating/1.jpg') as they become available.
 export const galleryImages: Record<ServiceId, string[]> = {
@@ -179,6 +256,7 @@ export const galleryImages: Record<ServiceId, string[]> = {
   'underfloor-heating': [asset('images/services/underfloor-heating.svg')],
   'central-boilers': [asset('images/services/central-boilers.svg')],
   'solar-heaters': [asset('images/services/solar-heaters.svg')],
+  'instant-heaters': [asset('images/services/instant-heaters.svg')],
   'pool-heating': [asset('images/services/pool-heating.svg')],
   plumbing: [asset('images/services/plumbing.svg')],
   'solar-energy': [asset('images/services/solar-energy.svg')],

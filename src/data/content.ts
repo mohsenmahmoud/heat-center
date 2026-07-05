@@ -331,12 +331,12 @@ export const projectTypes = [
   {
     title: 'فلل خاصة',
     description: 'أنظمة تدفئة وتسخين مخصصة تراعي خصوصية وتصميم كل فيلا.',
-    image: asset('images/project-types/villa.svg'),
+    image: asset('images/real/solar-3.webp'),
   },
   {
     title: 'كمباوندات سكنية',
     description: 'حلول تدفئة متكاملة لأكثر من 40 كمباوند بمعايير تنفيذ موحدة وجودة عالية.',
-    image: asset('images/project-types/compound.svg'),
+    image: asset('images/real/solar-2.webp'),
   },
   {
     title: 'فنادق ومنشآت سياحية',

@@ -193,12 +193,18 @@ export default function Home() {
             {projectTypes.map((p) => (
               <div
                 key={p.title}
-                className="group relative flex h-56 flex-col justify-end overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-b from-ink-800 to-ink-900 p-6"
+                className="group relative flex h-56 flex-col justify-end overflow-hidden rounded-3xl border border-white/5 p-6"
               >
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/50 to-ink-950/10" />
                 <div className="pointer-events-none absolute inset-0 bg-radial-ember opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <BadgeCheck className="absolute right-6 top-6 h-6 w-6 text-ember-500/40" />
+                <BadgeCheck className="absolute right-6 top-6 h-6 w-6 text-white/70" />
                 <h3 className="relative font-display text-lg font-bold text-white">{p.title}</h3>
-                <p className="relative mt-2 text-sm leading-relaxed text-ink-300">{p.description}</p>
+                <p className="relative mt-2 text-sm leading-relaxed text-ink-200">{p.description}</p>
               </div>
             ))}
           </div>

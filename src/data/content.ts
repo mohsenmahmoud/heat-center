@@ -341,12 +341,12 @@ export const projectTypes = [
   {
     title: 'فنادق ومنشآت سياحية',
     description: 'أنظمة تسخين مياه وتدفئة بقدرات كبيرة تلبي احتياج الضيافة على مدار الساعة.',
-    image: asset('images/project-types/hotel.svg'),
+    image: asset('images/real/instant-2.webp'),
   },
   {
     title: 'مبانٍ إدارية وتجارية',
     description: 'تصميم وتنفيذ أنظمة تدفئة مركزية للمكاتب والمنشآت التجارية.',
-    image: asset('images/project-types/office.svg'),
+    image: asset('images/real/boiler-1.webp'),
   },
 ]
 

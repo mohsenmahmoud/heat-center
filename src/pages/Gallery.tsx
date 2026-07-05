@@ -27,7 +27,7 @@ export default function Gallery() {
         description="تصفح كل صور أعمالنا المنفذة، أو فلتر حسب نوع الخدمة اللي بتهمك."
       />
 
-      <section className="relative bg-ink-950 pb-24">
+      <section className="relative bg-white pb-24">
         <Container>
           <div className="flex flex-wrap justify-center gap-3">
             <button
@@ -36,7 +36,7 @@ export default function Gallery() {
                 'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-inset transition-colors',
                 activeId === null
                   ? 'bg-ember-500 text-white ring-ember-500'
-                  : 'text-ember-400 ring-ember-500/20 hover:bg-ember-500/10',
+                  : 'text-ember-600 ring-ember-500/20 hover:bg-ember-500/10',
               )}
             >
               كل الصور
@@ -55,8 +55,8 @@ export default function Gallery() {
                         ? 'bg-ember-500 text-white ring-ember-500'
                         : 'bg-aqua-500 text-white ring-aqua-500'
                       : accent === 'ember'
-                        ? 'text-ember-400 ring-ember-500/20 hover:bg-ember-500/10'
-                        : 'text-aqua-400 ring-aqua-500/20 hover:bg-aqua-500/10',
+                        ? 'text-ember-600 ring-ember-500/20 hover:bg-ember-500/10'
+                        : 'text-aqua-600 ring-aqua-500/20 hover:bg-aqua-500/10',
                   )}
                 >
                   <ServiceIcon name={s.icon} className="h-4 w-4" />
@@ -72,14 +72,14 @@ export default function Gallery() {
               return (
                 <div
                   key={key}
-                  className="flex flex-col overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03]"
+                  className="flex flex-col overflow-hidden rounded-3xl border border-ink-950/8 bg-ink-50 shadow-sm"
                 >
                   <div
                     className={clsx(
                       'relative aspect-[4/3] overflow-hidden',
                       accent === 'aqua'
-                        ? 'bg-gradient-to-br from-aqua-900 via-ink-900 to-ink-950'
-                        : 'bg-gradient-to-br from-ember-950 via-ink-900 to-ink-950',
+                        ? 'bg-gradient-to-br from-aqua-100 via-ink-50 to-white'
+                        : 'bg-gradient-to-br from-ember-100 via-ink-50 to-white',
                     )}
                   >
                     <img
@@ -93,7 +93,7 @@ export default function Gallery() {
             })}
           </div>
 
-          <p className="mt-8 text-center text-sm text-ink-400">
+          <p className="mt-8 text-center text-sm text-ink-500">
             صور حقيقية من مشروعاتنا المنفذة قيد الإضافة — تواصل معنا للاطلاع على ملف أعمال مفصل.
           </p>
         </Container>

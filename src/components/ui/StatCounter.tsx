@@ -36,13 +36,13 @@ export default function StatCounter({
     <div ref={ref} className="flex flex-col items-center gap-1 text-center">
       <span
         className={`font-display text-4xl font-extrabold tabular-nums sm:text-5xl ${
-          tone === 'light' ? 'text-white' : 'text-ink-900'
+          tone === 'light' ? 'text-ink-950' : 'text-white'
         }`}
       >
         {display}
         <span className="text-ember-500">{suffix}</span>
       </span>
-      <span className={`text-sm font-medium ${tone === 'light' ? 'text-ink-300' : 'text-ink-600'}`}>
+      <span className={`text-sm font-medium ${tone === 'light' ? 'text-ink-500' : 'text-ink-300'}`}>
         {label}
       </span>
     </div>

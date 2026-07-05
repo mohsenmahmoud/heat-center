@@ -124,7 +124,7 @@ const centralHeatingSourceServices: Service[] = [
       'حل مثالي لمناخ مصر المشمس على مدار العام',
     ],
     accent: 'ember',
-    image: asset('images/services/solar-heaters.svg'),
+    image: asset('images/real/solar-3.webp'),
   },
   {
     id: 'instant-heaters',
@@ -197,7 +197,7 @@ const solarEnergyServices: Service[] = [
       'حلول مصممة خصيصًا حسب طبيعة كل مشروع',
     ],
     accent: 'ember',
-    image: asset('images/services/solar-energy.svg'),
+    image: asset('images/real/solar-2.webp'),
   },
 ]
 
@@ -255,11 +255,15 @@ export const galleryImages: Record<ServiceId, string[]> = {
   'central-heating': [asset('images/services/central-heating.svg')],
   'underfloor-heating': [asset('images/services/underfloor-heating.svg')],
   'central-boilers': [asset('images/services/central-boilers.svg')],
-  'solar-heaters': [asset('images/services/solar-heaters.svg')],
+  'solar-heaters': [
+    asset('images/real/solar-3.webp'),
+    asset('images/real/solar-1.webp'),
+    asset('images/real/solar-2.webp'),
+  ],
   'instant-heaters': [asset('images/services/instant-heaters.svg')],
   'pool-heating': [asset('images/services/pool-heating.svg')],
   plumbing: [asset('images/services/plumbing.svg')],
-  'solar-energy': [asset('images/services/solar-energy.svg')],
+  'solar-energy': [asset('images/real/solar-2.webp'), asset('images/real/solar-4.webp')],
 }
 
 export const whyUs = [
@@ -382,7 +386,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'تركيب منظومة سخانات شمسية لتغطية احتياج المبنى من المياه الساخنة وتقليل استهلاك الكهرباء.',
     serviceId: 'solar-heaters',
-    image: asset('images/services/solar-heaters.svg'),
+    image: asset('images/real/solar-1.webp'),
   },
   {
     title: 'مشروع فيلا خاصة',
@@ -406,7 +410,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'حلول طاقة شمسية تكميلية لخفض الاعتماد على الشبكة الكهربائية للمنشأة.',
     serviceId: 'solar-energy',
-    image: asset('images/services/solar-energy.svg'),
+    image: asset('images/real/solar-3.webp'),
   },
   {
     title: 'مشروع مبنى إداري',

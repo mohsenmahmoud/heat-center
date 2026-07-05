@@ -62,30 +62,22 @@ export default function Services() {
                         className="grid scroll-mt-28 gap-10 lg:grid-cols-2 lg:items-center"
                       >
                         <div className={clsx(reversed && 'lg:order-2')}>
-                          <div
-                            className={clsx(
-                              'relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[2rem] border border-white/5',
-                              accent === 'ember'
-                                ? 'bg-gradient-to-br from-ember-950 via-ink-900 to-ink-950'
-                                : 'bg-gradient-to-br from-aqua-900 via-ink-900 to-ink-950',
-                            )}
-                          >
-                            <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
-                            <div
-                              className={clsx(
-                                'pointer-events-none absolute h-56 w-56 rounded-full blur-3xl',
-                                accent === 'ember' ? 'bg-ember-500/30' : 'bg-aqua-500/30',
-                              )}
+                          <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[2rem] border border-white/5">
+                            <img
+                              src={service.image}
+                              alt={service.title}
+                              className="absolute inset-0 h-full w-full object-cover"
                             />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/5 to-transparent" />
                             <span
                               className={clsx(
-                                'relative flex h-28 w-28 items-center justify-center rounded-3xl ring-1 ring-inset backdrop-blur',
+                                'absolute bottom-4 right-4 flex h-14 w-14 items-center justify-center rounded-2xl ring-1 ring-inset backdrop-blur',
                                 accent === 'ember'
-                                  ? 'bg-ember-500/10 text-ember-400 ring-ember-500/30'
-                                  : 'bg-aqua-500/10 text-aqua-400 ring-aqua-500/30',
+                                  ? 'bg-ember-500/20 text-ember-300 ring-ember-500/30'
+                                  : 'bg-aqua-500/20 text-aqua-300 ring-aqua-500/30',
                               )}
                             >
-                              <ServiceIcon name={service.icon} className="h-12 w-12" strokeWidth={1.5} />
+                              <ServiceIcon name={service.icon} className="h-7 w-7" strokeWidth={1.75} />
                             </span>
                           </div>
                         </div>

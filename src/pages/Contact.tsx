@@ -49,7 +49,7 @@ export default function Contact() {
         description="احجز معاينة ميدانية مجانية، أو اترك بياناتك وفريقنا هيتواصل معاك خلال وقت قصير."
       />
 
-      <section className="relative bg-ink-950 pb-24">
+      <section className="relative bg-white pb-24">
         <Container>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {contactCards.map((c) => (
@@ -58,14 +58,14 @@ export default function Contact() {
                 href={c.href}
                 target={c.href.startsWith('http') ? '_blank' : undefined}
                 rel="noreferrer"
-                className="flex flex-col gap-4 rounded-3xl border border-white/5 bg-white/[0.03] p-6 transition-colors hover:border-ember-500/30 hover:bg-white/[0.05]"
+                className="flex flex-col gap-4 rounded-3xl border border-ink-950/8 bg-white p-6 shadow-sm transition-colors hover:border-ember-500/30"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-400 ring-1 ring-inset ring-ember-500/20">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-500 ring-1 ring-inset ring-ember-500/20">
                   <c.icon className="h-5 w-5" />
                 </span>
                 <div>
-                  <h3 className="font-display text-sm font-bold text-white">{c.title}</h3>
-                  <p dir="ltr" className="mt-1 text-left text-sm text-ink-300 sm:text-right sm:[direction:rtl]">
+                  <h3 className="font-display text-sm font-bold text-ink-950">{c.title}</h3>
+                  <p dir="ltr" className="mt-1 text-left text-sm text-ink-500 sm:text-right sm:[direction:rtl]">
                     {c.value}
                   </p>
                 </div>
@@ -74,65 +74,65 @@ export default function Contact() {
           </div>
 
           <div className="mt-14 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[2rem] border border-white/5 bg-white/[0.03] p-8 sm:p-10">
-              <h2 className="font-display text-2xl font-extrabold text-white">
+            <div className="rounded-[2rem] border border-ink-950/8 bg-ink-50 p-8 sm:p-10">
+              <h2 className="font-display text-2xl font-extrabold text-ink-950">
                 احجز معاينتك المجانية
               </h2>
-              <p className="mt-2 text-sm text-ink-300">
+              <p className="mt-2 text-sm text-ink-500">
                 املأ البيانات وفريقنا الهندسي هيتواصل معاك لتحديد أقرب موعد معاينة.
               </p>
 
               {submitted ? (
                 <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-ember-500/20 bg-ember-500/5 p-10 text-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ember-500/10 text-ember-400">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ember-500/10 text-ember-500">
                     <Send className="h-6 w-6" />
                   </span>
-                  <h3 className="font-display text-lg font-bold text-white">
+                  <h3 className="font-display text-lg font-bold text-ink-950">
                     تم استلام طلبك بنجاح
                   </h3>
-                  <p className="max-w-sm text-sm text-ink-300">
+                  <p className="max-w-sm text-sm text-ink-500">
                     شكرًا لتواصلك مع هيت سنتر، فريقنا هيتصل بيك فى أقرب وقت لتحديد موعد المعاينة.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-8 grid gap-5 sm:grid-cols-2">
-                  <label className="flex flex-col gap-2 text-sm text-ink-200">
+                  <label className="flex flex-col gap-2 text-sm text-ink-600">
                     الاسم بالكامل
                     <input
                       required
                       type="text"
                       placeholder="اكتب اسمك"
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
+                      className="rounded-xl border border-ink-950/10 bg-white px-4 py-3 text-sm text-ink-950 placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
                     />
                   </label>
-                  <label className="flex flex-col gap-2 text-sm text-ink-200">
+                  <label className="flex flex-col gap-2 text-sm text-ink-600">
                     رقم الهاتف
                     <input
                       required
                       type="tel"
                       dir="ltr"
                       placeholder="01xxxxxxxxx"
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
+                      className="rounded-xl border border-ink-950/10 bg-white px-4 py-3 text-sm text-ink-950 placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
                     />
                   </label>
-                  <label className="flex flex-col gap-2 text-sm text-ink-200 sm:col-span-2">
+                  <label className="flex flex-col gap-2 text-sm text-ink-600 sm:col-span-2">
                     نوع الخدمة المطلوبة
-                    <select className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20">
-                      <option className="bg-ink-900">التدفئة المركزية بالمياه الساخنة</option>
-                      <option className="bg-ink-900">التدفئة تحت الأرضية</option>
-                      <option className="bg-ink-900">الغلايات المركزية</option>
-                      <option className="bg-ink-900">السخانات الشمسية</option>
-                      <option className="bg-ink-900">تسخين حمامات السباحة</option>
-                      <option className="bg-ink-900">أعمال السباكة والتأسيس</option>
-                      <option className="bg-ink-900">غير ذلك / استشارة عامة</option>
+                    <select className="rounded-xl border border-ink-950/10 bg-white px-4 py-3 text-sm text-ink-950 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20">
+                      <option>التدفئة المركزية بالمياه الساخنة</option>
+                      <option>التدفئة تحت الأرضية</option>
+                      <option>الغلايات المركزية</option>
+                      <option>السخانات الشمسية</option>
+                      <option>تسخين حمامات السباحة</option>
+                      <option>أعمال السباكة والتأسيس</option>
+                      <option>غير ذلك / استشارة عامة</option>
                     </select>
                   </label>
-                  <label className="flex flex-col gap-2 text-sm text-ink-200 sm:col-span-2">
+                  <label className="flex flex-col gap-2 text-sm text-ink-600 sm:col-span-2">
                     تفاصيل إضافية
                     <textarea
                       rows={4}
                       placeholder="اكتب مساحة المكان أو أي تفاصيل تساعدنا نفهم احتياجك"
-                      className="resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
+                      className="resize-none rounded-xl border border-ink-950/10 bg-white px-4 py-3 text-sm text-ink-950 placeholder:text-ink-400 outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20"
                     />
                   </label>
                   <Button type="submit" className="sm:col-span-2 justify-center">
@@ -154,7 +154,7 @@ export default function Contact() {
                     <p className="text-sm text-ink-300">{siteConfig.workHours}</p>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 text-sm leading-relaxed text-ink-300">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-relaxed text-ink-300">
                   نغطي مشروعات القاهرة الكبرى والمحافظات المجاورة. لأي منطقة أخرى، تواصل معنا
                   لمعرفة إمكانية التنفيذ.
                 </div>
@@ -169,9 +169,9 @@ export default function Contact() {
                 </LinkButton>
               </div>
 
-              <div className="relative flex h-48 items-center justify-center overflow-hidden rounded-[2rem] border border-white/5 bg-ink-900">
+              <div className="relative flex h-48 items-center justify-center overflow-hidden rounded-[2rem] border border-ink-950/8 bg-ink-50">
                 <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
-                <span className="relative flex items-center gap-2 text-sm text-ink-400">
+                <span className="relative flex items-center gap-2 text-sm text-ink-500">
                   <MapPin className="h-4 w-4 text-ember-500" />
                   خريطة الموقع — قريبًا
                 </span>

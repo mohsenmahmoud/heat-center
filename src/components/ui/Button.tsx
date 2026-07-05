@@ -8,8 +8,8 @@ const variants: Record<Variant, string> = {
   primary:
     'bg-gradient-to-l from-ember-500 to-ember-600 text-white shadow-ember hover:from-ember-400 hover:to-ember-500 focus-visible:outline-ember-400',
   secondary:
-    'bg-ink-800/80 text-ink-50 ring-1 ring-inset ring-ink-600 hover:bg-ink-700 focus-visible:outline-ink-300',
-  ghost: 'text-ink-100 hover:text-ember-400',
+    'bg-white text-ink-800 ring-1 ring-inset ring-ink-200 shadow-sm hover:bg-ink-50 focus-visible:outline-ink-300',
+  ghost: 'text-ink-600 hover:text-ember-600',
 }
 
 interface BaseProps {

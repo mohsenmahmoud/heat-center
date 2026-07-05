@@ -26,19 +26,17 @@ export default function Navbar() {
     <header
       className={clsx(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        scrolled || open
-          ? 'bg-ink-950/90 shadow-ink backdrop-blur-lg'
-          : 'bg-gradient-to-b from-ink-950/70 to-transparent',
+        scrolled || open ? 'bg-white/90 shadow-ink backdrop-blur-lg' : 'bg-white/60 backdrop-blur-sm',
       )}
     >
       <Container className="flex h-20 items-center justify-between">
         <NavLink to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <BrandMark className="h-11 w-11 shrink-0" />
           <span className="flex flex-col leading-tight">
-            <span className="font-display text-lg font-extrabold text-white">
+            <span className="font-display text-lg font-extrabold text-ink-950">
               {siteConfig.nameEn}
             </span>
-            <span className="text-[11px] font-medium text-ember-400">{siteConfig.tagline}</span>
+            <span className="text-[11px] font-medium text-ember-600">{siteConfig.tagline}</span>
           </span>
         </NavLink>
 
@@ -51,7 +49,7 @@ export default function Navbar() {
               className={({ isActive }) =>
                 clsx(
                   'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
-                  isActive ? 'bg-white/5 text-ember-400' : 'text-ink-200 hover:text-white',
+                  isActive ? 'bg-ink-950/5 text-ember-600' : 'text-ink-600 hover:text-ink-950',
                 )
               }
             >
@@ -64,7 +62,7 @@ export default function Navbar() {
           <a
             href={`tel:${siteConfig.phone.replace(/\s/g, '')}`}
             aria-label={siteConfig.phoneDisplay}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-ink-100 hover:text-ember-400"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/5 text-ink-600 hover:text-ember-600"
           >
             <Phone className="h-4 w-4" />
           </a>
@@ -74,7 +72,7 @@ export default function Navbar() {
         </div>
 
         <button
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white lg:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/5 text-ink-950 lg:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="فتح القائمة"
         >
@@ -83,7 +81,7 @@ export default function Navbar() {
       </Container>
 
       {open && (
-        <div className="border-t border-white/5 bg-ink-950 lg:hidden">
+        <div className="border-t border-ink-950/5 bg-white lg:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {navLinks.map((link) => (
               <NavLink
@@ -94,7 +92,7 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   clsx(
                     'rounded-xl px-4 py-3 text-sm font-semibold',
-                    isActive ? 'bg-white/5 text-ember-400' : 'text-ink-200',
+                    isActive ? 'bg-ink-950/5 text-ember-600' : 'text-ink-600',
                   )
                 }
               >

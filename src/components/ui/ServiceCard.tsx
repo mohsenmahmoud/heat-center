@@ -10,7 +10,7 @@ export default function ServiceCard({ service, index }: { service: Service; inde
   return (
     <Link
       to={`/services#${service.id}`}
-      className="group relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.03] p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/10 hover:bg-white/[0.05]"
+      className="group relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-ink-950/8 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-ink-950/15 hover:shadow-md"
     >
       <span
         className={clsx(
@@ -24,26 +24,26 @@ export default function ServiceCard({ service, index }: { service: Service; inde
           className={clsx(
             'flex h-14 w-14 items-center justify-center rounded-2xl ring-1 ring-inset',
             accent === 'ember'
-              ? 'bg-ember-500/10 text-ember-400 ring-ember-500/20'
-              : 'bg-aqua-500/10 text-aqua-400 ring-aqua-500/20',
+              ? 'bg-ember-500/10 text-ember-500 ring-ember-500/20'
+              : 'bg-aqua-500/10 text-aqua-500 ring-aqua-500/20',
           )}
         >
           <ServiceIcon name={service.icon} className="h-6 w-6" strokeWidth={1.75} />
         </div>
-        <span className="font-display text-4xl font-black text-white/5">
+        <span className="font-display text-4xl font-black text-ink-950/5">
           {String(index + 1).padStart(2, '0')}
         </span>
       </div>
 
       <div>
-        <h3 className="font-display text-lg font-bold text-white">{service.title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink-300">{service.short}</p>
+        <h3 className="font-display text-lg font-bold text-ink-950">{service.title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-ink-500">{service.short}</p>
       </div>
 
       <span
         className={clsx(
           'mt-auto inline-flex items-center gap-2 text-sm font-bold',
-          accent === 'ember' ? 'text-ember-400' : 'text-aqua-400',
+          accent === 'ember' ? 'text-ember-600' : 'text-aqua-600',
         )}
       >
         اعرف أكثر

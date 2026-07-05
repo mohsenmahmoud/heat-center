@@ -19,28 +19,28 @@ export default function Home() {
   return (
     <>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-ink-950 pb-24 pt-40 sm:pb-32 sm:pt-48">
+      <section className="relative overflow-hidden bg-white pb-24 pt-40 sm:pb-32 sm:pt-48">
         <div className="bg-grid pointer-events-none absolute inset-0" />
         <div className="bg-radial-ember pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute -left-32 top-40 h-72 w-72 animate-float rounded-full bg-aqua-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-24 top-10 h-96 w-96 animate-glow rounded-full bg-ember-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-10 h-96 w-96 animate-glow rounded-full bg-ember-500/10 blur-3xl" />
 
         <Container className="relative">
           <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-bold text-ember-400 ring-1 ring-inset ring-ember-500/20">
+            <span className="inline-flex items-center gap-2 rounded-full bg-ember-500/10 px-4 py-1.5 text-xs font-bold text-ember-600 ring-1 ring-inset ring-ember-500/20">
               <Sparkles className="h-3.5 w-3.5" />
               شركة مصرية 100% — خبرة 8 سنوات فى التدفئة المركزية
             </span>
 
-            <h1 className="mt-7 text-balance font-display text-4xl font-extrabold leading-[1.15] text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-7 text-balance font-display text-4xl font-extrabold leading-[1.15] text-ink-950 sm:text-5xl lg:text-6xl">
               دفء دائم لبيتك…
               <br />
-              <span className="bg-gradient-to-l from-ember-300 via-ember-500 to-ember-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-l from-ember-400 via-ember-500 to-ember-600 bg-clip-text text-transparent">
                 براحة لا تنتهي
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-balance text-base leading-relaxed text-ink-300 sm:text-lg">
+            <p className="mt-6 max-w-2xl text-balance text-base leading-relaxed text-ink-500 sm:text-lg">
               نصمم وننفذ أنظمة التدفئة المركزية، السخانات الشمسية، والغلايات المركزية بمعايير
               أوروبية، وبخبرة هندسية أثبتت جدارتها فى أكثر من 250 مشروعًا و40 كمباوند وفيلا داخل
               مصر.
@@ -61,7 +61,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[2rem] border border-white/5">
+          <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[2rem] border border-ink-950/8 shadow-ink">
             <img
               src={asset('images/hero/home.webp')}
               alt="تركيب سخان شمسي من هيت سنتر"
@@ -69,7 +69,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-8 rounded-3xl border border-white/5 bg-white/[0.03] px-8 py-10 backdrop-blur sm:grid-cols-4">
+          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-8 rounded-3xl border border-ink-950/8 bg-ink-50 px-8 py-10 sm:grid-cols-4">
             {stats.map((s) => (
               <StatCounter key={s.label} value={s.value} suffix={s.suffix} label={s.label} />
             ))}
@@ -78,7 +78,7 @@ export default function Home() {
       </section>
 
       {/* SERVICES OVERVIEW */}
-      <section className="relative bg-ink-950 py-24">
+      <section className="relative bg-ink-50 py-24">
         <Container>
           <SectionHeading
             eyebrow="خدماتنا"
@@ -101,7 +101,7 @@ export default function Home() {
       </section>
 
       {/* SOLAR CALLOUT */}
-      <section className="relative overflow-hidden bg-ink-950 py-6">
+      <section className="relative overflow-hidden bg-white py-6">
         <Container>
           <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-l from-ember-600 via-ember-500 to-ember-400 px-8 py-14 sm:px-14">
             <div className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
@@ -130,7 +130,7 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="relative bg-ink-950 py-24">
+      <section className="relative bg-ink-50 py-24">
         <Container>
           <SectionHeading
             eyebrow="لماذا هيت سنتر"
@@ -142,13 +142,13 @@ export default function Home() {
             {whyUs.map((item) => (
               <div
                 key={item.title}
-                className="flex flex-col gap-4 rounded-3xl border border-white/5 bg-white/[0.03] p-7"
+                className="flex flex-col gap-4 rounded-3xl border border-ink-950/8 bg-white p-7 shadow-sm"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-400 ring-1 ring-inset ring-ember-500/20">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-500 ring-1 ring-inset ring-ember-500/20">
                   <ShieldCheck className="h-5 w-5" />
                 </span>
-                <h3 className="font-display text-base font-bold text-white">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-ink-300">{item.description}</p>
+                <h3 className="font-display text-base font-bold text-ink-950">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-ink-500">{item.description}</p>
               </div>
             ))}
           </div>
@@ -156,7 +156,7 @@ export default function Home() {
       </section>
 
       {/* PROCESS */}
-      <section className="relative overflow-hidden bg-ink-900 py-24">
+      <section className="relative overflow-hidden bg-white py-24">
         <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
         <Container className="relative">
           <SectionHeading
@@ -167,12 +167,12 @@ export default function Home() {
 
           <div className="mt-16 grid gap-6 lg:grid-cols-5">
             {process.map((p, i) => (
-              <div key={p.step} className="relative flex flex-col gap-4 rounded-3xl border border-white/5 bg-white/[0.03] p-6">
+              <div key={p.step} className="relative flex flex-col gap-4 rounded-3xl border border-ink-950/8 bg-ink-50 p-6">
                 <span className="font-display text-3xl font-black text-ember-500/40">{p.step}</span>
-                <h3 className="font-display text-base font-bold text-white">{p.title}</h3>
-                <p className="text-sm leading-relaxed text-ink-300">{p.description}</p>
+                <h3 className="font-display text-base font-bold text-ink-950">{p.title}</h3>
+                <p className="text-sm leading-relaxed text-ink-500">{p.description}</p>
                 {i < process.length - 1 && (
-                  <ArrowLeft className="pointer-events-none absolute -left-3 top-1/2 hidden h-6 w-6 -translate-y-1/2 text-ink-600 lg:block" />
+                  <ArrowLeft className="pointer-events-none absolute -left-3 top-1/2 hidden h-6 w-6 -translate-y-1/2 text-ink-300 lg:block" />
                 )}
               </div>
             ))}
@@ -181,7 +181,7 @@ export default function Home() {
       </section>
 
       {/* PROJECTS PREVIEW */}
-      <section className="relative bg-ink-950 py-24">
+      <section className="relative bg-ink-50 py-24">
         <Container>
           <SectionHeading
             eyebrow="أعمالنا"
@@ -218,7 +218,7 @@ export default function Home() {
       </section>
 
       {/* FAQ PREVIEW */}
-      <section className="relative bg-ink-950 py-24">
+      <section className="relative bg-white py-24">
         <Container className="max-w-4xl">
           <SectionHeading eyebrow="أسئلة شائعة" title="كل ما تريد معرفته قبل أن تبدأ" />
 
@@ -237,7 +237,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-ink-950 pb-24">
+      <section className="relative overflow-hidden bg-ink-50 pb-24">
         <Container>
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-gradient-to-br from-ink-800 to-ink-900 px-8 py-16 text-center sm:px-16">
             <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />

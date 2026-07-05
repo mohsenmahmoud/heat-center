@@ -86,8 +86,8 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--color-ink-950);
-  color: var(--color-ink-100);
+  background-color: #ffffff;
+  color: var(--color-ink-700);
   font-family: var(--font-sans);
   font-feature-settings: 'ss01' on;
   -webkit-font-smoothing: antialiased;
@@ -108,15 +108,15 @@ h4,
 
 .bg-grid {
   background-image:
-    linear-gradient(to left, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to top, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to left, rgba(10, 18, 28, 0.06) 1px, transparent 1px),
+    linear-gradient(to top, rgba(10, 18, 28, 0.06) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 
 .bg-radial-ember {
   background-image: radial-gradient(
     circle at 50% 0%,
-    rgba(242, 84, 14, 0.35),
+    rgba(242, 84, 14, 0.16),
     transparent 60%
   );
 }

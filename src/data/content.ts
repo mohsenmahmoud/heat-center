@@ -108,7 +108,7 @@ const centralHeatingSourceServices: Service[] = [
       'أنظمة تحكم ذكية لضبط درجة الحرارة',
     ],
     accent: 'ember',
-    image: asset('images/services/central-boilers.svg'),
+    image: asset('images/real/boiler-2.webp'),
   },
   {
     id: 'solar-heaters',
@@ -140,7 +140,7 @@ const centralHeatingSourceServices: Service[] = [
       'حل اقتصادي بنفس معايير الجودة والسلامة',
     ],
     accent: 'ember',
-    image: asset('images/services/instant-heaters.svg'),
+    image: asset('images/real/instant-1.webp'),
   },
 ]
 
@@ -178,7 +178,7 @@ const plumbingServices: Service[] = [
       'يناسب المشروعات السكنية والتجارية على حد سواء',
     ],
     accent: 'aqua',
-    image: asset('images/services/plumbing.svg'),
+    image: asset('images/real/plumbing-1.webp'),
   },
 ]
 
@@ -254,15 +254,21 @@ export const services: Service[] = serviceCategories.flatMap((c) => c.subService
 export const galleryImages: Record<ServiceId, string[]> = {
   'central-heating': [asset('images/services/central-heating.svg')],
   'underfloor-heating': [asset('images/services/underfloor-heating.svg')],
-  'central-boilers': [asset('images/services/central-boilers.svg')],
+  'central-boilers': [asset('images/real/boiler-2.webp'), asset('images/real/boiler-1.webp')],
   'solar-heaters': [
     asset('images/real/solar-3.webp'),
     asset('images/real/solar-1.webp'),
     asset('images/real/solar-2.webp'),
+    asset('images/real/solar-5.webp'),
+    asset('images/real/solar-6.webp'),
   ],
-  'instant-heaters': [asset('images/services/instant-heaters.svg')],
+  'instant-heaters': [
+    asset('images/real/instant-1.webp'),
+    asset('images/real/instant-2.webp'),
+    asset('images/real/instant-3.webp'),
+  ],
   'pool-heating': [asset('images/services/pool-heating.svg')],
-  plumbing: [asset('images/services/plumbing.svg')],
+  plumbing: [asset('images/real/plumbing-1.webp')],
   'solar-energy': [asset('images/real/solar-2.webp'), asset('images/real/solar-4.webp')],
 }
 
@@ -378,7 +384,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'توريد وتركيب غلاية مركزية بقدرة كبيرة لتأمين مياه ساخنة مستمرة على مدار الساعة.',
     serviceId: 'central-boilers',
-    image: asset('images/services/central-boilers.svg'),
+    image: asset('images/real/boiler-1.webp'),
   },
   {
     title: 'مشروع مبنى إداري',
@@ -402,7 +408,7 @@ export const caseStudies: CaseStudy[] = [
     location: 'القاهرة الكبرى',
     scope: 'أعمال تأسيس صحي وسباكة كاملة بمواسير بولي إيثيلين معتمدة أوروبيًا.',
     serviceId: 'plumbing',
-    image: asset('images/services/plumbing.svg'),
+    image: asset('images/real/plumbing-1.webp'),
   },
   {
     title: 'مشروع منشأة فندقية',

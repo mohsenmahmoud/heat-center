@@ -1,0 +1,53 @@
+{
+  "name": "qudra-marketing-studio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local AI marketing studio for Qudra: motion video generator + weekly content planner",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c green,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "node --watch --disable-warning=ExperimentalWarning server/index.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "npm run build && node --disable-warning=ExperimentalWarning server/index.js",
+    "test": "vitest run",
+    "test:e2e": "node --disable-warning=ExperimentalWarning tests/e2e/run-e2e.js",
+    "studio": "remotion studio video/index.jsx"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
+    "@fontsource/poppins": "^5.3.0",
+    "@remotion/bundler": "4.0.536",
+    "@remotion/media-parser": "4.0.536",
+    "@remotion/media-utils": "4.0.536",
+    "@remotion/player": "4.0.536",
+    "@remotion/renderer": "4.0.536",
+    "@remotion/transitions": "4.0.536",
+    "cheerio": "^1.2.0",
+    "docx": "^9.12.0",
+    "dotenv": "^18.0.8",
+    "express": "^4.22.3",
+    "lucide-react": "^1.59.0",
+    "multer": "^2.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.536",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.536",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.6.1",
+    "concurrently": "^10.0.6",
+    "playwright-core": "^1.64.1",
+    "postcss": "^8.5.31",
+    "supertest": "^7.3.1",
+    "tailwindcss": "^3.4.19",
+    "vite": "^6.4.4",
+    "vitest": "^3.2.7"
+  }
+}

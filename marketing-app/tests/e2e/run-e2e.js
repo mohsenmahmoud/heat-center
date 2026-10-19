@@ -1,0 +1,185 @@
+/**
+ * End-to-end check of both tabs in a real browser, against the built app in demo mode:
+ *   Tab 1: upload image → write script → edit → preview → render MP4 → download → history
+ *   Tab 2: generate week → edit (autosave) → regenerate a day → export Markdown/Word → copy all
+ * Usage: npm run test:e2e   (needs a Chromium: `npx playwright-core install chromium`,
+ * or point E2E_BROWSER at any Chrome/Chromium binary).
+ */
+import { spawn, execSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const PORT = 5198;
+const BASE = `http://127.0.0.1:${PORT}`;
+const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qms-e2e-'));
+const shots = path.join(root, 'tests/e2e/screenshots');
+fs.mkdirSync(shots, { recursive: true });
+
+const results = [];
+const step = async (name, fn) => {
+  const t0 = Date.now();
+  try {
+    await fn();
+    results.push(`  ✓ ${name} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+    console.log(results.at(-1));
+  } catch (err) {
+    console.log(`  ✗ ${name}\n    ${err.message.split('\n').slice(0, 4).join('\n    ')}`);
+    throw err;
+  }
+};
+const assert = (cond, msg) => {
+  if (!cond) throw new Error(msg);
+};
+
+console.log('Building web UI…');
+execSync('npx vite build', { cwd: root, stdio: 'ignore' });
+
+const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', 'server/index.js'], {
+  cwd: root,
+  env: { ...process.env, MQS_SKIP_DOTENV: '1', MOCK_AI: 'true', PORT: String(PORT), DATA_DIR: dataDir, APP_PASSWORD: '' },
+  stdio: ['ignore', 'pipe', 'inherit'],
+});
+await new Promise((resolve, reject) => {
+  server.stdout.on('data', (d) => d.toString().includes('Qudra Marketing Studio') && resolve());
+  server.on('exit', (code) => reject(new Error(`server exited with ${code}`)));
+});
+
+// E2E_BROWSER drives the test; BROWSER_EXECUTABLE (if set) is what the server's renderer uses.
+const browser = await chromium.launch({ executablePath: process.env.E2E_BROWSER || undefined });
+const context = await browser.newContext({ viewport: { width: 1500, height: 1000 }, acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
+const page = await context.newPage();
+const consoleErrors = [];
+page.on('pageerror', (e) => consoleErrors.push(e.message));
+
+let exitCode = 0;
+try {
+  console.log('\nApp shell');
+  await step('opens in Arabic, right-to-left, dark theme', async () => {
+    await page.goto(BASE);
+    await page.getByRole('tab', { name: 'مولّد الفيديو' }).waitFor();
+    assert((await page.getAttribute('html', 'dir')) === 'rtl', 'expected dir=rtl');
+    assert(await page.evaluate(() => document.documentElement.classList.contains('dark')), 'expected dark theme');
+  });
+  await step('switches to English (LTR) and light theme, then back', async () => {
+    await page.getByTitle('Language').click();
+    await page.getByRole('tab', { name: 'Motion Video' }).waitFor();
+    assert((await page.getAttribute('html', 'dir')) === 'ltr', 'expected dir=ltr');
+    await page.getByRole('button', { name: 'Theme' }).click();
+    assert(!(await page.evaluate(() => document.documentElement.classList.contains('dark'))), 'expected light theme');
+    await page.screenshot({ path: path.join(shots, '00-light-en.png') });
+    await page.getByRole('button', { name: 'Theme' }).click();
+    await page.getByTitle('Language').click();
+    await page.getByRole('tab', { name: 'مولّد الفيديو' }).waitFor();
+  });
+
+  console.log('\nTab 1: Motion Video Generator');
+  await step('uploads a product screenshot', async () => {
+    const png = path.join(dataDir, 'dashboard.png');
+    // 2x1 landscape PNG → rendered inside the browser-window mockup.
+    fs.writeFileSync(png, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGNgYPj/n4GBgQEADvoB/1vQ4z8AAAAASUVORK5CYII=', 'base64'));
+    await page.locator('[data-testid=image-input]').setInputFiles(png);
+    await page.locator('img[alt="dashboard.png"]').waitFor();
+  });
+  await step('writes a script from a topic', async () => {
+    await page.getByPlaceholder('مثال: تذكير الأقساط').fill('تذكير الأقساط التلقائي');
+    await page.locator('[data-testid=write-script]').click();
+    await page.locator('[data-testid=scene]').first().waitFor({ timeout: 60000 });
+    const n = await page.locator('[data-testid=scene]').count();
+    assert(n >= 6, `expected ≥6 scenes, got ${n}`);
+  });
+  await step('edits a scene headline and shows it in the live preview', async () => {
+    const headline = page.locator('[data-testid=scene]').first().getByLabel('العنوان على الشاشة');
+    await headline.fill('آخر الشهر بدون فوضى');
+    const player = page.locator('.__remotion-player').first();
+    await player.waitFor();
+    // Seek to ~2s and check the frame actually painted something (not a blank/black box).
+    await page.waitForTimeout(1500);
+    await player.click({ position: { x: 150, y: 150 } });
+    await page.waitForTimeout(2200);
+    await player.click({ position: { x: 150, y: 150 } });
+    const shot = await player.screenshot({ path: path.join(shots, '01b-preview.png') });
+    assert(shot.length > 15000, 'preview player looks empty');
+    await page.screenshot({ path: path.join(shots, '01-video-script.png') });
+  });
+  await step('renders the MP4 with live progress', async () => {
+    await page.locator('[data-testid=render]').click();
+    await page.locator('[data-testid=render-progress]').waitFor({ timeout: 15000 });
+    await page.screenshot({ path: path.join(shots, '02-video-rendering.png') });
+    await page.locator('[data-testid=render-result], [role=alert]').first().waitFor({ timeout: 6 * 60 * 1000 });
+    const failed = await page.locator('[role=alert]').count();
+    assert(!failed, `render failed: ${failed && (await page.locator('[role=alert]').first().innerText())}`);
+    await page.screenshot({ path: path.join(shots, '03-video-done.png') });
+  });
+  await step('downloads a valid 40–60s MP4 and lists it in history', async () => {
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=render-result] a[download]').click()]);
+    const file = path.join(dataDir, 'download.mp4');
+    await download.saveAs(file);
+    const head = fs.readFileSync(file).subarray(4, 8).toString();
+    assert(head === 'ftyp', 'downloaded file is not an MP4');
+    const history = await (await fetch(`${BASE}/api/video/history`)).json();
+    assert(history.items.length === 1, 'history should have one video');
+    const d = history.items[0].durationSec;
+    assert(d >= 40 && d <= 60, `duration ${d}s outside 40–60s`);
+    await page.locator('[data-testid=history] article').first().waitFor();
+  });
+
+  console.log('\nTab 2: Weekly Content Planner');
+  await step('generates a 7-day plan', async () => {
+    await page.getByRole('tab', { name: 'الخطة الأسبوعية' }).click();
+    await page.locator('[data-testid=generate-plan]').click();
+    await page.locator('[data-testid=post-card]').first().waitFor({ timeout: 60000 });
+    const n = await page.locator('[data-testid=post-card]').count();
+    assert(n === 7, `expected 7 posts, got ${n}`);
+    await page.screenshot({ path: path.join(shots, '04-planner.png'), fullPage: true });
+  });
+  await step('autosaves an edited hook', async () => {
+    const card = page.locator('[data-testid=post-card]').first();
+    await card.locator('textarea').first().fill('هوك معدّل للاختبار');
+    await card.getByText('تم الحفظ').waitFor({ timeout: 5000 });
+    const plans = await (await fetch(`${BASE}/api/planner`)).json();
+    const plan = await (await fetch(`${BASE}/api/planner/${plans.items[0].id}`)).json();
+    assert(plan.posts[0].hook === 'هوك معدّل للاختبار', 'edit was not saved');
+  });
+  await step('regenerates one day', async () => {
+    const card = page.locator('[data-testid=post-card]').nth(1);
+    const before = await card.locator('textarea').first().inputValue();
+    await card.locator('[data-testid=regen]').click();
+    await card.getByPlaceholder('تعليمات اختيارية').fill('اجعله عن الشهادات');
+    await card.getByRole('button', { name: 'إعادة توليد' }).first().click();
+    await page.waitForFunction(
+      ([b]) => document.querySelectorAll('[data-testid=post-card]')[1].querySelector('textarea').value !== b,
+      [before],
+      { timeout: 60000 },
+    );
+  });
+  await step('exports Markdown and Word', async () => {
+    for (const [id, ext] of [['export-md', '.md'], ['export-docx', '.docx']]) {
+      const [download] = await Promise.all([page.waitForEvent('download'), page.locator(`[data-testid=${id}]`).click()]);
+      assert(download.suggestedFilename().endsWith(ext), `expected ${ext}, got ${download.suggestedFilename()}`);
+      const file = path.join(dataDir, `plan${ext}`);
+      await download.saveAs(file);
+      assert(fs.statSync(file).size > 500, `${ext} export looks empty`);
+    }
+  });
+  await step('copies the whole plan to the clipboard', async () => {
+    await page.getByRole('button', { name: 'نسخ الكل' }).click();
+    const text = await page.evaluate(() => navigator.clipboard.readText());
+    assert(text.includes('هوك معدّل للاختبار') && text.split('———').length === 7, 'clipboard does not contain the plan');
+  });
+
+  assert(consoleErrors.length === 0, `browser errors: ${consoleErrors.join(' | ')}`);
+  console.log(`\nAll E2E steps passed. Screenshots: ${shots}`);
+} catch (err) {
+  exitCode = 1;
+  await page.screenshot({ path: path.join(shots, 'failure.png'), fullPage: true }).catch(() => {});
+  console.error(`\nE2E failed: ${err.message}`);
+} finally {
+  await browser.close();
+  server.kill();
+  fs.rmSync(dataDir, { recursive: true, force: true });
+  process.exit(exitCode);
+}

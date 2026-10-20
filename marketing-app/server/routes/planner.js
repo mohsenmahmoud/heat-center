@@ -3,7 +3,8 @@ import { plansRepo } from '../db.js';
 import { errors } from '../lib/errors.js';
 import { lintBrand } from '../brand/qudra.js';
 import { PlanRequest, PostUpdate } from '../services/schemas.js';
-import { rewritePost, writeWeekPlan } from '../services/ai/index.js';
+import { rewritePost, writeDayScript, writeWeekPlan } from '../services/ai/index.js';
+import { finalizeScript } from '../services/scripts.js';
 import { buildSlots, slotFromPost, toPost } from '../services/planner.js';
 import { planToDocx, planToMarkdown } from '../services/export.js';
 
@@ -68,6 +69,31 @@ plannerRouter.post(
     });
     plan.posts[index] = { ...toPost(slot, content), id: old.id };
     res.json(plansRepo.updatePosts(plan.id, plan.posts).posts[index]);
+  }),
+);
+
+// Writes (or rewrites) the full video script for one day of the plan.
+plannerRouter.post(
+  '/:id/posts/:postId/script',
+  wrap(async (req, res) => {
+    const plan = loadPlan(req.params.id);
+    const index = findPost(plan, req.params.postId);
+    const post = plan.posts[index];
+    const slot = slotFromPost(post, plan.language);
+    const durationSec = plan.settings.durationSec || 45;
+    const ai = await writeDayScript({
+      post,
+      pillar: slot.pillar,
+      platform: post.platform,
+      language: plan.language,
+      market: plan.settings.market,
+      focus: plan.settings.focus,
+      otherHooks: plan.posts.filter((_, i) => i !== index).map((p) => p.hook),
+      durationSec,
+    });
+    const script = finalizeScript(ai, { language: plan.language, durationSec, topic: post.hook });
+    // A new script means any earlier video no longer matches it.
+    res.json(plansRepo.patchPost(plan.id, post.id, { script, videoId: null }));
   }),
 );
 

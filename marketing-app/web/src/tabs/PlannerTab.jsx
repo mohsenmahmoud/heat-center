@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { CalendarDays, CalendarRange, Copy, FileDown, FileText, Trash2, Wand2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { CalendarDays, CalendarRange, Copy, FileDown, FileText, Film, Trash2, Wand2 } from 'lucide-react';
 import { api, copyText } from '../lib/api.js';
 import { useI18n } from '../lib/i18n.jsx';
 import { useToast } from '../components/Toasts.jsx';
 import { ErrorBox, Field, SectionTitle, Segmented, Spinner } from '../components/ui.jsx';
-import { PostCard, postToText } from '../components/planner/PostCard.jsx';
+import { PLATFORM_LABEL, PostCard, postToText } from '../components/planner/PostCard.jsx';
 
 const PLATFORMS = [
   { key: 'linkedin', label: 'LinkedIn' },
@@ -20,16 +20,27 @@ function nextSaturday() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** Tab 2: 7-day plan with per-day editing, regenerating, copying and Markdown/Word export. */
-export default function PlannerTab({ status }) {
+const SCRIPT_CONCURRENCY = 2;
+
+/**
+ * Tab 2: a 7-day video plan. Each day is a video: angle + full script (scenes, voiceover, CTA)
+ * that opens in the video generator for rendering. Days can be edited, regenerated, copied and exported.
+ */
+export default function PlannerTab({ status, onOpenInVideo }) {
   const { t, lang } = useI18n();
   const toast = useToast();
-  const [form, setForm] = useState({ weekStart: nextSaturday(), platforms: PLATFORMS.map((p) => p.key), language: lang, market: 'both', focus: '' });
+  const [form, setForm] = useState({ weekStart: nextSaturday(), platforms: PLATFORMS.map((p) => p.key), language: lang, market: 'both', focus: '', durationSec: 45 });
   const [plan, setPlan] = useState(null);
   const [plans, setPlans] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [scriptBusy, setScriptBusy] = useState(() => new Set());
+  const planIdRef = useRef(null);
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+
+  useEffect(() => {
+    planIdRef.current = plan?.id ?? null;
+  }, [plan?.id]);
 
   const loadPlans = useCallback(() => api.get('/api/planner').then((d) => setPlans(d.items)).catch(() => {}), []);
   useEffect(() => {
@@ -42,7 +53,10 @@ export default function PlannerTab({ status }) {
     try {
       const created = await api.post('/api/planner/generate', form);
       setPlan(created);
+      planIdRef.current = created.id;
       loadPlans();
+      // The plan's job is videos: write every day's script right away.
+      writeScripts(created.id, created.posts.map((p) => p.id));
     } catch (err) {
       setError(err);
     } finally {
@@ -69,6 +83,57 @@ export default function PlannerTab({ status }) {
       toast.error(err);
     }
   };
+
+  const busyFlag = (postId, on) =>
+    setScriptBusy((prev) => {
+      const next = new Set(prev);
+      on ? next.add(postId) : next.delete(postId);
+      return next;
+    });
+
+  const writeScript = async (planId, postId) => {
+    busyFlag(postId, true);
+    try {
+      const post = await api.post(`/api/planner/${planId}/posts/${postId}/script`);
+      // Ignore results for a plan the user has navigated away from.
+      if (planIdRef.current === planId) replacePost(post);
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      busyFlag(postId, false);
+    }
+  };
+
+  /** Writes scripts for several days, a couple at a time so the progress is visible and rate limits are respected. */
+  const writeScripts = async (planId, postIds) => {
+    const queue = [...postIds];
+    const worker = async () => {
+      while (queue.length) await writeScript(planId, queue.shift());
+    };
+    await Promise.all(Array.from({ length: SCRIPT_CONCURRENCY }, worker));
+  };
+
+  const reloadPlan = useCallback(async (id) => {
+    try {
+      const fresh = await api.get(`/api/planner/${id}`);
+      if (planIdRef.current === id) setPlan(fresh);
+    } catch {
+      /* the plan may have been deleted */
+    }
+  }, []);
+
+  // A video rendered from one of this plan's days: refresh to show it as produced.
+  useEffect(() => {
+    const onRendered = (e) => e.detail?.planId && e.detail.planId === planIdRef.current && reloadPlan(e.detail.planId);
+    window.addEventListener('qms:video-rendered', onRendered);
+    return () => window.removeEventListener('qms:video-rendered', onRendered);
+  }, [reloadPlan]);
+
+  const openInVideo = (post) =>
+    onOpenInVideo({
+      script: post.script,
+      source: { planId: plan.id, postId: post.id, label: `${post.dayName} ${post.date} · ${PLATFORM_LABEL[post.platform]}` },
+    });
 
   const replacePost = (post) => setPlan((p) => ({ ...p, posts: p.posts.map((x) => (x.id === post.id ? post : x)) }));
   const togglePlatform = (key) =>
@@ -106,6 +171,9 @@ export default function PlannerTab({ status }) {
             </select>
           </Field>
         </div>
+        <Field label={`${t('videoLength')}: ${form.durationSec}${t('sec')}`}>
+          <input type="range" min={40} max={60} step={5} value={form.durationSec} onChange={(e) => set('durationSec')(Number(e.target.value))} className="w-full accent-[rgb(var(--accent))]" />
+        </Field>
         <Field label={t('focus')}>
           <textarea className="input min-h-[80px] resize-y" placeholder={t('focusPh')} value={form.focus} onChange={(e) => set('focus')(e.target.value)} maxLength={1500} />
         </Field>
@@ -146,6 +214,21 @@ export default function PlannerTab({ status }) {
                 </div>
                 <div className="text-xs text-muted">{plan.settings.platforms.map((k) => PLATFORMS.find((p) => p.key === k)?.label).join(' · ')}</div>
               </div>
+              <span className="chip" data-testid="scripts-progress">
+                <Film className="h-3.5 w-3.5 text-accent" />
+                {plan.posts.filter((p) => p.script).length}/{plan.posts.length} {t('scriptsDone')} · {plan.posts.filter((p) => p.videoId).length} {t('videosDone')}
+              </span>
+              {plan.posts.some((p) => !p.script) && (
+                <button
+                  className="btn-accent !py-2 text-xs"
+                  disabled={scriptBusy.size > 0}
+                  onClick={() => writeScripts(plan.id, plan.posts.filter((p) => !p.script && !scriptBusy.has(p.id)).map((p) => p.id))}
+                  data-testid="write-all-scripts"
+                >
+                  {scriptBusy.size > 0 ? <Spinner /> : <Film className="h-4 w-4" />}
+                  {t('writeAllScripts')}
+                </button>
+              )}
               <a className="btn-ghost !py-2 text-xs" href={`/api/planner/${plan.id}/export?format=md`} download data-testid="export-md">
                 <FileText className="h-4 w-4" />
                 {t('exportMd')}
@@ -165,9 +248,18 @@ export default function PlannerTab({ status }) {
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
+            <p className="px-1 text-xs text-muted">{t('planIntro')}</p>
             <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3" data-testid="plan-grid">
               {plan.posts.map((post) => (
-                <PostCard key={post.id} planId={plan.id} post={post} onChange={replacePost} />
+                <PostCard
+                  key={post.id}
+                  planId={plan.id}
+                  post={post}
+                  onChange={replacePost}
+                  scriptBusy={scriptBusy.has(post.id)}
+                  onWriteScript={(postId) => writeScript(plan.id, postId)}
+                  onOpenInVideo={openInVideo}
+                />
               ))}
             </div>
           </>

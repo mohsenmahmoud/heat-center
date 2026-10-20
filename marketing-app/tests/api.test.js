@@ -129,12 +129,42 @@ describe('Tab 2: weekly planner', () => {
     expect(res.body.platform).toBe(post.platform);
   });
 
+  it('writes a full video script for a day, fitted to the plan length and opening with its hook', async () => {
+    const post = plan.posts[0];
+    const res = await agent().post(`/api/planner/${plan.id}/posts/${post.id}/script`);
+    expect(res.status).toBe(200);
+    const { script } = res.body;
+    expect(script.scenes.length).toBeGreaterThanOrEqual(6);
+    expect(script.scenes[0].type).toBe('hook');
+    expect(script.scenes.at(-1).type).toBe('cta');
+    expect(script.scenes.every((s) => s.voiceover)).toBe(true);
+    expect(res.body.videoId).toBeNull();
+    const total = script.scenes.reduce((a, s) => a + s.durationSec, 0) - (script.scenes.length - 1) * 0.5;
+    expect(Math.abs(total - 45)).toBeLessThanOrEqual(0.5);
+    // Saved on the plan, and accepted as-is by the renderer's validation.
+    const reloaded = await agent().get(`/api/planner/${plan.id}`);
+    expect(reloaded.body.posts[0].script.title).toBe(script.title);
+    const { RenderRequest } = await import('../server/services/schemas.js');
+    expect(RenderRequest.safeParse({ script, options: { source: { planId: plan.id, postId: post.id } } }).success).toBe(true);
+  });
+
+  it('keeps the script when a day is edited, drops it when the day gets a new angle', async () => {
+    const post = (await agent().get(`/api/planner/${plan.id}`)).body.posts[0];
+    const edited = await agent().put(`/api/planner/${plan.id}/posts/${post.id}`).send({ ...post, cta: 'ابعتلنا ديمو' });
+    expect(edited.body.script).toBeTruthy();
+    const fresh = await agent().post(`/api/planner/${plan.id}/posts/${post.id}/regenerate`).send({});
+    expect(fresh.body.script).toBeUndefined();
+  });
+
   it('exports Markdown and Word', async () => {
+    await agent().post(`/api/planner/${plan.id}/posts/${plan.posts[3].id}/script`);
     const md = await agent().get(`/api/planner/${plan.id}/export?format=md`);
     expect(md.status).toBe(200);
     expect(md.headers['content-disposition']).toContain('.md');
     expect(md.text).toContain('# خطة المحتوى الأسبوعية');
     expect(md.text.match(/^## /gm)).toHaveLength(7);
+    expect(md.text).toContain('### 🎬 سكريبت الفيديو');
+    expect(md.text).toContain('نص التعليق الصوتي كاملاً');
 
     const docx = await agent().get(`/api/planner/${plan.id}/export?format=docx`).buffer(true).parse((res, cb) => {
       const chunks = [];

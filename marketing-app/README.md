@@ -5,7 +5,7 @@ A local AI marketing app for Qudra (قُدرة), in a dark/white UI with Arabic 
 | Tab | What it does |
 |---|---|
 | **1. Motion Video Generator** | Topic, URL or screenshots → editable 40–60s script → live preview → branded 1080×1920 MP4 (transitions, CTA, logo, captions, music/voice) → download → history |
-| **2. Weekly Content Planner** | 7-day plan (Saturday start) across LinkedIn / Facebook / Instagram / TikTok with hook, caption, visual idea, hashtags, CTA, format and best time. Edit (autosave), regenerate one day, copy, export Markdown or Word |
+| **2. Weekly Video Planner** | 7-day **video** plan (Saturday start) across LinkedIn / Facebook / Instagram / TikTok. Every day gets a hook, a **full video script** (scenes, on-screen text, voiceover, CTA), the caption to publish with it and the best time. Open any day in the video generator with one click, render it, and the day is marked produced. Edit (autosave), regenerate a day, copy the voiceover, export Markdown or Word |
 
 Everything runs on your computer (`127.0.0.1` only). API keys live in `.env` on the server side and never reach the browser.
 
@@ -49,15 +49,16 @@ ANTHROPIC_API_KEY=sk-ant-...
 - اللوجو في `assets/brand/logo.png`. استبدله بنسخة أخرى بنفس الاسم لو حبيت.
 - مع "موشن + صور + Stock + AI": لو أضفت مفتاح Pexels أو Pixabay (مجاني)، خلفيات المشاهد تصبح لقطات حقيقية بلمسة أخضر قدرة.
 
-### 5) استخدام التبويب الثاني: الخطة الأسبوعية
-1. اختر **بداية الأسبوع** (افتراضياً السبت القادم)، والمنصات، واللغة، والسوق، واكتب تركيز الحملة لو موجود.
-2. اضغط **أنشئ خطة 7 أيام**. التوزيع يتبع محاور قدرة: ألم التشغيل ×2، قدرة في الشغل ×2، أرقام ونمو، خبرة المجال، ثقة.
-3. عدّل أي خانة مباشرة، والحفظ تلقائي ("تم الحفظ").
-4. **إعادة توليد** يوم واحد، مع تعليمات اختيارية (مثلاً: "اجعله عن الشهادات").
-5. **نسخ** بوست واحد أو **نسخ الكل**، أو صدّر **Markdown** أو **Word**.
-6. الخطط القديمة في قائمة **خطط سابقة**.
-
-البوست الذي يحتوي عبارة ممنوعة في دليل البراند (مثل "الحل الأمثل" أو "اكتشف الآن") يظهر عليه تحذير أصفر.
+### 5) استخدام التبويب الثاني: خطة الفيديوهات الأسبوعية
+كل يوم في الخطة **فيديو كامل**، مش فكرة بس.
+1. اختر **بداية الأسبوع** (افتراضياً السبت القادم)، والمنصات، واللغة، والسوق، و**مدة كل فيديو**، وتركيز الحملة لو موجود.
+2. اضغط **أنشئ خطة فيديوهات 7 أيام**. Claude يحدد زاوية كل يوم حسب محاور قدرة (ألم التشغيل ×2، قدرة في الشغل ×2، أرقام ونمو، خبرة المجال، ثقة)، وبعدها **يكتب سكريبت الفيديو لكل يوم تلقائياً**. العدّاد فوق بيوضح التقدّم، مثلاً "5/7 سكريبت".
+3. في كل يوم هتلاقي **سكريبت الفيديو**: المشاهد، والنص على الشاشة، والتعليق الصوتي لكل مشهد.
+4. اضغط **نسخ الفويس أوفر** لو هتسجّل بصوتك، فالنص كله بيتنسخ جاهز للقراءة.
+5. اضغط **افتح في مولّد الفيديو**. السكريبت هيتحمّل في التبويب الأول، فارفع صورك وصوتك، ثم **أنتج الفيديو MP4**.
+6. بعد الإنتاج هتلاقي اليوم في الخطة عليه علامة **تم الإنتاج** ورابط **تحميل الفيديو**، والعدّاد بيوضح "2 فيديو".
+7. تقدر تعدّل الهوك والكابشن (الحفظ تلقائي)، أو تعمل **إعادة توليد** ليوم بزاوية جديدة (السكريبت بيتكتب من جديد)، أو **إعادة كتابة السكريبت** بس.
+8. التصدير لـ **Markdown** أو **Word** بيحتوي على السكريبتات كاملة، ونص التعليق الصوتي لكل يوم.
 
 ### 6) الأمان
 - التطبيق يسمع على `127.0.0.1` فقط ويرفض أي طلب من غير localhost.

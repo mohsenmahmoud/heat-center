@@ -51,7 +51,9 @@ function slotLine(slot, i) {
   return `${i + 1}. ${slot.dayName} ${slot.date} | platform: ${p.label} (${p.tone}; ${p.length}; typical format: ${p.format}) | pillar: ${slot.pillar.en}`;
 }
 
-const POST_RULES = `For each post return: hook (first line, ≤ 12 words, stops an academy owner scrolling), caption (the full post body following the platform length, line breaks between ideas, ends with the CTA idea), visualIdea (what the design or video shows, product-led, Qudra green palette), hashtags (3–5, LinkedIn 2–3), cta (one action), format (e.g. Carousel, Reel, Post, Document), bestTime (local posting time, HH:MM).`;
+// Every day of the plan is a short vertical video; the post fields describe that video and its caption.
+const POST_RULES = `Every post is a 40–60 second vertical (9:16) motion-graphics video published on that day's platform.
+For each post return: hook (the video's opening line, ≤ 12 words, stops an academy owner scrolling), caption (the text published with the video, following the platform length, line breaks between ideas, ends with the CTA idea), visualIdea (the video concept: which Qudra screen or scene carries the story), hashtags (3–5, LinkedIn 2–3), cta (one action), format (e.g. "Reel 9:16", "LinkedIn video", "Short"), bestTime (local posting time, HH:MM).`;
 
 /** Writes all posts of a week in one call so they don't repeat each other. */
 export async function writeWeekPlan({ slots, language, market, focus }) {
@@ -86,4 +88,19 @@ ${instruction ? `Specific request from the marketer: ${instruction}` : 'Give a f
 
 ${POST_RULES}`;
   return generateJson({ system: brandSystemPrompt(language), content: text, schema: PostSchema, effort: 'medium', maxTokens: 8000 });
+}
+
+/** Expands one day of a weekly plan into a full video script built on that day's angle. */
+export async function writeDayScript({ post, pillar, platform, language, market, focus, otherHooks, durationSec }) {
+  if (config.mockAi) {
+    const script = mockScript({ topic: post.hook, language });
+    return { ...script, caption: post.caption, hashtags: post.hashtags };
+  }
+  const topic = `Video for ${post.dayName} ${post.date} on ${PLATFORMS[platform].label} (content pillar: ${pillar.en}).
+${focus ? `Campaign focus: ${focus}\n` : ''}Use this exact opening line for the hook scene: "${post.hook}"
+Video concept: ${post.visualIdea}
+One CTA only: ${post.cta}
+The post caption that goes with the video (keep the script consistent with it): ${post.caption}
+Other videos this week open with these hooks; do not repeat their angle: ${otherHooks.map((h) => `"${h}"`).join(', ')}`;
+  return writeVideoScript({ topic, page: null, images: [], language, durationSec, market });
 }

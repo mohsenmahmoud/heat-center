@@ -2,11 +2,12 @@ import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../config.js';
-import { uploadsRepo, videosRepo } from '../db.js';
+import { plansRepo, uploadsRepo, videosRepo } from '../db.js';
 import { errors } from '../lib/errors.js';
 import { downloadToDir } from '../lib/net.js';
 import { lintBrand } from '../brand/qudra.js';
-import { fitDurations, totalSeconds } from '../../video/timing.js';
+import { totalSeconds } from '../../video/timing.js';
+import { finalizeScript } from '../services/scripts.js';
 import { RenderRequest, ScriptRequest } from '../services/schemas.js';
 import { writeVideoScript } from '../services/ai/index.js';
 import { scrapePage } from '../services/scraper.js';
@@ -67,25 +68,8 @@ videoRouter.post(
       market: input.market,
     });
 
-    // Pin images to the scenes that show the product, in order.
-    const queue = allImages.filter((i) => i.mime.startsWith('image/')).map((i) => i.id);
-    const scenes = ai.scenes.map((s, i) => ({
-      id: `s${i + 1}`,
-      ...s,
-      imageId: ['feature', 'solution'].includes(s.type) && queue.length ? queue.shift() : null,
-    }));
-
-    const contact = [config.brand.website, config.brand.whatsapp].filter(Boolean).join('  ·  ');
-    const script = {
-      title: ai.title,
-      language: input.language,
-      aspect: '9:16',
-      topic: input.topic || page?.title || '',
-      scenes: fitDurations(scenes, input.durationSec),
-      cta: { ...ai.cta, contact },
-      caption: ai.caption,
-      hashtags: ai.hashtags,
-    };
+    const imageIds = allImages.filter((i) => i.mime.startsWith('image/')).map((i) => i.id);
+    const script = finalizeScript(ai, { language: input.language, durationSec: input.durationSec, topic: input.topic || page?.title || '', imageIds });
     res.json({ script, durationSec: totalSeconds(script.scenes), warnings: lintBrand(script), pageImages });
   }),
 );
@@ -96,6 +80,7 @@ videoRouter.post(
     const body = RenderRequest.parse(req.body);
     if (activeJob()) throw errors.busy();
     for (const s of body.script.scenes) if (s.imageId && !uploadsRepo.get(s.imageId)) throw errors.notFound('Scene image');
+    if (body.options.source && !plansRepo.get(body.options.source.planId)) throw errors.notFound('Plan');
     const job = createJob({ title: body.script.title });
     // Fire and forget; progress goes out through /jobs/:id/events.
     runRenderJob(job.id, body);

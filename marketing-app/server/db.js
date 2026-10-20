@@ -7,6 +7,8 @@ let db;
 export function getDb() {
   if (db) return db;
   db = new DatabaseSync(config.paths.db);
+  // Wait for a concurrent writer (another process or test worker) instead of failing with "database is locked".
+  db.exec('PRAGMA busy_timeout = 5000');
   db.exec(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS uploads (
@@ -111,6 +113,15 @@ export const plansRepo = {
   updatePosts(id, posts) {
     getDb().prepare('UPDATE plans SET posts_json = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(posts), now(), id);
     return plansRepo.get(id);
+  },
+  /** Merges `patch` into one post of a plan; returns the updated post or null. */
+  patchPost(planId, postId, patch) {
+    const plan = plansRepo.get(planId);
+    const index = plan?.posts.findIndex((p) => p.id === postId) ?? -1;
+    if (index < 0) return null;
+    plan.posts[index] = { ...plan.posts[index], ...patch };
+    plansRepo.updatePosts(planId, plan.posts);
+    return plan.posts[index];
   },
   list: () =>
     getDb()

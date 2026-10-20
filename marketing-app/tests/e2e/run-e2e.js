@@ -128,12 +128,14 @@ try {
   });
 
   console.log('\nTab 2: Weekly Content Planner');
-  await step('generates a 7-day plan', async () => {
+  await step('generates a 7-day video plan and writes every day\'s script', async () => {
     await page.getByRole('tab', { name: 'الخطة الأسبوعية' }).click();
     await page.locator('[data-testid=generate-plan]').click();
     await page.locator('[data-testid=post-card]').first().waitFor({ timeout: 60000 });
     const n = await page.locator('[data-testid=post-card]').count();
     assert(n === 7, `expected 7 posts, got ${n}`);
+    await page.locator('[data-testid=scripts-progress]', { hasText: '7/7' }).waitFor({ timeout: 5 * 60 * 1000 });
+    assert((await page.locator('[data-testid=open-in-video]').count()) === 7, 'every day should have a script');
     await page.screenshot({ path: path.join(shots, '04-planner.png'), fullPage: true });
   });
   await step('autosaves an edited hook', async () => {
@@ -144,7 +146,19 @@ try {
     const plan = await (await fetch(`${BASE}/api/planner/${plans.items[0].id}`)).json();
     assert(plan.posts[0].hook === 'هوك معدّل للاختبار', 'edit was not saved');
   });
-  await step('regenerates one day', async () => {
+  await step('opens a day in the video generator, renders it and marks the day as produced', async () => {
+    await page.locator('[data-testid=post-card]').first().locator('[data-testid=open-in-video]').click();
+    await page.locator('[data-testid=plan-source]').waitFor();
+    const scenes = await page.locator('[data-testid=scene]').count();
+    assert(scenes >= 6, `expected the plan script in the editor, got ${scenes} scenes`);
+    await page.locator('[data-testid=render]').click();
+    await page.locator('[data-testid=render-result], [role=alert]').first().waitFor({ timeout: 6 * 60 * 1000 });
+    assert(!(await page.locator('[role=alert]').count()), 'render from plan failed');
+    await page.getByRole('tab', { name: 'الخطة الأسبوعية' }).click();
+    await page.locator('[data-testid=post-card]').first().locator('[data-testid=produced]').waitFor({ timeout: 10000 });
+    await page.screenshot({ path: path.join(shots, '05-planner-produced.png') });
+  });
+  await step('regenerates one day (and rewrites its script)', async () => {
     const card = page.locator('[data-testid=post-card]').nth(1);
     const before = await card.locator('textarea').first().inputValue();
     await card.locator('[data-testid=regen]').click();
@@ -155,6 +169,7 @@ try {
       [before],
       { timeout: 60000 },
     );
+    await page.locator('[data-testid=scripts-progress]', { hasText: '7/7' }).waitFor({ timeout: 2 * 60 * 1000 });
   });
   await step('exports Markdown and Word', async () => {
     for (const [id, ext] of [['export-md', '.md'], ['export-docx', '.docx']]) {

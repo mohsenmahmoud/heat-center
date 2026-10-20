@@ -26,7 +26,7 @@ function previewProps(script, images, form, logo) {
   };
 }
 
-export function PreviewPanel({ script, images, form, logo, onRendered }) {
+export function PreviewPanel({ script, images, form, logo, source, onRendered }) {
   const { t } = useI18n();
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
@@ -52,6 +52,7 @@ export function PreviewPanel({ script, images, form, logo, onRendered }) {
           voiceUploadId: form.voiceUpload?.id || null,
           music: form.music || null,
           captions: form.captions,
+          source: source ? { planId: source.planId, postId: source.postId } : null,
         },
       });
       setJob({ id: jobId, status: 'queued', stage: 'queued', progress: 0 });
@@ -63,6 +64,8 @@ export function PreviewPanel({ script, images, form, logo, onRendered }) {
         if (update.status === 'done') {
           setResult(update.result);
           onRendered();
+          // Lets the planner mark the day as produced.
+          if (source) window.dispatchEvent(new CustomEvent('qms:video-rendered', { detail: { planId: source.planId, postId: source.postId } }));
           es.close();
         } else if (update.status === 'error') {
           setError({ messages: update.error.message });

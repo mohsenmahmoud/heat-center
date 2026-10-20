@@ -13,6 +13,14 @@ export default function App() {
   const [status, setStatus] = useState(null);
   const [tab, setTab] = useState(() => (location.hash === '#planner' ? 'planner' : 'video'));
 
+  // A plan day sent to the video tab: { script, source, nonce }.
+  const [handoff, setHandoff] = useState(null);
+  const openInVideo = useCallback((payload) => {
+    setHandoff({ ...payload, nonce: Date.now() });
+    setTab('video');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const loadStatus = useCallback(() => api.get('/api/status').then(setStatus).catch(() => setStatus(null)), []);
 
   useEffect(() => {
@@ -106,10 +114,10 @@ export default function App() {
         {caps?.writer === 'mock' && <Banner tone="info">{t('demoMode')}</Banner>}
         {/* Both tabs stay mounted so switching keeps unsaved work. */}
         <div hidden={tab !== 'video'}>
-          <VideoTab status={status} />
+          <VideoTab status={status} handoff={handoff} />
         </div>
         <div hidden={tab !== 'planner'}>
-          <PlannerTab status={status} />
+          <PlannerTab status={status} onOpenInVideo={openInVideo} />
         </div>
       </main>
     </div>

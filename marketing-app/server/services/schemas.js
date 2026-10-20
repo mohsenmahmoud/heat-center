@@ -80,6 +80,8 @@ export const RenderRequest = z.object({
       voiceUploadId: z.string().regex(/^[a-f0-9]{16}$/).nullable().optional(),
       music: z.string().max(200).nullable().optional(),
       captions: z.boolean().default(true),
+      // Set when the video was opened from a weekly-plan day, so the plan can link to it.
+      source: z.object({ planId: z.string().regex(/^[a-f0-9]{16}$/), postId: z.string().regex(/^[a-f0-9]{16}$/) }).nullable().optional(),
     })
     .default({}),
 });
@@ -92,6 +94,7 @@ export const PlanRequest = z.object({
   language: z.enum(['ar', 'en']).default('ar'),
   market: z.enum(['egypt', 'gulf', 'both']).default('both'),
   focus: z.string().max(1500).default(''),
+  durationSec: z.number().min(40).max(60).default(45),
 });
 
 export const PostUpdate = z.object({

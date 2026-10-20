@@ -5,7 +5,7 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 import { parseMedia } from '@remotion/media-parser';
 import { nodeReader } from '@remotion/media-parser/node';
 import { config } from '../config.js';
-import { uploadsRepo, videosRepo, newId } from '../db.js';
+import { plansRepo, uploadsRepo, videosRepo, newId } from '../db.js';
 import { errors, AppError } from '../lib/errors.js';
 import { orientation } from '../lib/image-size.js';
 import { fitDurations, totalSeconds, MIN_TOTAL_SEC, MAX_TOTAL_SEC } from '../../video/timing.js';
@@ -151,6 +151,10 @@ export async function runRenderJob(jobId, { script, options }) {
       durationSec: composition.durationInFrames / composition.fps,
       sizeBytes: fs.statSync(path.join(config.paths.videos, fileName)).size,
     });
+    if (options.source) {
+      // The edited script becomes the plan day's script, and the day points at its video.
+      plansRepo.patchPost(options.source.planId, options.source.postId, { script: { ...script, scenes: scenes.map(({ visual, ...s }) => s) }, videoId: saved.id });
+    }
     updateJob(jobId, { status: 'done', stage: 'done', progress: 1, result: saved });
   } catch (err) {
     console.error('[render] job failed:', err);

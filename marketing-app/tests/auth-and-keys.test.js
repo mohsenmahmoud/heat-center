@@ -5,6 +5,9 @@ import request from 'supertest';
 process.env.APP_PASSWORD = 'correct horse';
 process.env.MOCK_AI = 'false';
 delete process.env.ANTHROPIC_API_KEY;
+delete process.env.GEMINI_API_KEY;
+delete process.env.GOOGLE_API_KEY;
+delete process.env.AI_PROVIDER;
 
 let app;
 beforeAll(async () => {
@@ -35,7 +38,7 @@ describe('password protection', () => {
   });
 });
 
-describe('missing Claude key', () => {
+describe('missing AI key', () => {
   it('explains how to add the key instead of failing silently', async () => {
     const login = await request(app).post('/api/auth/login').send({ password: 'correct horse' });
     const cookie = login.headers['set-cookie'][0];
@@ -44,8 +47,9 @@ describe('missing Claude key', () => {
 
     const res = await request(app).post('/api/video/script').set('Cookie', cookie).send({ topic: 'x' });
     expect(res.status).toBe(503);
-    expect(res.body.error.code).toBe('MISSING_CLAUDE_KEY');
+    expect(res.body.error.code).toBe('MISSING_AI_KEY');
     expect(res.body.error.message.ar).toContain('ANTHROPIC_API_KEY');
+    expect(res.body.error.message.ar).toContain('GEMINI_API_KEY');
 
     const plan = await request(app).post('/api/planner/generate').set('Cookie', cookie).send({ weekStart: '2026-10-24' });
     expect(plan.status).toBe(503);

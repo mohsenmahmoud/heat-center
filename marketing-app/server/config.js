@@ -30,6 +30,10 @@ export const config = {
   anthropicKey: env.ANTHROPIC_API_KEY || '',
   claudeModel: env.CLAUDE_MODEL || 'claude-opus-5-5',
   claudeFallbacks: (env.CLAUDE_FALLBACKS || 'default') !== 'off',
+  geminiKey: env.GEMINI_API_KEY || env.GOOGLE_API_KEY || '',
+  geminiModel: env.GEMINI_MODEL || 'gemini-flash-latest',
+  // claude | gemini. Empty = whichever has a key (Claude first).
+  aiProvider: (env.AI_PROVIDER || '').toLowerCase(),
 
   imageProvider: (env.IMAGE_PROVIDER || 'none').toLowerCase(),
   openaiKey: env.OPENAI_API_KEY || '',
@@ -72,8 +76,19 @@ for (const dir of [config.paths.data, config.paths.uploads, config.paths.media, 
   fs.mkdirSync(dir, { recursive: true });
 }
 
+/** The AI that writes scripts and plans: explicit AI_PROVIDER, else the first provider with a key. */
+export function writerProvider() {
+  if (config.mockAi) return 'mock';
+  if (config.aiProvider === 'gemini' || config.aiProvider === 'claude') return config.aiProvider;
+  if (config.anthropicKey) return 'claude';
+  if (config.geminiKey) return 'gemini';
+  return null;
+}
+
 /** Which optional capabilities are usable right now; drives the UI's enabled/disabled states. */
 export function capabilities() {
+  const provider = writerProvider();
+  const hasKey = provider === 'mock' || (provider === 'claude' && !!config.anthropicKey) || (provider === 'gemini' && !!config.geminiKey);
   const imageReady =
     (config.imageProvider === 'openai' && !!config.openaiKey) ||
     (config.imageProvider === 'replicate' && !!config.replicateKey);
@@ -81,8 +96,8 @@ export function capabilities() {
     (config.ttsProvider === 'elevenlabs' && !!config.elevenlabsKey && !!config.elevenlabsVoice) ||
     (config.ttsProvider === 'openai' && !!config.openaiKey);
   return {
-    writer: config.mockAi ? 'mock' : config.anthropicKey ? 'claude' : null,
-    model: config.mockAi ? 'mock' : config.claudeModel,
+    writer: hasKey ? provider : null,
+    model: { mock: 'mock', claude: config.claudeModel, gemini: config.geminiModel }[provider] || null,
     images: imageReady ? config.imageProvider : null,
     tts: ttsReady ? config.ttsProvider : null,
     stock: [config.pexelsKey && 'pexels', config.pixabayKey && 'pixabay'].filter(Boolean),

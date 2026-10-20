@@ -5,7 +5,7 @@ import path from 'node:path';
 import { z } from 'zod';
 import { fitDurations, totalSeconds } from '../video/timing.js';
 import { lintBrand } from '../server/brand/qudra.js';
-import { toStrictJsonSchema } from '../server/services/ai/claude.js';
+import { toStrictJsonSchema } from '../server/services/ai/json-schema.js';
 import { assertPublicUrl } from '../server/lib/net.js';
 import { buildSlots } from '../server/services/planner.js';
 import { imageSize } from '../server/lib/image-size.js';

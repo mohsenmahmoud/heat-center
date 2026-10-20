@@ -67,7 +67,7 @@ export default function App() {
             <div className="leading-tight">
               <div className="text-sm font-bold">{t('appName')}</div>
               <div className="text-[11px] text-muted">
-                {caps?.writer ? `${caps.writer === 'mock' ? 'Demo' : 'Claude'} · ${caps.model}` : 'localhost'}
+                {caps?.writer ? `${{ mock: 'Demo', claude: 'Claude', gemini: 'Gemini' }[caps.writer]} · ${caps.model}` : 'localhost'}
               </div>
             </div>
           </div>

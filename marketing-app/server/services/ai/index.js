@@ -1,7 +1,7 @@
 import { config } from '../../config.js';
 import { brandSystemPrompt, PLATFORMS } from '../../brand/qudra.js';
 import { AiScriptSchema, AiPlanSchema, PostSchema } from '../schemas.js';
-import { generateJson } from './claude.js';
+import { generateJson } from './writer.js';
 import { mockScript, mockPosts } from './mock.js';
 
 const MARKET = {

@@ -28,12 +28,17 @@ npm start                   # يبني الواجهة ويشغّل التطبي�
 
 أو ببساطة: دبل كليك على `start.bat` (Windows) أو شغّل `./start.sh` (Mac/Linux). الملف ينسخ `.env` ويثبّت الحزم أول مرة ثم يشغّل التطبيق.
 
-### 3) أضف مفتاح Claude
-افتح ملف `.env` وضع المفتاح من [console.anthropic.com](https://console.anthropic.com):
+### 3) أضف مفتاح الذكاء الاصطناعي: Claude أو Gemini
+افتح ملف `.env` وحط **واحد** من المفتاحين:
 ```
+# Claude: من console.anthropic.com (رصيد API منفصل عن اشتراك Claude)
 ANTHROPIC_API_KEY=sk-ant-...
+
+# أو Gemini: من aistudio.google.com/apikey
+GEMINI_API_KEY=AIza...
 ```
-ثم أعد التشغيل. لتجربة التطبيق **بدون مفتاح** ضع `MOCK_AI=true` (محتوى مثال ثابت، والفيديو يُنتج فعلاً).
+ثم أعد التشغيل. التطبيق بيستخدم المفتاح الموجود تلقائياً. لو حطيت الاتنين، بيستخدم Claude، إلا لو كتبت `AI_PROVIDER=gemini`.
+لتجربة التطبيق **بدون أي مفتاح** ضع `MOCK_AI=true` (محتوى مثال ثابت، والفيديو يُنتج فعلاً).
 
 ### 4) استخدام التبويب الأول: مولّد الفيديو
 1. اكتب **الموضوع**، أو ضع **رابط** صفحة (مثلاً صفحة ميزة على qudratms.com)، و/أو ارفع **صور** (لقطات من لوحة التحكم أو التطبيق).
@@ -69,7 +74,9 @@ ANTHROPIC_API_KEY=sk-ant-...
 ### 7) مشاكل شائعة
 | الرسالة | الحل |
 |---|---|
-| مفتاح Claude غير موجود | أضف `ANTHROPIC_API_KEY` في `.env` وأعد التشغيل |
+| لا يوجد مفتاح ذكاء اصطناعي | أضف `ANTHROPIC_API_KEY` أو `GEMINI_API_KEY` في `.env` وأعد التشغيل |
+| مفتاح Gemini غير صحيح | انسخ المفتاح من جديد من aistudio.google.com/apikey |
+| موديل Gemini غير متاح | غيّر `GEMINI_MODEL` في `.env` لموديل متاح في حسابك |
 | مفتاح Claude غير صحيح | انسخ المفتاح من جديد من console.anthropic.com |
 | تعذّر قراءة الرابط | بعض المواقع تمنع القراءة الآلية. انسخ النص في خانة الموضوع |
 | فشل إنتاج الفيديو | أول مرة يحتاج إنترنت لتحميل متصفح الرندر. راجع رسالة السيرفر في الطرفية |
@@ -100,7 +107,9 @@ marketing-app/
 │   ├── lib/                    auth (HMAC cookie), errors, safe fetch (blocks private IPs), image size
 │   ├── routes/                 system · uploads · video · planner
 │   └── services/
+│       ├── ai/writer.js        picks Claude or Gemini (AI_PROVIDER / available key)
 │       ├── ai/claude.js        Anthropic SDK, structured JSON output, refusal fallback, typed errors
+│       ├── ai/gemini.js        Google GenAI SDK, JSON-schema output, friendly errors
 │       ├── ai/index.js         prompts for script / week plan / single-post rewrite
 │       ├── ai/mock.js          demo mode (MOCK_AI=true)
 │       ├── media.js            stock (Pexels, Pixabay), AI images (OpenAI, Replicate), TTS (ElevenLabs, OpenAI)
@@ -126,6 +135,10 @@ marketing-app/
    - per-scene visuals: pinned screenshot → device mockup, else stock footage, else AI image, else the brand gradient;
    - `renderMedia` → H.264 MP4, plus a thumbnail.
 4. `GET /api/video/jobs/:id/events` streams progress. Results are stored in `data/` and SQLite.
+
+### AI writer (Claude or Gemini)
+- `AI_PROVIDER=claude|gemini`, or leave it empty to use whichever key is set (Claude first). Both go through `server/services/ai/writer.js` with the same prompts, JSON schema and Zod validation.
+- Gemini: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-flash-latest`), via the official `@google/genai` SDK with `responseJsonSchema`.
 
 ### Claude usage
 - Model: `CLAUDE_MODEL` (default `claude-opus-5-5`). For lower cost, set `claude-sonnet-5-5`.

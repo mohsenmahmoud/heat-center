@@ -10,7 +10,7 @@ const app = createApp();
 app.listen(config.port, config.host, () => {
   const caps = capabilities();
   console.log(`\n  Qudra Marketing Studio → http://localhost:${config.port}\n`);
-  console.log(`  Writer:  ${caps.writer ? `${caps.writer} (${caps.model})` : 'NOT CONFIGURED: add ANTHROPIC_API_KEY to .env (or MOCK_AI=true for demo mode)'}`);
+  console.log(`  Writer:  ${caps.writer ? `${caps.writer} (${caps.model})` : 'NOT CONFIGURED: add ANTHROPIC_API_KEY or GEMINI_API_KEY to .env (or MOCK_AI=true for demo mode)'}`);
   console.log(`  Stock:   ${caps.stock.join(', ') || 'off'}   Images: ${caps.images || 'off'}   Voice: ${caps.tts || 'off'}`);
   console.log(`  Login:   ${caps.authRequired ? 'password required' : 'no password (set APP_PASSWORD in .env to require one)'}\n`);
 });

@@ -20,16 +20,34 @@ export const errors = {
       'مفتاح Claude غير موجود. أضف ANTHROPIC_API_KEY في ملف .env ثم أعد تشغيل التطبيق.',
       'Claude API key is missing. Add ANTHROPIC_API_KEY to .env and restart the app.',
     ),
+  missingAiKey: () =>
+    new AppError(
+      'MISSING_AI_KEY',
+      503,
+      'لا يوجد مفتاح ذكاء اصطناعي. أضف ANTHROPIC_API_KEY (Claude) أو GEMINI_API_KEY (Gemini) في ملف .env ثم أعد تشغيل التطبيق.',
+      'No AI key found. Add ANTHROPIC_API_KEY (Claude) or GEMINI_API_KEY (Gemini) to .env and restart the app.',
+    ),
+  missingGeminiKey: () =>
+    new AppError('MISSING_GEMINI_KEY', 503, 'مفتاح Gemini غير موجود. أضف GEMINI_API_KEY في ملف .env ثم أعد التشغيل.', 'Gemini API key is missing. Add GEMINI_API_KEY to .env and restart.'),
+  invalidGeminiKey: () =>
+    new AppError('INVALID_GEMINI_KEY', 502, 'مفتاح Gemini غير صحيح أو غير مفعّل. راجع GEMINI_API_KEY في .env.', 'Gemini API key was rejected. Check GEMINI_API_KEY in .env.'),
+  geminiModelNotFound: (model) =>
+    new AppError(
+      'GEMINI_MODEL_NOT_FOUND',
+      502,
+      `موديل Gemini "${model}" غير متاح لحسابك. غيّر GEMINI_MODEL في .env إلى موديل متاح (مثل gemini-flash-latest).`,
+      `Gemini model "${model}" is not available to your key. Set GEMINI_MODEL in .env to an available model (e.g. gemini-flash-latest).`,
+    ),
   invalidClaudeKey: () =>
     new AppError('INVALID_CLAUDE_KEY', 502, 'مفتاح Claude غير صحيح أو منتهي. راجع ANTHROPIC_API_KEY في .env.', 'Claude API key was rejected. Check ANTHROPIC_API_KEY in .env.'),
-  rateLimited: () =>
-    new AppError('RATE_LIMITED', 429, 'تم تجاوز حد الطلبات على Claude. انتظر دقيقة وحاول مرة أخرى.', 'Claude rate limit reached. Wait a minute and try again.'),
-  aiUnavailable: () =>
-    new AppError('AI_UNAVAILABLE', 502, 'تعذّر الوصول إلى Claude الآن. تأكد من الإنترنت وحاول مرة أخرى.', 'Could not reach Claude. Check your internet connection and try again.'),
-  aiRefused: () =>
-    new AppError('AI_REFUSED', 422, 'رفض Claude هذا الطلب. جرّب صياغة الموضوع بشكل مختلف.', 'Claude declined this request. Try rephrasing the topic.'),
-  aiBadOutput: () =>
-    new AppError('AI_BAD_OUTPUT', 502, 'رد Claude بصيغة غير متوقعة. اضغط "إعادة المحاولة".', 'Claude returned an unexpected format. Please retry.'),
+  rateLimited: (name = 'Claude') =>
+    new AppError('RATE_LIMITED', 429, `تم تجاوز حد الطلبات على ${name}. انتظر دقيقة وحاول مرة أخرى.`, `${name} rate limit reached. Wait a minute and try again.`),
+  aiUnavailable: (name = 'Claude') =>
+    new AppError('AI_UNAVAILABLE', 502, `تعذّر الوصول إلى ${name} الآن. تأكد من الإنترنت وحاول مرة أخرى.`, `Could not reach ${name}. Check your internet connection and try again.`),
+  aiRefused: (name = 'Claude') =>
+    new AppError('AI_REFUSED', 422, `رفض ${name} هذا الطلب. جرّب صياغة الموضوع بشكل مختلف.`, `${name} declined this request. Try rephrasing the topic.`),
+  aiBadOutput: (name = 'Claude') =>
+    new AppError('AI_BAD_OUTPUT', 502, `رد ${name} بصيغة غير متوقعة. اضغط "إعادة المحاولة".`, `${name} returned an unexpected format. Please retry.`),
   validation: (en, ar = 'بيانات غير صحيحة: ' + en) => new AppError('VALIDATION', 400, ar, en),
   notFound: (what = 'Item') => new AppError('NOT_FOUND', 404, 'العنصر غير موجود.', `${what} not found.`),
   unauthorized: () => new AppError('UNAUTHORIZED', 401, 'يجب تسجيل الدخول أولاً.', 'Please sign in first.'),

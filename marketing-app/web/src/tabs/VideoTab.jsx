@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Film, X } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { useI18n } from '../lib/i18n.jsx';
@@ -17,6 +17,7 @@ const DEFAULT_FORM = {
   visualStyle: 'mix',
   voiceMode: 'none',
   voiceUpload: null,
+  voiceName: '',
   music: '',
   captions: true,
 };
@@ -34,6 +35,20 @@ export default function VideoTab({ status, handoff }) {
   const [history, setHistory] = useState([]);
   // The weekly-plan day this script came from, if any: the rendered video gets linked back to it.
   const [source, setSource] = useState(null);
+  const [reference, setReference] = useState(null);
+  const voiceTouched = useRef(false);
+
+  // Videos should come out complete: default to the AI voice whenever one is available.
+  useEffect(() => {
+    if (status?.capabilities?.tts && !voiceTouched.current) setForm((f) => (f.voiceMode === 'none' ? { ...f, voiceMode: 'ai' } : f));
+  }, [status]);
+  const setFormTracked = useCallback((updater) => {
+    setForm((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (next.voiceMode !== prev.voiceMode) voiceTouched.current = true;
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     if (!handoff?.script) return;
@@ -61,6 +76,7 @@ export default function VideoTab({ status, handoff }) {
         language: form.language,
         durationSec: form.durationSec,
         market: form.market,
+        reference,
       });
       if (data.pageImages?.length) setImages((prev) => [...prev, ...data.pageImages]);
       setScript(data.script);
@@ -98,8 +114,8 @@ export default function VideoTab({ status, handoff }) {
         </div>
       )}
       <div className="grid gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)_minmax(320px,400px)]">
-        <SourceForm form={form} setForm={setForm} images={images} setImages={setImages} status={status} onWrite={writeScript} writing={writing} error={scriptError} hasScript={!!script} />
-        <ScriptEditor script={script} setScript={setScript} images={images} voiceMode={form.voiceMode} warnings={warnings} writing={writing} />
+        <SourceForm form={form} setForm={setFormTracked} images={images} setImages={setImages} status={status} onWrite={writeScript} writing={writing} error={scriptError} hasScript={!!script} reference={reference} setReference={setReference} />
+        <ScriptEditor script={script} setScript={setScript} images={images} voiceMode={form.voiceMode} voiceName={form.voiceName || status?.defaultVoice} voiceRate={status?.voiceRate} warnings={warnings} writing={writing} />
         <PreviewPanel script={script} images={images} form={form} logo={status?.logo} source={source} onRendered={loadHistory} />
       </div>
       <VideoHistory items={history} onReuse={reuse} onChanged={loadHistory} />

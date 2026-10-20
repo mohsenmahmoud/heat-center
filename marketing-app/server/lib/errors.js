@@ -68,7 +68,7 @@ export function toPayload(err) {
     return { status: err.status, body: { error: { code: err.code, message: err.messages, details: err.details } } };
   }
   if (err?.type === 'entity.too.large' || err?.code === 'LIMIT_FILE_SIZE') {
-    return { status: 413, body: { error: { code: 'TOO_LARGE', message: { ar: 'الملف أكبر من الحد المسموح (10 ميجا).', en: 'File is larger than the 10 MB limit.' } } } };
+    return { status: 413, body: { error: { code: 'TOO_LARGE', message: { ar: 'الملف أكبر من الحد المسموح (10 ميجا للصور والصوت، 200 ميجا للفيديو).', en: 'File is too large (10 MB for images/audio, 200 MB for video).' } } } };
   }
   if (err?.code === 'LIMIT_FILE_COUNT' || err?.code === 'LIMIT_UNEXPECTED_FILE') {
     return { status: 400, body: { error: { code: 'TOO_MANY_FILES', message: { ar: 'عدد الملفات أكبر من المسموح (10).', en: 'Too many files (max 10).' } } } };

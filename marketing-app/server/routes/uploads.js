@@ -29,7 +29,29 @@ const upload = multer({
   },
 });
 
+const VIDEO_TYPES = { 'video/mp4': '.mp4', 'video/quicktime': '.mov', 'video/webm': '.webm' };
+
+const videoUpload = multer({
+  storage: multer.diskStorage({
+    destination: config.paths.uploads,
+    filename: (_req, file, cb) => cb(null, crypto.randomBytes(16).toString('hex') + VIDEO_TYPES[file.mimetype]),
+  }),
+  limits: { fileSize: 200 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (VIDEO_TYPES[file.mimetype]) return cb(null, true);
+    cb(errors.validation(`Unsupported video type ${file.mimetype}`, 'نوع الفيديو غير مدعوم. المسموح: MP4 أو MOV أو WEBM.'));
+  },
+});
+
 export const uploadsRouter = Router();
+
+// Reference videos (up to 200 MB) for "make a video like this one".
+uploadsRouter.post('/video', videoUpload.single('file'), (req, res, next) => {
+  if (!req.file) return next(errors.validation('No video received', 'لم يتم استلام الفيديو.'));
+  const f = req.file;
+  const row = uploadsRepo.add({ originalName: f.originalname, fileName: f.filename, mime: f.mimetype, size: f.size });
+  res.status(201).json({ id: row.id, name: f.originalname, mime: f.mimetype, size: f.size, url: `/uploads/${f.filename}` });
+});
 
 uploadsRouter.post('/', upload.array('files', 10), (req, res, next) => {
   if (!req.files?.length) return next(errors.validation('No files received', 'لم يتم استلام أي ملف.'));

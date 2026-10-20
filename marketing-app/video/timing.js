@@ -3,6 +3,9 @@ export const FPS = 30;
 export const TRANSITION_FRAMES = 15;
 export const MIN_TOTAL_SEC = 40;
 export const MAX_TOTAL_SEC = 60;
+// Hard limits (a reference video or a voiceover can take a video outside the usual 40–60s).
+export const HARD_MIN_SEC = 15;
+export const HARD_MAX_SEC = 90;
 const MIN_SCENE_SEC = 3;
 const MAX_SCENE_SEC = 14;
 

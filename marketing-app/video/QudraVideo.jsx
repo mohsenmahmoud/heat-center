@@ -69,8 +69,9 @@ export function QudraVideo(props) {
   const { width, durationInFrames, fps } = useVideoConfig();
   const rtl = script.language === 'ar';
   const scenes = script.scenes;
+  const hasVoice = !!voiceSrc || scenes.some((s) => s.voice?.src);
   const musicVolume = (f) =>
-    (voiceSrc ? 0.16 : 0.5) * interpolate(f, [0, fps, durationInFrames - fps * 1.5, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    (hasVoice ? 0.16 : 0.5) * interpolate(f, [0, fps, durationInFrames - fps * 1.5, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill style={{ fontFamily, direction: rtl ? 'rtl' : 'ltr', background: colors.ink }}>
@@ -79,6 +80,8 @@ export function QudraVideo(props) {
           <React.Fragment key={scene.id || i}>
             <TransitionSeries.Sequence durationInFrames={sceneFrames(scene)}>
               <SceneSwitch scene={scene} props={props} />
+              {/* AI voiceover: each scene speaks its own line, so voice and visuals stay in sync. */}
+              {scene.voice?.src && <Audio src={resolveSrc(mediaBase, scene.voice.src)} playbackRate={scene.voice.rate || 1} />}
             </TransitionSeries.Sequence>
             {i < scenes.length - 1 && (
               <TransitionSeries.Transition presentation={presentation(scene.transition, rtl)} timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })} />
@@ -92,7 +95,7 @@ export function QudraVideo(props) {
         <Watermark scenes={scenes} logoSrc={logoSrc} base={mediaBase} />
       </AbsoluteFill>
 
-      {captions && voiceSrc && <Captions scenes={scenes} />}
+      {captions && hasVoice && <Captions scenes={scenes} />}
       <ProgressBar />
       {musicSrc && <Audio src={resolveSrc(mediaBase, musicSrc)} volume={musicVolume} loop />}
       {voiceSrc && <Audio src={resolveSrc(mediaBase, voiceSrc)} />}

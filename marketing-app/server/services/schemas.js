@@ -44,8 +44,45 @@ export const ScriptRequest = z.object({
   url: z.string().max(2000).default(''),
   imageIds: z.array(z.string().regex(/^[a-f0-9]{16}$/)).max(10).default([]),
   language: z.enum(['ar', 'en']).default('ar'),
-  durationSec: z.number().min(40).max(60).default(45),
+  // 40–60s normally; a reference video may ask for 15–90s.
+  durationSec: z.number().min(15).max(90).default(45),
   market: z.enum(['egypt', 'gulf', 'both']).default('both'),
+  // Blueprint from /api/video/reference: rebuild that video's structure and style for Qudra.
+  reference: z.lazy(() => ReferenceInput).nullable().optional(),
+});
+
+const ReferenceInput = z.object({
+  summary: z.string().max(2000),
+  durationSec: z.number().min(1).max(600),
+  hookPattern: z.string().max(1000),
+  tone: z.string().max(500),
+  pacing: z.string().max(500),
+  voiceStyle: z.string().max(500),
+  textStyle: z.string().max(500),
+  scenes: z
+    .array(
+      z.object({
+        type: z.enum(SCENE_TYPES),
+        durationSec: z.number().min(0).max(120),
+        onScreenText: z.string().max(600),
+        voiceover: z.string().max(1500),
+        purpose: z.string().max(600),
+        visual: z.string().max(800),
+        transition: z.enum(TRANSITIONS),
+      }),
+    )
+    .min(1)
+    .max(12),
+});
+
+export const ReferenceRequest = z
+  .object({ url: z.string().max(500).default(''), uploadId: z.string().regex(/^[a-f0-9]{16}$/).nullable().optional(), language: z.enum(['ar', 'en']).default('ar') })
+  .refine((v) => v.url.trim() || v.uploadId, { message: 'Add a YouTube link or upload a video' });
+
+export const VoicePreviewRequest = z.object({
+  text: z.string().min(1).max(1000),
+  language: z.enum(['ar', 'en']).default('ar'),
+  voiceName: z.string().max(40).nullable().optional(),
 });
 
 const SceneInput = z.object({
@@ -80,6 +117,7 @@ export const RenderRequest = z.object({
       visualStyle: z.enum(['motion', 'mix']).default('mix'),
       voiceMode: z.enum(['none', 'ai', 'upload']).default('none'),
       voiceUploadId: z.string().regex(/^[a-f0-9]{16}$/).nullable().optional(),
+      voiceName: z.string().max(40).nullable().optional(),
       music: z.string().max(200).nullable().optional(),
       captions: z.boolean().default(true),
       // Set when the video was opened from a weekly-plan day, so the plan can link to it.

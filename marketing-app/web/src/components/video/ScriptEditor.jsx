@@ -1,17 +1,36 @@
-import React from 'react';
-import { ArrowDown, ArrowUp, Clock, Copy, FileText, Plus, Trash2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ArrowDown, ArrowUp, Clock, Copy, FileText, Plus, Trash2, Volume2 } from 'lucide-react';
 import { totalSeconds, MIN_TOTAL_SEC, MAX_TOTAL_SEC } from '../../../../video/timing.js';
-import { copyText } from '../../lib/api.js';
+import { api, copyText } from '../../lib/api.js';
 import { useI18n } from '../../lib/i18n.jsx';
 import { useToast } from '../Toasts.jsx';
-import { Field, SectionTitle, Warnings } from '../ui.jsx';
+import { Field, SectionTitle, Spinner, Warnings } from '../ui.jsx';
 
 const TYPES = ['hook', 'pain', 'solution', 'feature', 'proof', 'cta'];
 const TRANSITIONS = ['fade', 'slide', 'wipe', 'flip'];
 
-export function ScriptEditor({ script, setScript, images, voiceMode, warnings, writing }) {
+export function ScriptEditor({ script, setScript, images, voiceMode, voiceName, voiceRate = 1.1, warnings, writing }) {
   const { t } = useI18n();
   const toast = useToast();
+  const [speaking, setSpeaking] = useState(null);
+  const audio = useRef(null);
+
+  // Speaks one scene's line with the chosen AI voice (the server caches it, so rendering reuses the clip).
+  const listen = async (scene) => {
+    audio.current?.pause();
+    setSpeaking(scene.id);
+    try {
+      const { url } = await api.post('/api/video/voice-preview', { text: scene.voiceover, language: script.language, voiceName });
+      const a = new Audio(url);
+      a.playbackRate = voiceRate;
+      audio.current = a;
+      a.onended = () => setSpeaking(null);
+      await a.play();
+    } catch (err) {
+      toast.error(err);
+      setSpeaking(null);
+    }
+  };
 
   if (writing && !script) return <EditorSkeleton />;
   if (!script) {
@@ -84,6 +103,12 @@ export function ScriptEditor({ script, setScript, images, voiceMode, warnings, w
                 ))}
               </select>
               <div className="ms-auto flex gap-1">
+                {voiceMode === 'ai' && scene.voiceover && (
+                  <button className="btn-icon !h-7 !w-auto gap-1 !px-2 text-[11px]" onClick={() => listen(scene)} disabled={speaking === scene.id} title={t('listen')} data-testid="listen">
+                    {speaking === scene.id ? <Spinner className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                    {t('listen')}
+                  </button>
+                )}
                 <button className="btn-icon !h-7 !w-7" disabled={i === 0} onClick={() => move(i, -1)} aria-label="up">
                   <ArrowUp className="h-3.5 w-3.5" />
                 </button>

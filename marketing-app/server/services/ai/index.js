@@ -14,12 +14,15 @@ const MARKET = {
  * Writes a 40–60s motion-video script. `source` holds topic text, scraped page text
  * and uploaded images (as base64 content blocks) for Claude to work from.
  */
-export async function writeVideoScript({ topic, page, images, language, durationSec, market }) {
-  if (config.mockAi) return mockScript({ topic: topic || page?.title, language });
+export async function writeVideoScript({ topic, page, images, language, durationSec, market, reference = null }) {
+  if (config.mockAi) return mockScript({ topic: topic || page?.title, language, reference });
 
+  const structure = reference
+    ? `Structure: rebuild the REFERENCE VIDEO below for Qudra. Keep exactly its ${reference.scenes.length} scenes in the same order, with the same scene types, the same relative durations, the same transitions, the same hook pattern, pacing, tone and amount of on-screen text. Use the reference's voiceover style for the voiceover lines. The content must be about Qudra and the topic below; never copy the reference's brand, product names or claims.`
+    : 'Structure: 6–8 scenes in this order: hook (0–3s, scroll-stopping) → pain → solution (Qudra) → 1–3 feature scenes → proof (concrete before/after, no invented numbers) → cta.';
   const instructions = `Write a ${durationSec}-second vertical (9:16) motion-graphics marketing video script for ${MARKET[market]}.
 
-Structure: 6–8 scenes in this order: hook (0–3s, scroll-stopping) → pain → solution (Qudra) → 1–3 feature scenes → proof (concrete before/after, no invented numbers) → cta.
+${structure}
 Each scene:
 - headline: on-screen text, max 9 words, the scene's one idea.
 - subtext: max 18 words supporting line (may be empty for hook/cta).
@@ -28,7 +31,7 @@ Each scene:
 - transition: into the NEXT scene (fade | slide | wipe | flip); vary them.
 - stockQuery: 2–5 English words to search stock footage for this scene's background (people, offices, classrooms; empty for cta).
 - visualIdea: what the motion graphic shows (brief).
-- voiceover: the spoken line for this scene, natural, fits its duration (~2.3 words/second).
+- voiceover: the spoken line for this scene, natural and conversational; short enough to say in the scene's duration at about 2 words per second (hook ≤ 9 words, other scenes ≤ 16 words).
 Also return: title (internal, short), cta.headline + cta.button (one CTA), caption for posting the video (≤ 80 words), 3–5 hashtags.
 - imageIndex: ${images.length ? `which attached image this scene shows, 1–${images.length} in the order attached; 0 for none. Put each image on the scene whose text describes that screen, use each image at most once, and keep hook and cta at 0.` : 'always 0 (no images attached).'}
 ${images.length ? `The user attached ${images.length} image(s) (product screenshots), in this order. Look at each one and describe what it actually shows in the scene you put it on.` : ''}`;
@@ -40,7 +43,8 @@ ${images.length ? `The user attached ${images.length} image(s) (product screensh
       text: `${instructions}
 
 <topic>${topic || '(none, use the page content)'}</topic>
-${page ? `<page url="${page.url}">\n<title>${page.title}</title>\n${page.text}\n</page>` : ''}`,
+${page ? `<page url="${page.url}">\n<title>${page.title}</title>\n${page.text}\n</page>` : ''}
+${reference ? `<reference_video>\n${JSON.stringify(reference, null, 1)}\n</reference_video>` : ''}`,
     },
   ];
 

@@ -69,8 +69,18 @@ const T = {
   },
 };
 
-export function mockScript({ topic, language }) {
+export function mockScript({ topic, language, reference = null }) {
   const t = T[language];
+  if (reference) {
+    // Demo of "rebuild this reference": same scenes, types, timing and transitions.
+    return {
+      title: t.title((topic || '').slice(0, 60)),
+      scenes: reference.scenes.map((s) => ({ type: s.type, headline: (s.onScreenText || s.purpose).slice(0, 90), subtext: '', bullets: [], durationSec: s.durationSec, transition: s.transition, stockQuery: '', visualIdea: s.visual, voiceover: s.voiceover })),
+      cta: t.cta,
+      caption: t.caption,
+      hashtags: t.hashtags,
+    };
+  }
   const shortTopic = (topic || (language === 'ar' ? 'إدارة أكاديميتك' : 'running your academy')).slice(0, 80);
   return {
     title: t.title(shortTopic),

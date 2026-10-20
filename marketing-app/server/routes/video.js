@@ -8,7 +8,9 @@ import { downloadToDir } from '../lib/net.js';
 import { lintBrand } from '../brand/qudra.js';
 import { totalSeconds } from '../../video/timing.js';
 import { finalizeScript } from '../services/scripts.js';
-import { RenderRequest, ScriptRequest } from '../services/schemas.js';
+import { ReferenceRequest, RenderRequest, ScriptRequest, VoicePreviewRequest } from '../services/schemas.js';
+import { analyzeReference } from '../services/reference.js';
+import { synthesizeSpeech } from '../services/media.js';
 import { writeVideoScript } from '../services/ai/index.js';
 import { scrapePage } from '../services/scraper.js';
 import { activeJob, createJob, getJob, subscribe } from '../services/jobs.js';
@@ -51,7 +53,7 @@ videoRouter.post(
   '/script',
   wrap(async (req, res) => {
     const input = ScriptRequest.parse(req.body);
-    if (!input.topic.trim() && !input.url.trim() && !input.imageIds.length) {
+    if (!input.topic.trim() && !input.url.trim() && !input.imageIds.length && !input.reference) {
       throw errors.validation('Add a topic, a URL or at least one image', 'أضف موضوعاً أو رابطاً أو صورة واحدة على الأقل.');
     }
     const uploads = input.imageIds.map((id) => uploadsRepo.get(id)).filter(Boolean);
@@ -66,11 +68,34 @@ videoRouter.post(
       language: input.language,
       durationSec: input.durationSec,
       market: input.market,
+      reference: input.reference || null,
     });
 
     const imageIds = allImages.filter((i) => i.mime.startsWith('image/')).map((i) => i.id);
     const script = finalizeScript(ai, { language: input.language, durationSec: input.durationSec, topic: input.topic || page?.title || '', imageIds });
     res.json({ script, durationSec: totalSeconds(script.scenes), warnings: lintBrand(script), pageImages });
+  }),
+);
+
+// Watches a reference video (YouTube link or uploaded file) and returns its structure.
+videoRouter.post(
+  '/reference',
+  wrap(async (req, res) => {
+    const input = ReferenceRequest.parse(req.body);
+    const upload = input.uploadId ? uploadsRepo.get(input.uploadId) : null;
+    if (input.uploadId && (!upload || !upload.mime.startsWith('video/'))) throw errors.notFound('Video file');
+    const blueprint = await analyzeReference({ url: input.url.trim(), upload, language: input.language });
+    res.json({ blueprint });
+  }),
+);
+
+// Speaks one scene's line so it can be heard before rendering (cached, so the render reuses it).
+videoRouter.post(
+  '/voice-preview',
+  wrap(async (req, res) => {
+    const input = VoicePreviewRequest.parse(req.body);
+    const clip = await synthesizeSpeech(input.text, { language: input.language, voiceName: input.voiceName });
+    res.json({ url: `/media/${clip.fileName}`, seconds: clip.seconds });
   }),
 );
 

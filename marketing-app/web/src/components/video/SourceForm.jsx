@@ -4,6 +4,7 @@ import { api } from '../../lib/api.js';
 import { useI18n } from '../../lib/i18n.jsx';
 import { useToast } from '../Toasts.jsx';
 import { ErrorBox, Field, SectionTitle, Segmented, Spinner } from '../ui.jsx';
+import { ReferencePicker } from './ReferencePicker.jsx';
 
 function orientationOf(url) {
   return new Promise((resolve) => {
@@ -25,7 +26,7 @@ export async function uploadFiles(files) {
   return Promise.all(items.map(async (i) => (i.mime.startsWith('image/') ? { ...i, orientation: await orientationOf(i.url) } : i)));
 }
 
-export function SourceForm({ form, setForm, images, setImages, status, onWrite, writing, error, hasScript }) {
+export function SourceForm({ form, setForm, images, setImages, status, onWrite, writing, error, hasScript, reference, setReference }) {
   const { t } = useI18n();
   const toast = useToast();
   const fileInput = useRef(null);
@@ -63,7 +64,7 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
     }
   };
 
-  const canWrite = !writing && !uploading && (form.topic.trim() || form.url.trim() || images.length) && caps?.writer;
+  const canWrite = !writing && !uploading && (form.topic.trim() || form.url.trim() || images.length || reference) && caps?.writer;
 
   return (
     <section className="card space-y-5 p-5">
@@ -114,6 +115,20 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
         )}
       </div>
 
+      <div>
+        <span className="label">{t('reference')}</span>
+        <ReferencePicker
+          blueprint={reference}
+          enabled={!!caps?.reference}
+          language={form.language}
+          onChange={(bp) => {
+            setReference(bp);
+            // Match the reference's length (within what the renderer allows).
+            if (bp) set('durationSec')(Math.min(90, Math.max(15, Math.round(bp.durationSec))));
+          }}
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <Field group label={t('contentLang')}>
           <Segmented value={form.language} onChange={set('language')} options={[{ value: 'ar', label: 'العربية' }, { value: 'en', label: 'English' }]} />
@@ -128,7 +143,7 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
       </div>
 
       <Field label={`${t('duration')}: ${form.durationSec}${t('sec')}`}>
-        <input type="range" min={40} max={60} step={5} value={form.durationSec} onChange={(e) => set('durationSec')(Number(e.target.value))} className="w-full accent-[rgb(var(--accent))]" />
+        <input type="range" min={reference ? 15 : 40} max={reference ? 90 : 60} step={reference ? 1 : 5} value={form.durationSec} onChange={(e) => set('durationSec')(Number(e.target.value))} className="w-full accent-[rgb(var(--accent))]" />
       </Field>
 
       <Field group label={t('style')}>
@@ -158,6 +173,22 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
           ]}
         />
       </Field>
+      {form.voiceMode === 'ai' && caps?.tts && (
+        <div className="space-y-1.5">
+          {status?.voices?.length > 0 && (
+            <Field label={t('voicePick')}>
+              <select className="input !py-2" value={form.voiceName || status.defaultVoice} onChange={(e) => set('voiceName')(e.target.value)} data-testid="voice-name">
+                {status.voices.map((v) => (
+                  <option key={v} value={v}>
+                    {t(`voiceNames.${v}`)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
+          <p className="text-xs text-muted">{t('voiceAiNote')}</p>
+        </div>
+      )}
       {form.voiceMode === 'upload' && (
         <div>
           <button type="button" className="btn-ghost w-full text-xs" onClick={() => voiceInput.current?.click()}>

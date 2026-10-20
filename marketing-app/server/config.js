@@ -40,7 +40,13 @@ export const config = {
   replicateKey: env.REPLICATE_API_TOKEN || '',
   replicateModel: env.REPLICATE_IMAGE_MODEL || 'black-forest-labs/flux-schnell',
 
-  ttsProvider: (env.TTS_PROVIDER || 'none').toLowerCase(),
+  // elevenlabs | openai | gemini | none. Empty = ElevenLabs if configured, else Gemini when a Gemini key exists.
+  ttsProviderSetting: (env.TTS_PROVIDER || '').toLowerCase(),
+  // 3.1 Flash TTS speaks Arabic at a natural ad pace (about twice as fast as 3.8 in tests).
+  geminiTtsModel: env.GEMINI_TTS_MODEL || 'gemini-3.1-flash-tts-preview',
+  geminiVoice: env.GEMINI_TTS_VOICE || 'Charon',
+  // AI voices read Arabic slowly; play them a little faster (pitch is preserved).
+  voiceRate: Math.min(1.5, Math.max(0.8, Number(env.VOICE_RATE) || 1.1)),
   elevenlabsKey: env.ELEVENLABS_API_KEY || '',
   elevenlabsVoice: env.ELEVENLABS_VOICE_ID || '',
   openaiTtsVoice: env.OPENAI_TTS_VOICE || 'alloy',
@@ -76,6 +82,19 @@ for (const dir of [config.paths.data, config.paths.uploads, config.paths.media, 
   fs.mkdirSync(dir, { recursive: true });
 }
 
+/** Which text-to-speech provider AI voiceovers use, or null when none is usable. */
+export function ttsProvider() {
+  const set = config.ttsProviderSetting;
+  const ready = {
+    elevenlabs: !!config.elevenlabsKey && !!config.elevenlabsVoice,
+    openai: !!config.openaiKey,
+    gemini: !!config.geminiKey,
+  };
+  if (set && set !== 'none' && set !== 'auto') return ready[set] ? set : null;
+  if (set === 'none' && !config.geminiKey) return null;
+  return ready.elevenlabs ? 'elevenlabs' : ready.gemini ? 'gemini' : null;
+}
+
 /** The AI that writes scripts and plans: explicit AI_PROVIDER, else the first provider with a key. */
 export function writerProvider() {
   if (config.mockAi) return 'mock';
@@ -92,14 +111,13 @@ export function capabilities() {
   const imageReady =
     (config.imageProvider === 'openai' && !!config.openaiKey) ||
     (config.imageProvider === 'replicate' && !!config.replicateKey);
-  const ttsReady =
-    (config.ttsProvider === 'elevenlabs' && !!config.elevenlabsKey && !!config.elevenlabsVoice) ||
-    (config.ttsProvider === 'openai' && !!config.openaiKey);
   return {
     writer: hasKey ? provider : null,
     model: { mock: 'mock', claude: config.claudeModel, gemini: config.geminiModel }[provider] || null,
     images: imageReady ? config.imageProvider : null,
-    tts: ttsReady ? config.ttsProvider : null,
+    tts: ttsProvider(),
+    // Gemini can watch reference videos (used even when Claude writes the scripts).
+    reference: !!config.geminiKey,
     stock: [config.pexelsKey && 'pexels', config.pixabayKey && 'pixabay'].filter(Boolean),
     authRequired: !!config.appPassword,
   };

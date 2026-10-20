@@ -54,6 +54,18 @@ GEMINI_API_KEY=AIza...
 - اللوجو في `assets/brand/logo.png`. استبدله بنسخة أخرى بنفس الاسم لو حبيت.
 - مع "موشن + صور + Stock + AI": لو أضفت مفتاح Pexels أو Pixabay (مجاني)، خلفيات المشاهد تصبح لقطات حقيقية بلمسة أخضر قدرة.
 
+### 4.1) صوت AI (فويس أوفر تلقائي)
+- لو `GEMINI_API_KEY` موجود، الصوت بيشتغل لوحده من غير أي مفتاح إضافي.
+- في **الصوت** اختار **صوت AI**، وبعدين اختار **صوت المعلّق** (رجالي أو نسائي).
+- جنب كل مشهد هتلاقي زرار **🔊 اسمع**، بيسمّعك جملة المشهد قبل الإنتاج.
+- عند الإنتاج، كل مشهد بيتقري بصوته، ومدة المشهد بتتظبط على طول جملته، والترجمة المكتوبة بتظهر مع الكلام.
+
+### 4.2) فيديو مرجعي ("اعملي فيديو زي ده")
+1. في **فيديو مرجعي** حط رابط **يوتيوب**، أو اضغط **ارفع فيديو** وارفع MP4. لفيديوهات تيك توك وإنستجرام ولينكدإن: نزّل الفيديو على جهازك الأول، وبعدين ارفعه.
+2. اضغط **حلّل الفيديو المرجعي**. Gemini بيتفرج على الفيديو ويطلّع هيكله: عدد المشاهد، ومدة كل مشهد، ونوع الهوك، والإيقاع، وأسلوب الصوت.
+3. اكتب موضوعك عن قدرة، واضغط **اكتب السكريبت**. السكريبت بيمشي على نفس الهيكل والإيقاع والمدة، بس المحتوى بيبقى عن قدرة.
+- ملاحظة: الهيكل والأسلوب بيتنقلوا، لكن الشكل البصري بيفضل بهوية قدرة. وأقل مدة للمشهد 3 ثواني عشان النص يتقري.
+
 ### 5) استخدام التبويب الثاني: خطة الفيديوهات الأسبوعية
 كل يوم في الخطة **فيديو كامل**، مش فكرة بس.
 1. اختر **بداية الأسبوع** (افتراضياً السبت القادم)، والمنصات، واللغة، والسوق، و**مدة كل فيديو**، وتركيز الحملة لو موجود.
@@ -112,8 +124,9 @@ marketing-app/
 │       ├── ai/gemini.js        Google GenAI SDK, JSON-schema output, friendly errors
 │       ├── ai/index.js         prompts for script / week plan / single-post rewrite
 │       ├── ai/mock.js          demo mode (MOCK_AI=true)
-│       ├── media.js            stock (Pexels, Pixabay), AI images (OpenAI, Replicate), TTS (ElevenLabs, OpenAI)
+│       ├── media.js            stock (Pexels, Pixabay), AI images (OpenAI, Replicate), TTS (Gemini, ElevenLabs, OpenAI; cached per line)
 │       ├── scraper.js          URL → title, text, images
+│       ├── reference.js        reference video (YouTube link or upload) → blueprint via Gemini video understanding
 │       ├── render.js + jobs.js Remotion pipeline with live progress over Server-Sent Events
 │       ├── planner.js          day/platform/pillar slots
 │       └── export.js           Markdown + Word (.docx, RTL-aware)
@@ -131,7 +144,7 @@ marketing-app/
 1. `POST /api/video/script`: Claude gets the topic, the scraped page text and up to 4 uploaded images, and returns a structured scene list. Durations are fitted to the requested length.
 2. The UI edits the script; the Remotion **Player** previews the exact composition the server renders.
 3. `POST /api/video/render` starts a job:
-   - voiceover (AI or uploaded), with scenes stretched to the audio length;
+   - voiceover: AI voice is synthesized per scene and each scene lasts as long as its line (voice, captions and visuals stay in sync); an uploaded recording stretches the whole video;
    - per-scene visuals: pinned screenshot → device mockup, else stock footage, else AI image, else the brand gradient;
    - `renderMedia` → H.264 MP4, plus a thumbnail.
 4. `GET /api/video/jobs/:id/events` streams progress. Results are stored in `data/` and SQLite.

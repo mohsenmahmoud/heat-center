@@ -50,6 +50,7 @@ export function PreviewPanel({ script, images, form, logo, source, onRendered })
           visualStyle: form.visualStyle,
           voiceMode: form.voiceMode === 'upload' && !form.voiceUpload ? 'none' : form.voiceMode,
           voiceUploadId: form.voiceUpload?.id || null,
+          voiceName: form.voiceName || null,
           music: form.music || null,
           captions: form.captions,
           source: source ? { planId: source.planId, postId: source.postId } : null,

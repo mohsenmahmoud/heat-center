@@ -8,7 +8,7 @@ import { config } from '../config.js';
 import { plansRepo, uploadsRepo, videosRepo, newId } from '../db.js';
 import { errors, AppError } from '../lib/errors.js';
 import { orientation } from '../lib/image-size.js';
-import { fitDurations, totalSeconds, MIN_TOTAL_SEC, MAX_TOTAL_SEC } from '../../video/timing.js';
+import { fitDurations, totalSeconds, FPS, HARD_MIN_SEC, HARD_MAX_SEC, TRANSITION_FRAMES } from '../../video/timing.js';
 import { findStock, generateImage, synthesizeSpeech } from './media.js';
 import { updateJob } from './jobs.js';
 
@@ -74,18 +74,43 @@ async function prepareVisuals(script, options, report) {
   return scenes;
 }
 
-async function prepareVoice(script, options) {
-  if (options.voiceMode === 'ai') {
-    const text = script.scenes.map((s) => s.voiceover || `${s.headline}. ${s.subtext}`).join('\n');
-    const file = await synthesizeSpeech(text, script.language);
-    return { src: `/media/${file}`, seconds: await audioSeconds(path.join(config.paths.media, file)) };
-  }
-  if (options.voiceMode === 'upload' && options.voiceUploadId) {
-    const upload = uploadsRepo.get(options.voiceUploadId);
-    if (!upload) throw errors.notFound('Voice file');
-    return { src: `/uploads/${upload.file_name}`, seconds: await audioSeconds(path.join(config.paths.uploads, upload.file_name)) };
-  }
-  return null;
+const TRANSITION_SEC = TRANSITION_FRAMES / FPS;
+
+/**
+ * AI voice: one clip per scene, and each scene lasts as long as its line (so voice, captions and
+ * visuals stay in sync). Clips are made a few at a time.
+ */
+async function voiceScenes(script, options, report) {
+  const rate = config.voiceRate;
+  const out = new Array(script.scenes.length);
+  let next = 0;
+  let done = 0;
+  const worker = async () => {
+    while (next < script.scenes.length) {
+      const i = next++;
+      const scene = script.scenes[i];
+      const text = (scene.voiceover || '').trim();
+      if (!text) {
+        out[i] = scene;
+      } else {
+        const clip = await synthesizeSpeech(text, { language: script.language, voiceName: options.voiceName });
+        const seconds = clip.seconds ?? (await audioSeconds(path.join(config.paths.media, clip.fileName))) ?? scene.durationSec;
+        // Room for the clip at the faster playback rate, plus breathing space and the overlap with the next scene.
+        const tail = scene.type === 'cta' ? 1.2 : 0.4;
+        out[i] = { ...scene, voice: { src: `/media/${clip.fileName}`, rate }, durationSec: Math.max(2.5, Math.round((seconds / rate + tail + TRANSITION_SEC) * 10) / 10) };
+      }
+      report(++done / script.scenes.length);
+    }
+  };
+  await Promise.all(Array.from({ length: 3 }, worker));
+  return out;
+}
+
+async function uploadedVoice(options) {
+  if (options.voiceMode !== 'upload' || !options.voiceUploadId) return null;
+  const upload = uploadsRepo.get(options.voiceUploadId);
+  if (!upload) throw errors.notFound('Voice file');
+  return { src: `/uploads/${upload.file_name}`, seconds: await audioSeconds(path.join(config.paths.uploads, upload.file_name)) };
 }
 
 /** Full pipeline for one job: assets → bundle → MP4 + thumbnail → history row. */
@@ -99,15 +124,19 @@ export async function runRenderJob(jobId, { script, options }) {
   };
   try {
     stage('voice', 0.02, null);
-    const voice = await prepareVoice(script, options);
-
-    // Voiceover sets the pace: stretch scenes to the audio (kept within 40–60s when possible).
     let scenes = script.scenes;
-    const target = voice?.seconds ? Math.min(Math.max(voice.seconds + 1.5, MIN_TOTAL_SEC), Math.max(MAX_TOTAL_SEC, voice.seconds + 1.5)) : Math.min(Math.max(totalSeconds(scenes), MIN_TOTAL_SEC), MAX_TOTAL_SEC);
-    scenes = fitDurations(scenes, target);
+    const voice = await uploadedVoice(options);
+    if (options.voiceMode === 'ai') {
+      // The voice sets the length: scenes follow their spoken lines.
+      scenes = await voiceScenes(script, options, (p) => stage('voice', 0.02 + p * 0.08, null));
+    } else {
+      // An uploaded recording sets the total length; otherwise keep the script's length within bounds.
+      const target = voice?.seconds ? Math.max(voice.seconds + 1.5, HARD_MIN_SEC) : Math.min(Math.max(totalSeconds(scenes), HARD_MIN_SEC), HARD_MAX_SEC);
+      scenes = fitDurations(scenes, target);
+    }
 
-    stage('assets', 0.05, null);
-    scenes = await prepareVisuals({ ...script, scenes }, options, (p, msg) => stage('assets', 0.05 + p * 0.15, msg));
+    stage('assets', 0.1, null);
+    scenes = await prepareVisuals({ ...script, scenes }, options, (p, msg) => stage('assets', 0.1 + p * 0.1, msg));
 
     const music = options.music && listMusic().includes(options.music) ? `/music/${encodeURIComponent(options.music)}` : null;
     const inputProps = {
@@ -145,7 +174,7 @@ export async function runRenderJob(jobId, { script, options }) {
       title: script.title,
       language: script.language,
       topic: script.topic,
-      script: { ...script, scenes: scenes.map(({ visual, ...s }) => s), options },
+      script: { ...script, scenes: scenes.map(({ visual, voice, ...s }) => s), options },
       fileName,
       thumbName,
       durationSec: composition.durationInFrames / composition.fps,
@@ -153,7 +182,7 @@ export async function runRenderJob(jobId, { script, options }) {
     });
     if (options.source) {
       // The edited script becomes the plan day's script, and the day points at its video.
-      plansRepo.patchPost(options.source.planId, options.source.postId, { script: { ...script, scenes: scenes.map(({ visual, ...s }) => s) }, videoId: saved.id });
+      plansRepo.patchPost(options.source.planId, options.source.postId, { script: { ...script, scenes: scenes.map(({ visual, voice, ...s }) => s) }, videoId: saved.id });
     }
     updateJob(jobId, { status: 'done', stage: 'done', progress: 1, result: saved });
   } catch (err) {

@@ -9,7 +9,7 @@ import { toStrictJsonSchema } from '../server/services/ai/json-schema.js';
 import { assertPublicUrl } from '../server/lib/net.js';
 import { buildSlots } from '../server/services/planner.js';
 import { imageSize } from '../server/lib/image-size.js';
-import { AiScriptSchema } from '../server/services/schemas.js';
+import { AiPlanSchema, AiScriptSchema, PostSchema } from '../server/services/schemas.js';
 
 describe('video timing', () => {
   const scenes = [3, 8, 6, 6, 7, 5].map((d, i) => ({ id: String(i), durationSec: d }));
@@ -36,6 +36,18 @@ describe('structured output schema', () => {
     expect(schema.required).toEqual(['a', 'b']);
     expect(schema.properties.b.items.additionalProperties).toBe(false);
     expect(JSON.stringify(schema)).not.toMatch(/minLength|maximum/);
+  });
+
+  it('keeps fields whose names are also schema keywords (a post field called "format")', () => {
+    const schema = toStrictJsonSchema(z.object({ format: z.string().min(1), default: z.string(), pattern: z.string() }));
+    expect(Object.keys(schema.properties)).toEqual(['format', 'default', 'pattern']);
+    expect(schema.required).toEqual(['format', 'default', 'pattern']);
+    expect(schema.properties.format).toEqual({ type: 'string' });
+  });
+
+  it('converts the real plan and script schemas without losing fields', () => {
+    const plan = toStrictJsonSchema(AiPlanSchema);
+    expect(plan.properties.posts.items.required).toEqual(Object.keys(PostSchema.shape));
   });
 
   it('converts the real script schema', () => {

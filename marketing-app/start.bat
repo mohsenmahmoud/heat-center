@@ -25,9 +25,10 @@ if errorlevel 1 (
 
 REM 2) First run: create .env and install packages.
 if not exist .env copy .env.example .env >nul
-if not exist node_modules (
-  echo  Installing packages for the first time, this takes a few minutes...
-  call npm install
+REM Runs every time so updates that add packages just work (fast when nothing changed).
+(
+  echo  Checking packages...
+  call npm install --no-audit --no-fund --loglevel=error
   if errorlevel 1 (
     echo  [X] npm install failed. Check your internet connection and try again.
     pause

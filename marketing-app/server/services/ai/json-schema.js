@@ -10,7 +10,8 @@ export function toStrictJsonSchema(zodSchema) {
     const out = {};
     for (const [k, v] of Object.entries(node)) {
       if (UNSUPPORTED.includes(k)) continue;
-      out[k] = walk(v);
+      // Keys under `properties` are field names (a post has a field called "format"), not schema keywords.
+      out[k] = k === 'properties' ? Object.fromEntries(Object.entries(v).map(([name, sub]) => [name, walk(sub)])) : walk(v);
     }
     if (out.type === 'object') {
       out.additionalProperties = false;

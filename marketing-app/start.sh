@@ -10,7 +10,8 @@ node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a
   exit 1
 }
 [ -f .env ] || cp .env.example .env
-[ -d node_modules ] || npm install || exit 1
+# Runs every time so updates that add packages just work (fast when nothing changed).
+npm install --no-audit --no-fund --loglevel=error || exit 1
 npm run build --silent || exit 1
 ( sleep 3; (open http://localhost:5174 || xdg-open http://localhost:5174) >/dev/null 2>&1 ) &
 echo "Keep this window open while you use the app. Press Ctrl+C to stop."

@@ -32,11 +32,14 @@ export function imageSize(filePath) {
   return null;
 }
 
+/** landscape (wide screen), portrait (tall desktop page) or phone (phone-shaped screenshot). */
 export function orientation(filePath) {
   try {
     const size = imageSize(filePath);
-    return size && size.width > size.height ? 'landscape' : 'portrait';
+    if (!size) return 'landscape';
+    const ratio = size.height / size.width;
+    return ratio >= 1.8 ? 'phone' : ratio > 1 ? 'portrait' : 'landscape';
   } catch {
-    return 'portrait';
+    return 'landscape';
   }
 }

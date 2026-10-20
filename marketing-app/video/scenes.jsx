@@ -55,7 +55,7 @@ export function HookScene({ scene, base }) {
   );
 }
 
-export function StandardScene({ scene, base }) {
+export function StandardScene({ scene, base, language }) {
   const { width, height } = useVideoConfig();
   const L = layout(width, height);
   const portrait = height > width;
@@ -81,7 +81,7 @@ export function StandardScene({ scene, base }) {
         </div>
         {hasMockup && (
           <div style={{ flex: 1, display: 'flex', alignItems: portrait ? 'flex-end' : 'center', justifyContent: 'center', minHeight: 0 }}>
-            <DeviceMockup src={scene.visual.src} base={base} orientation={scene.visual.orientation} width={portrait ? width * 0.84 : width * 0.42} />
+            <DeviceMockup src={scene.visual.src} base={base} orientation={scene.visual.orientation} rtl={language === 'ar'} width={portrait ? width * 0.84 : width * 0.42} />
           </div>
         )}
       </AbsoluteFill>

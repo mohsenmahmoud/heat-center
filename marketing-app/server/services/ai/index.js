@@ -30,7 +30,8 @@ Each scene:
 - visualIdea: what the motion graphic shows (brief).
 - voiceover: the spoken line for this scene, natural, fits its duration (~2.3 words/second).
 Also return: title (internal, short), cta.headline + cta.button (one CTA), caption for posting the video (≤ 80 words), 3–5 hashtags.
-${images.length ? `The user attached ${images.length} image(s) (e.g. product screenshots). Refer to what they show in the feature scenes.` : ''}`;
+- imageIndex: ${images.length ? `which attached image this scene shows, 1–${images.length} in the order attached; 0 for none. Put each image on the scene whose text describes that screen, use each image at most once, and keep hook and cta at 0.` : 'always 0 (no images attached).'}
+${images.length ? `The user attached ${images.length} image(s) (product screenshots), in this order. Look at each one and describe what it actually shows in the scene you put it on.` : ''}`;
 
   const content = [
     ...images,

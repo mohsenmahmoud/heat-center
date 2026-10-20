@@ -81,3 +81,26 @@ describe('image size', () => {
     expect(imageSize(file)).toEqual({ width: 2, height: 1 });
   });
 });
+
+describe('scene images', () => {
+  const ai = (indexes) => ({
+    title: 't',
+    cta: { headline: 'c', button: 'b' },
+    caption: '',
+    hashtags: [],
+    scenes: indexes.map((imageIndex, i) => ({ type: ['hook', 'solution', 'feature', 'feature', 'cta'][i], headline: `h${i}`, subtext: '', bullets: [], durationSec: 8, transition: 'fade', stockQuery: '', visualIdea: '', voiceover: '', imageIndex })),
+  });
+
+  it("uses the AI's choice of image for each scene, once each", async () => {
+    const { finalizeScript } = await import('../server/services/scripts.js');
+    const script = finalizeScript(ai([0, 0, 2, 1, 0]), { language: 'ar', durationSec: 40, imageIds: ['a', 'b'] });
+    expect(script.scenes.map((s) => s.imageId)).toEqual([null, null, 'b', 'a', null]);
+    expect(script.scenes[0]).not.toHaveProperty('imageIndex');
+  });
+
+  it('falls back to filling product scenes in order when the AI picked none', async () => {
+    const { finalizeScript } = await import('../server/services/scripts.js');
+    const script = finalizeScript(ai([0, 0, 0, 0, 0]), { language: 'ar', durationSec: 40, imageIds: ['a', 'b'] });
+    expect(script.scenes.map((s) => s.imageId)).toEqual([null, 'a', 'b', null, null]);
+  });
+});

@@ -8,8 +8,12 @@ import { ErrorBox, Field, SectionTitle, Segmented, Spinner } from '../ui.jsx';
 function orientationOf(url) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve(img.naturalWidth > img.naturalHeight ? 'landscape' : 'portrait');
-    img.onerror = () => resolve('portrait');
+    // Same rule as the server: wide screen, tall desktop page, or phone screenshot.
+    img.onload = () => {
+      const ratio = img.naturalHeight / img.naturalWidth;
+      resolve(ratio >= 1.8 ? 'phone' : ratio > 1 ? 'portrait' : 'landscape');
+    };
+    img.onerror = () => resolve('landscape');
     img.src = url;
   });
 }

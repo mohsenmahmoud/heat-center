@@ -17,6 +17,8 @@ export const AiScriptSchema = z.object({
       stockQuery: z.string(),
       visualIdea: z.string(),
       voiceover: z.string(),
+      // 1-based index of the attached image this scene shows; 0 = no image.
+      imageIndex: z.number().int().default(0),
     }),
   ),
   cta: z.object({ headline: z.string(), button: z.string() }),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Easing, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { colors, gradient, resolveSrc } from './theme.js';
 
 /** Scene background: animated brand gradient, or stock/AI media with a green duotone overlay. */
@@ -105,31 +105,44 @@ export function Chip({ children, size, variant = 'mint', delay = 0 }) {
   );
 }
 
-/** Uploaded screenshot inside a phone (portrait) or browser (landscape) frame. */
-export function DeviceMockup({ src, base, orientation, width, delay = 6 }) {
+/**
+ * Uploaded screenshot inside a browser frame (desktop screens) or a phone frame (phone screenshots).
+ * Wide screens slowly zoom into the top corner where KPIs live; tall pages scroll, so details stay readable on a phone.
+ */
+export function DeviceMockup({ src, base, orientation, width, rtl, delay = 6 }) {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
   const s = spring({ frame: frame - delay, fps, config: { damping: 15, stiffness: 90 } });
-  const float = Math.sin(frame / 18) * 8;
+  const float = Math.sin(frame / 18) * 6;
+  const progress = interpolate(frame, [delay + 18, durationInFrames - 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic) });
   const url = resolveSrc(base, src);
   const common = { transform: `translateY(${(1 - s) * 300 + float}px) rotate(${(1 - s) * -6}deg)`, opacity: s, boxShadow: '0 40px 90px rgba(0,0,0,0.35)', background: colors.white, overflow: 'hidden' };
 
-  if (orientation === 'landscape') {
+  if (orientation === 'phone') {
     return (
-      <div style={{ ...common, width, borderRadius: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', background: colors.mintBg, direction: 'ltr' }}>
-          {['#EC736C', '#E0A54D', '#3DAA63'].map((c) => (
-            <span key={c} style={{ width: 14, height: 14, borderRadius: 7, background: c }} />
-          ))}
-          <span style={{ marginLeft: 16, flex: 1, padding: '6px 16px', borderRadius: 10, background: colors.white, color: colors.gray, fontSize: 20 }}>qudratms.com</span>
-        </div>
-        <Img src={url} style={{ width: '100%', display: 'block' }} />
+      <div style={{ ...common, height: '100%', maxWidth: width * 0.62, aspectRatio: '9 / 19', borderRadius: 56, border: `14px solid ${colors.ink}` }}>
+        <Img src={url} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', objectPosition: `50% ${progress * 100}%` }} />
       </div>
     );
   }
+  const tall = orientation === 'portrait';
   return (
-    <div style={{ ...common, width: width * 0.62, borderRadius: 56, border: `14px solid ${colors.ink}` }}>
-      <Img src={url} style={{ width: '100%', display: 'block', aspectRatio: '9 / 19', objectFit: 'cover', objectPosition: 'top' }} />
+    <div style={{ ...common, width, borderRadius: 22, display: 'flex', flexDirection: 'column', ...(tall ? { height: '100%' } : {}) }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', background: colors.mintBg, direction: 'ltr', flexShrink: 0 }}>
+        {['#EC736C', '#E0A54D', '#3DAA63'].map((c) => (
+          <span key={c} style={{ width: 14, height: 14, borderRadius: 7, background: c }} />
+        ))}
+        <span style={{ marginLeft: 16, flex: 1, padding: '6px 16px', borderRadius: 10, background: colors.white, color: colors.gray, fontSize: 20 }}>qudratms.com</span>
+      </div>
+      {tall ? (
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <Img src={url} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', objectPosition: `50% ${progress * 100}%` }} />
+        </div>
+      ) : (
+        <div style={{ overflow: 'hidden', aspectRatio: '4 / 3' }}>
+          <Img src={url} style={{ width: '100%', display: 'block', transform: `scale(${1 + progress * 0.6})`, transformOrigin: rtl ? 'top right' : 'top left' }} />
+        </div>
+      )}
     </div>
   );
 }

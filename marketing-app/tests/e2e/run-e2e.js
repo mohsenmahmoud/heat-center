@@ -163,12 +163,15 @@ try {
     const plan = await (await fetch(`${BASE}/api/planner/${plans.items[0].id}`)).json();
     assert(plan.posts[0].hook === 'هوك معدّل للاختبار', 'edit was not saved');
   });
-  await step('opens a day in the video generator, renders it and marks the day as produced', async () => {
+  await step('one click on a day makes its images and renders its video, then marks the day as produced', async () => {
     await page.locator('[data-testid=post-card]').first().locator('[data-testid=open-in-video]').click();
     await page.locator('[data-testid=plan-source]').waitFor();
     const scenes = await page.locator('[data-testid=scene]').count();
     assert(scenes >= 6, `expected the plan script in the editor, got ${scenes} scenes`);
-    await page.locator('[data-testid=render]').click();
+    // No render click: images are made and the render starts on its own.
+    await page.locator('[data-testid=render-progress]').waitFor({ timeout: 60000 });
+    const kinds = await page.locator('[data-testid=visual-kind]').allInnerTexts();
+    assert(kinds.filter((k) => k === 'صورة AI').length >= 4, `expected AI images before rendering, got ${kinds.join(' | ')}`);
     await page.locator('[data-testid=render-result], [role=alert]').first().waitFor({ timeout: 6 * 60 * 1000 });
     assert(!(await page.locator('[role=alert]').count()), 'render from plan failed');
     await page.getByRole('tab', { name: 'الخطة الأسبوعية' }).click();

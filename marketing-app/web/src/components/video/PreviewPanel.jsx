@@ -34,7 +34,7 @@ function previewProps(script, images, form, brand) {
   };
 }
 
-export function PreviewPanel({ script, images, form, brand, source, onRendered }) {
+export function PreviewPanel({ script, images, form, brand, source, onRendered, autoRender = 0 }) {
   const { t } = useI18n();
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
@@ -46,6 +46,11 @@ export function PreviewPanel({ script, images, form, brand, source, onRendered }
   const rendering = job && (job.status === 'queued' || job.status === 'running');
 
   useEffect(() => () => sourceRef.current?.close(), []);
+
+  // Started from a plan day: render as soon as the scene images are ready.
+  useEffect(() => {
+    if (autoRender && script && !rendering) render();
+  }, [autoRender]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const render = async () => {
     setError(null);

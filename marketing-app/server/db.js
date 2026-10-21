@@ -9,8 +9,17 @@ export function getDb() {
   db = new DatabaseSync(config.paths.db);
   // Wait for a concurrent writer (another process or test worker) instead of failing with "database is locked".
   db.exec('PRAGMA busy_timeout = 5000');
+  // Switching to WAL can fail at once (without waiting) while another process is setting up the same file.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      db.exec('PRAGMA journal_mode = WAL');
+      break;
+    } catch (err) {
+      if (!/locked|busy/i.test(err.message) || attempt >= 20) throw err;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
   db.exec(`
-    PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS uploads (
       id TEXT PRIMARY KEY, original_name TEXT, file_name TEXT NOT NULL,
       mime TEXT, size INTEGER, created_at TEXT NOT NULL

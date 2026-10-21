@@ -44,8 +44,13 @@ export default function VideoTab({ status, handoff }) {
   // Videos should not come out empty: give every scene an image unless the user chose motion graphics only.
   const autoFill = (next) => {
     visuals.cancel();
-    if (status?.capabilities?.images && form.visualStyle === 'mix') visuals.fillAll(next);
+    if (status?.capabilities?.images && form.visualStyle === 'mix') return visuals.fillAll(next);
+    return Promise.resolve();
   };
+  // A plan day opened here is produced end to end: images, then the MP4, with no extra clicks.
+  const [autoRender, setAutoRender] = useState(0);
+  const [autoStage, setAutoStage] = useState(null);
+  const autoRun = useRef(0);
 
   // Videos should come out complete: default to the AI voice whenever one is available.
   useEffect(() => {
@@ -62,11 +67,18 @@ export default function VideoTab({ status, handoff }) {
   useEffect(() => {
     if (!handoff?.script) return;
     setScript(handoff.script);
-    autoFill(handoff.script);
     setWarnings([]);
     setScriptError(null);
     setSource(handoff.source);
     setForm((f) => ({ ...f, language: handoff.script.language }));
+    const run = ++autoRun.current;
+    setAutoStage('images');
+    autoFill(handoff.script).then(() => {
+      // Skipped if the user started something else meanwhile (new script, another day).
+      if (autoRun.current !== run) return;
+      setAutoStage(null);
+      setAutoRender((n) => n + 1);
+    });
   }, [handoff]);
 
   const loadHistory = useCallback(() => {
@@ -81,6 +93,8 @@ export default function VideoTab({ status, handoff }) {
   }, [loadHistory]);
 
   const writeScript = async () => {
+    autoRun.current++;
+    setAutoStage(null);
     setWriting(true);
     setSource(null);
     setScriptError(null);
@@ -107,6 +121,8 @@ export default function VideoTab({ status, handoff }) {
   };
 
   const reuse = (video) => {
+    autoRun.current++;
+    setAutoStage(null);
     visuals.cancel();
     const { options, ...rest } = video.script;
     setScript(rest);
@@ -125,7 +141,7 @@ export default function VideoTab({ status, handoff }) {
           <div className="flex-1">
             <span className="font-semibold">{t('fromPlan')}: </span>
             {source.label}
-            <span className="block text-xs text-muted">{t('fromPlanNote')}</span>
+            <span className="block text-xs text-muted">{autoStage === 'images' ? t('autoImages') : t('fromPlanNote')}</span>
           </div>
           <button className="btn-icon" onClick={() => setSource(null)} title={t('unlink')} aria-label={t('unlink')}>
             <X className="h-4 w-4" />
@@ -135,7 +151,7 @@ export default function VideoTab({ status, handoff }) {
       <div className="grid gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)_minmax(320px,400px)]">
         <SourceForm form={form} setForm={setFormTracked} images={images} setImages={setImages} status={status} onWrite={writeScript} writing={writing} error={scriptError} hasScript={!!script} reference={reference} setReference={setReference} />
         <ScriptEditor script={script} setScript={setScript} images={images} visuals={visuals} imagesOn={!!status?.capabilities?.images} voiceMode={form.voiceMode} voiceName={form.voiceName || status?.defaultVoice} voiceRate={status?.voiceRate} warnings={warnings} writing={writing} />
-        <PreviewPanel script={script} images={images} form={form} brand={byId(script?.brandId)} source={source} onRendered={loadHistory} />
+        <PreviewPanel script={script} images={images} form={form} brand={byId(script?.brandId)} source={source} onRendered={loadHistory} autoRender={autoRender} />
       </div>
       <VideoHistory items={history} onReuse={reuse} onChanged={loadHistory} />
     </div>

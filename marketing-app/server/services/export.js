@@ -1,5 +1,6 @@
 import { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
-import { PILLARS, PLATFORMS } from '../brand/qudra.js';
+import { PILLARS, PLATFORMS, brandName } from '../brand/index.js';
+import { cleanVisual } from '../../video/brand-theme.js';
 import { voiceoverText } from './scripts.js';
 
 const L = {
@@ -12,10 +13,10 @@ const sec = (s) => `${Number(s.durationSec).toFixed(1).replace(/\.0$/, '')}s`;
 const pillarName = (key, lang) => PILLARS.find((p) => p.key === key)?.[lang] || key;
 const platformName = (key) => PLATFORMS[key]?.label || key;
 
-export function planToMarkdown(plan) {
+export function planToMarkdown(plan, brand) {
   const lang = plan.language;
   const t = L[lang];
-  const out = [`# ${t.title} — Qudra`, '', `**${t.week}:** ${plan.weekStart}`, ''];
+  const out = [`# ${t.title} — ${brandName(brand, lang)}`, '', `**${t.week}:** ${plan.weekStart}`, ''];
   for (const p of plan.posts) {
     out.push(
       `## ${p.dayName} · ${p.date}`,
@@ -55,46 +56,48 @@ export function planToMarkdown(plan) {
   return out.join('\n');
 }
 
-export async function planToDocx(plan) {
+export async function planToDocx(plan, brand) {
   const lang = plan.language;
+  const visual = cleanVisual(brand?.visual);
+  const [main, deep, ink] = [visual.primary, visual.secondary, visual.dark].map((c) => c.replace('#', '').toUpperCase());
   const rtl = lang === 'ar';
   const t = L[lang];
   const font = rtl ? 'Arial' : 'Calibri';
   const align = rtl ? AlignmentType.RIGHT : AlignmentType.LEFT;
   const run = (text, opts = {}) => new TextRun({ text, font, rightToLeft: rtl, size: 22, ...opts });
   const para = (children, opts = {}) => new Paragraph({ children, bidirectional: rtl, alignment: align, spacing: { after: 120 }, ...opts });
-  const field = (label, value) => para([run(`${label}: `, { bold: true, color: '016332' }), run(value)]);
+  const field = (label, value) => para([run(`${label}: `, { bold: true, color: deep }), run(value)]);
 
   const children = [
-    para([run(`${t.title} — Qudra`, { bold: true, size: 36, color: '2C894D' })], { heading: HeadingLevel.TITLE }),
+    para([run(`${t.title} — ${brandName(brand, lang)}`, { bold: true, size: 36, color: main })], { heading: HeadingLevel.TITLE }),
     para([run(`${t.week}: ${plan.weekStart}`, { color: '868C87' })]),
   ];
   for (const p of plan.posts) {
     children.push(
-      para([run(`${p.dayName} · ${p.date}`, { bold: true, size: 28, color: '1D2A22' })], { heading: HeadingLevel.HEADING_1, spacing: { before: 360, after: 120 } }),
+      para([run(`${p.dayName} · ${p.date}`, { bold: true, size: 28, color: ink })], { heading: HeadingLevel.HEADING_1, spacing: { before: 360, after: 120 } }),
       field(t.platform, platformName(p.platform)),
       field(t.pillar, pillarName(p.pillar, lang)),
       field(t.format, p.format),
       field(t.time, p.bestTime),
       field(t.hook, p.hook),
-      para([run(`${t.caption}:`, { bold: true, color: '016332' })]),
+      para([run(`${t.caption}:`, { bold: true, color: deep })]),
       ...p.caption.split('\n').map((line) => para([run(line)], { spacing: { after: 60 } })),
       field(t.visual, p.visualIdea),
       field(t.cta, p.cta),
       field(t.hashtags, p.hashtags.join(' ')),
-      para([run(`🎬 ${t.script}`, { bold: true, size: 26, color: '2C894D' })], { spacing: { before: 200, after: 120 } }),
+      para([run(`🎬 ${t.script}`, { bold: true, size: 26, color: main })], { spacing: { before: 200, after: 120 } }),
     );
     if (!p.script) {
       children.push(para([run(t.noScript, { italics: true, color: '868C87' })]));
       continue;
     }
     p.script.scenes.forEach((s, i) => {
-      children.push(para([run(`${t.scene} ${i + 1} · ${s.type} · ${sec(s)}`, { bold: true, color: '1D2A22' })], { spacing: { before: 120, after: 60 } }));
+      children.push(para([run(`${t.scene} ${i + 1} · ${s.type} · ${sec(s)}`, { bold: true, color: ink })], { spacing: { before: 120, after: 60 } }));
       children.push(field(t.onScreen, `${s.headline}${s.subtext ? ` — ${s.subtext}` : ''}`));
       if (s.voiceover) children.push(field(t.voice, s.voiceover));
     });
     children.push(field('CTA', `${p.script.cta.headline} · ${p.script.cta.button}`));
   }
-  const doc = new Document({ creator: 'Qudra Marketing Studio', title: t.title, sections: [{ properties: {}, children }] });
+  const doc = new Document({ creator: 'Marketing Studio', title: `${t.title} — ${brandName(brand, lang)}`, sections: [{ properties: {}, children }] });
   return Packer.toBuffer(doc);
 }

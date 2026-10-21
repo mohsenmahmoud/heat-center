@@ -1,14 +1,14 @@
 import React from 'react';
 import { Composition, registerRoot } from 'remotion';
-import { QudraVideo } from './QudraVideo.jsx';
+import { BrandVideo } from './BrandVideo.jsx';
 import { DIMENSIONS, FPS, totalFrames } from './timing.js';
 import { sampleProps } from './sample.js';
 
 function Root() {
   return (
     <Composition
-      id="QudraVideo"
-      component={QudraVideo}
+      id="BrandVideo"
+      component={BrandVideo}
       fps={FPS}
       width={1080}
       height={1920}

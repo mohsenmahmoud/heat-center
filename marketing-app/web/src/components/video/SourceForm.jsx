@@ -138,6 +138,7 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
             <option value="both">{t('both')}</option>
             <option value="egypt">{t('egypt')}</option>
             <option value="gulf">{t('gulf')}</option>
+            <option value="global">{t('global')}</option>
           </select>
         </Field>
       </div>

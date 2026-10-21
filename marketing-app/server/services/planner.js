@@ -1,4 +1,4 @@
-import { PILLARS, PLATFORMS, lintBrand } from '../brand/qudra.js';
+import { PILLARS, PLATFORMS, lintBrand } from '../brand/index.js';
 import { newId } from '../db.js';
 
 const DAY_NAMES = {
@@ -11,7 +11,7 @@ const PILLAR_ORDER = ['pain', 'product', 'insight', 'pain', 'roi', 'product', 't
 
 /**
  * Decides what each of the 7 days is (date, platform, content pillar) before asking
- * the AI to write, so the mix follows the Qudra pillar shares and every chosen platform gets used.
+ * the AI to write, so the mix follows the pillar shares and every chosen platform gets used.
  */
 export function buildSlots({ weekStart, platforms, language }) {
   const start = new Date(`${weekStart}T00:00:00Z`);
@@ -29,7 +29,7 @@ export function buildSlots({ weekStart, platforms, language }) {
   });
 }
 
-export function toPost(slot, content) {
+export function toPost(slot, content, brand) {
   return {
     id: newId(),
     date: slot.date,
@@ -38,7 +38,7 @@ export function toPost(slot, content) {
     pillar: slot.pillar.key,
     ...content,
     hashtags: content.hashtags.map((h) => (h.startsWith('#') ? h : `#${h}`)),
-    warnings: lintBrand(content),
+    warnings: lintBrand(content, brand),
   };
 }
 

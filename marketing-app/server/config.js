@@ -57,8 +57,8 @@ export const config = {
   browserExecutable: env.BROWSER_EXECUTABLE || null,
   renderConcurrency: env.RENDER_CONCURRENCY ? Number(env.RENDER_CONCURRENCY) : null,
 
+  // Only used when the Qudra brand is first created; after that, edit it in the Brands tab.
   brand: {
-    ctaDefault: env.BRAND_CTA || 'احجز ديمو مجاني',
     whatsapp: env.BRAND_WHATSAPP || '',
     website: env.BRAND_WEBSITE || 'qudratms.com',
   },
@@ -69,6 +69,7 @@ export const config = {
     uploads: path.join(dataDir, 'uploads'),
     media: path.join(dataDir, 'media'),
     videos: path.join(dataDir, 'videos'),
+    brands: path.join(dataDir, 'brands'),
     db: path.join(dataDir, 'studio.db'),
     assets: path.join(ROOT, 'assets'),
     music: path.join(ROOT, 'assets', 'music'),
@@ -78,7 +79,7 @@ export const config = {
   },
 };
 
-for (const dir of [config.paths.data, config.paths.uploads, config.paths.media, config.paths.videos]) {
+for (const dir of [config.paths.data, config.paths.uploads, config.paths.media, config.paths.videos, config.paths.brands]) {
   fs.mkdirSync(dir, { recursive: true });
 }
 

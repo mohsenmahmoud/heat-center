@@ -1,11 +1,12 @@
-# Qudra Marketing Studio · استوديو قدرة للتسويق
+# Marketing Studio · استوديو التسويق
 
-A local AI marketing app for Qudra (قُدرة), in a dark/white UI with Arabic and English:
+A local AI marketing app for **any number of brands** (it starts with Qudra · قُدرة), in a dark/white UI with Arabic and English:
 
 | Tab | What it does |
 |---|---|
 | **1. Motion Video Generator** | Topic, URL or screenshots → editable 40–60s script → live preview → branded 1080×1920 MP4 (transitions, CTA, logo, captions, music/voice) → download → history |
 | **2. Weekly Video Planner** | 7-day **video** plan (Saturday start) across LinkedIn / Facebook / Instagram / TikTok. Every day gets a hook, a **full video script** (scenes, on-screen text, voiceover, CTA), the caption to publish with it and the best time. Open any day in the video generator with one click, render it, and the day is marked produced. Edit (autosave), regenerate a day, copy the voiceover, export Markdown or Word |
+| **3. Brands** | One profile per product: name, tagline, audience, real features, voice rules, CTAs, hashtags, banned phrases, logo, 5 colours, a look (gradient / flat / premium dark / clean light) and Arabic + Latin fonts. Draft a whole brand with AI from a website or a short brief. Every script, plan and video follows the brand picked in the header |
 
 Everything runs on your computer (`127.0.0.1` only). API keys live in `.env` on the server side and never reach the browser.
 
@@ -41,7 +42,7 @@ GEMINI_API_KEY=AIza...
 لتجربة التطبيق **بدون أي مفتاح** ضع `MOCK_AI=true` (محتوى مثال ثابت، والفيديو يُنتج فعلاً).
 
 ### 4) استخدام التبويب الأول: مولّد الفيديو
-1. اكتب **الموضوع**، أو ضع **رابط** صفحة (مثلاً صفحة ميزة على qudratms.com)، و/أو ارفع **صور** (لقطات من لوحة التحكم أو التطبيق).
+1. تأكد إن **البراند** الصح مختار فوق (جنب اللوجو). بعدها اكتب **الموضوع**، أو ضع **رابط** صفحة (مثلاً صفحة ميزة على موقع المنتج)، و/أو ارفع **صور** (لقطات من لوحة التحكم أو التطبيق).
 2. اختر اللغة (عربي فصحى مبسطة / إنجليزي)، والسوق، والمدة (40–60 ثانية)، والشكل البصري، والصوت، والموسيقى.
 3. اضغط **اكتب السكريبت**. Claude يكتب 6–8 مشاهد: Hook ← الألم ← الحل ← ميزات ← قبل/بعد ← CTA.
 4. عدّل أي مشهد: النص، المدة، الانتقال، الترتيب، الصورة المعروضة داخل موكاب الموبايل أو المتصفح. المعاينة الحية تتحدث فوراً.
@@ -49,10 +50,10 @@ GEMINI_API_KEY=AIza...
 6. كل فيديو يُحفظ في **السجل**: تشغيل، تحميل، "استخدم السكريبت" لتعديله وإعادة إنتاجه، أو حذف.
 
 **نصائح:**
-- صور اللقطات العرضية (لوحة التحكم) تظهر داخل نافذة متصفح عليها qudratms.com، والطولية تظهر داخل موبايل.
+- صور اللقطات العرضية (لوحة التحكم) تظهر داخل نافذة متصفح عليها موقع البراند، والطولية تظهر داخل موبايل.
 - لإضافة موسيقى: ضع ملفات MP3 في `assets/music/` فتظهر في القائمة.
-- اللوجو في `assets/brand/logo.png`. استبدله بنسخة أخرى بنفس الاسم لو حبيت.
-- مع "موشن + صور + Stock + AI": لو أضفت مفتاح Pexels أو Pixabay (مجاني)، خلفيات المشاهد تصبح لقطات حقيقية بلمسة أخضر قدرة.
+- اللوجو والألوان والخطوط بتيجي من البراند المختار (تبويب **البراندات**).
+- مع "موشن + صور + Stock + AI": لو أضفت مفتاح Pexels أو Pixabay (مجاني)، خلفيات المشاهد تصبح لقطات حقيقية بلمسة من ألوان البراند.
 
 ### 4.1) صوت AI (فويس أوفر تلقائي)
 - لو `GEMINI_API_KEY` موجود، الصوت بيشتغل لوحده من غير أي مفتاح إضافي.
@@ -63,19 +64,33 @@ GEMINI_API_KEY=AIza...
 ### 4.2) فيديو مرجعي ("اعملي فيديو زي ده")
 1. في **فيديو مرجعي** حط رابط **يوتيوب**، أو اضغط **ارفع فيديو** وارفع MP4. لفيديوهات تيك توك وإنستجرام ولينكدإن: نزّل الفيديو على جهازك الأول، وبعدين ارفعه.
 2. اضغط **حلّل الفيديو المرجعي**. Gemini بيتفرج على الفيديو ويطلّع هيكله: عدد المشاهد، ومدة كل مشهد، ونوع الهوك، والإيقاع، وأسلوب الصوت.
-3. اكتب موضوعك عن قدرة، واضغط **اكتب السكريبت**. السكريبت بيمشي على نفس الهيكل والإيقاع والمدة، بس المحتوى بيبقى عن قدرة.
-- ملاحظة: الهيكل والأسلوب بيتنقلوا، لكن الشكل البصري بيفضل بهوية قدرة. وأقل مدة للمشهد 3 ثواني عشان النص يتقري.
+3. اكتب موضوعك، واضغط **اكتب السكريبت**. السكريبت بيمشي على نفس الهيكل والإيقاع والمدة، بس المحتوى بيبقى عن البراند المختار.
+- ملاحظة: الهيكل والأسلوب بيتنقلوا، لكن الشكل البصري بيفضل بهوية البراند المختار. وأقل مدة للمشهد 3 ثواني عشان النص يتقري.
 
 ### 5) استخدام التبويب الثاني: خطة الفيديوهات الأسبوعية
 كل يوم في الخطة **فيديو كامل**، مش فكرة بس.
 1. اختر **بداية الأسبوع** (افتراضياً السبت القادم)، والمنصات، واللغة، والسوق، و**مدة كل فيديو**، وتركيز الحملة لو موجود.
-2. اضغط **أنشئ خطة فيديوهات 7 أيام**. Claude يحدد زاوية كل يوم حسب محاور قدرة (ألم التشغيل ×2، قدرة في الشغل ×2، أرقام ونمو، خبرة المجال، ثقة)، وبعدها **يكتب سكريبت الفيديو لكل يوم تلقائياً**. العدّاد فوق بيوضح التقدّم، مثلاً "5/7 سكريبت".
+2. اضغط **أنشئ خطة فيديوهات 7 أيام** (الخطة بتتعمل للبراند المختار فوق). الذكاء الاصطناعي يحدد زاوية كل يوم حسب المحاور (ألم العميل ×2، المنتج في الشغل ×2، نتائج وأرقام، خبرة المجال، ثقة وكواليس)، وبعدها **يكتب سكريبت الفيديو لكل يوم تلقائياً**. العدّاد فوق بيوضح التقدّم، مثلاً "5/7 سكريبت".
 3. في كل يوم هتلاقي **سكريبت الفيديو**: المشاهد، والنص على الشاشة، والتعليق الصوتي لكل مشهد.
 4. اضغط **نسخ الفويس أوفر** لو هتسجّل بصوتك، فالنص كله بيتنسخ جاهز للقراءة.
 5. اضغط **افتح في مولّد الفيديو**. السكريبت هيتحمّل في التبويب الأول، فارفع صورك وصوتك، ثم **أنتج الفيديو MP4**.
 6. بعد الإنتاج هتلاقي اليوم في الخطة عليه علامة **تم الإنتاج** ورابط **تحميل الفيديو**، والعدّاد بيوضح "2 فيديو".
 7. تقدر تعدّل الهوك والكابشن (الحفظ تلقائي)، أو تعمل **إعادة توليد** ليوم بزاوية جديدة (السكريبت بيتكتب من جديد)، أو **إعادة كتابة السكريبت** بس.
 8. التصدير لـ **Markdown** أو **Word** بيحتوي على السكريبتات كاملة، ونص التعليق الصوتي لكل يوم.
+
+### 5.1) تبويب البراندات: أي منتج، بأي هوية
+الاستوديو مش مربوط بقدرة. كل منتج ليه **براند** خاص بيه، وكل حاجة بتتعمل (سكريبت، خطة، فيديو) بتمشي على البراند المختار في أعلى الصفحة.
+1. افتح تبويب **البراندات**.
+2. أسرع طريقة: في **أنشئ براند بالذكاء الاصطناعي** حط رابط موقع المنتج و/أو وصف قصير (المنتج إيه، لمين، والإحساس اللي عاوزه: فخم، شبابي، رسمي…)، واضغط **اكتب ملف البراند**. الذكاء الاصطناعي هيكتب الاسم والشعار والجمهور والمميزات والصوت والـ CTA والهاشتاجات، ويقترح الألوان (من ألوان الموقع نفسه لو فيه رابط) والستايل والخطوط.
+   أو اضغط **براند جديد** واملأ البيانات بنفسك.
+3. راجع وعدّل:
+   - **الهوية**: الاسم عربي/إنجليزي، الشعار، الموقع، التواصل (بيظهر تحت الـ CTA في آخر الفيديو)، واللوجو (PNG بخلفية شفافة أفضل).
+   - **المنتج والجمهور**: عن المنتج، بنكلم مين، و**المميزات الحقيقية** (الذكاء الاصطناعي بيتكلم عنها بس، ومش بيخترع غيرها).
+   - **الصوت والأسلوب**: قواعد النبرة، الدعوات لإجراء، الهاشتاجات، قاموس الكلمات، قواعد إضافية، وعبارات ممنوعة.
+   - **الهوية البصرية**: 5 ألوان (أو باليتة جاهزة)، و**الستايل**: تدرّج / لون مسطّح / داكن فخم / فاتح نظيف، وخط عربي وخط إنجليزي. ألوان النص بتتظبط لوحدها عشان تفضل مقروءة.
+4. المعاينة على اليمين بتتحرك بهوية البراند وانت بتعدّل. اضغط **احفظ البراند**: البراند الجديد بيبقى هو المختار.
+5. للتبديل بين البراندات: من القائمة اللي جنب اللوجو فوق. كل براند ليه سجل فيديوهات وخطط خاص بيه.
+- حذف براند مش بيمسح الفيديوهات والخطط القديمة بتاعته. ولازم يفضل براند واحد على الأقل.
 
 ### 6) الأمان
 - التطبيق يسمع على `127.0.0.1` فقط ويرفض أي طلب من غير localhost.
@@ -114,28 +129,32 @@ marketing-app/
 ├── server/                     Express API, 127.0.0.1 only
 │   ├── index.js / app.js       startup, security headers, Host guard, routing, error → {ar, en} messages
 │   ├── config.js               .env loading + capability detection
-│   ├── db.js                   SQLite (node:sqlite): uploads, videos, plans
-│   ├── brand/qudra.js          brand voice, palette, pillars, banned phrases (edit to retune all output)
+│   ├── db.js                   SQLite (node:sqlite): uploads, videos, plans, brands (videos/plans carry brand_id)
+│   ├── brand/index.js          shared pillars, platforms, common banned phrases, system prompt built from a brand profile
+│   ├── brand/qudra.js          the Qudra profile seeded on first run (then edited in the Brands tab)
 │   ├── lib/                    auth (HMAC cookie), errors, safe fetch (blocks private IPs), image size
-│   ├── routes/                 system · uploads · video · planner
+│   ├── routes/                 system · uploads · video · planner · brands (CRUD, logo, AI draft)
 │   └── services/
 │       ├── ai/writer.js        picks Claude or Gemini (AI_PROVIDER / available key)
 │       ├── ai/claude.js        Anthropic SDK, structured JSON output, refusal fallback, typed errors
 │       ├── ai/gemini.js        Google GenAI SDK, JSON-schema output, friendly errors
-│       ├── ai/index.js         prompts for script / week plan / single-post rewrite
+│       ├── ai/index.js         prompts for script / week plan / single-post rewrite / brand draft (all take the brand)
+│       ├── brands.js           Qudra seed, brand lookup with fallback, props for the video
 │       ├── ai/mock.js          demo mode (MOCK_AI=true)
 │       ├── media.js            stock (Pexels, Pixabay), AI images (OpenAI, Replicate), TTS (Gemini, ElevenLabs, OpenAI; cached per line)
-│       ├── scraper.js          URL → title, text, images
+│       ├── scraper.js          URL → title, text, images (+ the site's colours for brand drafts)
 │       ├── reference.js        reference video (YouTube link or upload) → blueprint via Gemini video understanding
 │       ├── render.js + jobs.js Remotion pipeline with live progress over Server-Sent Events
 │       ├── planner.js          day/platform/pillar slots
 │       └── export.js           Markdown + Word (.docx, RTL-aware)
 ├── video/                      Remotion composition shared by the live preview and the MP4 renderer
-│   ├── QudraVideo.jsx          scenes, transitions, watermark, captions, audio
+│   ├── BrandVideo.jsx          scenes, transitions, watermark, captions, audio; brand comes in the props
+│   ├── brand-theme.js          5 colours + look → readable surface tokens (pure JS, shared with the server)
+│   ├── theme.js / font-files.js theme context and the bundled Arabic/Latin fonts
 │   ├── scenes.jsx / parts.jsx  hook, standard, before/after, CTA; kinetic text, mockups, swoosh
 │   └── timing.js               40–60s fitting shared by server and browser
 ├── web/                        React + Vite + Tailwind UI (RTL/LTR, dark/light)
-├── assets/brand/logo.png       watermark + CTA logo
+├── assets/brand/logo.png       Qudra's logo, copied into data/brands/ on first run
 ├── assets/music/               your royalty-free tracks
 └── tests/                      Vitest suites + Playwright E2E
 ```
@@ -145,7 +164,8 @@ marketing-app/
 2. The UI edits the script; the Remotion **Player** previews the exact composition the server renders.
 3. `POST /api/video/render` starts a job:
    - voiceover: AI voice is synthesized per scene and each scene lasts as long as its line (voice, captions and visuals stay in sync); an uploaded recording stretches the whole video;
-   - per-scene visuals: pinned screenshot → device mockup, else stock footage, else AI image, else the brand gradient;
+   - per-scene visuals: pinned screenshot → device mockup, else stock footage, else AI image, else the brand background;
+   - the script's `brandId` picks the brand: colours, look, fonts, logo and name go to the composition as props;
    - `renderMedia` → H.264 MP4, plus a thumbnail.
 4. `GET /api/video/jobs/:id/events` streams progress. Results are stored in `data/` and SQLite.
 
@@ -159,7 +179,7 @@ marketing-app/
 - Server-side refusal fallback (`fallbacks: "default"`) is on; set `CLAUDE_FALLBACKS=off` to disable it.
 
 ### Data
-Everything is in `data/` (git-ignored): `studio.db`, `uploads/`, `media/` (stock/AI/voice cache) and `videos/`. Delete the folder to reset.
+Everything is in `data/` (git-ignored): `studio.db`, `uploads/`, `media/` (stock/AI/voice cache), `brands/` (logos) and `videos/`. Delete the folder to reset.
 
 ### Licensing note
 Rendering uses [Remotion](https://remotion.dev), which is free for individuals and companies with up to 3 employees. Larger teams need a [company license](https://remotion.pro).

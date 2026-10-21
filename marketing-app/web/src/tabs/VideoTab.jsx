@@ -3,6 +3,7 @@ import { Film, X } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { useI18n } from '../lib/i18n.jsx';
 import { useToast } from '../components/Toasts.jsx';
+import { useBrands } from '../lib/brands.jsx';
 import { SourceForm } from '../components/video/SourceForm.jsx';
 import { ScriptEditor } from '../components/video/ScriptEditor.jsx';
 import { PreviewPanel } from '../components/video/PreviewPanel.jsx';
@@ -26,6 +27,7 @@ const DEFAULT_FORM = {
 export default function VideoTab({ status, handoff }) {
   const { lang, t } = useI18n();
   const toast = useToast();
+  const { activeId, byId } = useBrands();
   const [form, setForm] = useState({ ...DEFAULT_FORM, language: lang });
   const [images, setImages] = useState([]);
   const [script, setScript] = useState(null);
@@ -59,7 +61,13 @@ export default function VideoTab({ status, handoff }) {
     setForm((f) => ({ ...f, language: handoff.script.language }));
   }, [handoff]);
 
-  const loadHistory = useCallback(() => api.get('/api/video/history').then((d) => setHistory(d.items)).catch(() => {}), []);
+  const loadHistory = useCallback(() => {
+    if (!activeId) return;
+    api
+      .get(`/api/video/history?brandId=${encodeURIComponent(activeId)}`)
+      .then((d) => setHistory(d.items))
+      .catch(() => {});
+  }, [activeId]);
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
@@ -76,6 +84,7 @@ export default function VideoTab({ status, handoff }) {
         language: form.language,
         durationSec: form.durationSec,
         market: form.market,
+        brandId: activeId,
         reference,
       });
       if (data.pageImages?.length) setImages((prev) => [...prev, ...data.pageImages]);
@@ -116,7 +125,7 @@ export default function VideoTab({ status, handoff }) {
       <div className="grid gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)_minmax(320px,400px)]">
         <SourceForm form={form} setForm={setFormTracked} images={images} setImages={setImages} status={status} onWrite={writeScript} writing={writing} error={scriptError} hasScript={!!script} reference={reference} setReference={setReference} />
         <ScriptEditor script={script} setScript={setScript} images={images} voiceMode={form.voiceMode} voiceName={form.voiceName || status?.defaultVoice} voiceRate={status?.voiceRate} warnings={warnings} writing={writing} />
-        <PreviewPanel script={script} images={images} form={form} logo={status?.logo} source={source} onRendered={loadHistory} />
+        <PreviewPanel script={script} images={images} form={form} brand={byId(script?.brandId)} source={source} onRendered={loadHistory} />
       </div>
       <VideoHistory items={history} onReuse={reuse} onChanged={loadHistory} />
     </div>

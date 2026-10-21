@@ -1,7 +1,11 @@
 import { z } from 'zod';
+import { ARABIC_FONTS, LATIN_FONTS, LOOKS } from '../../video/brand-theme.js';
 
 export const SCENE_TYPES = ['hook', 'pain', 'solution', 'feature', 'proof', 'cta'];
 export const TRANSITIONS = ['fade', 'slide', 'wipe', 'flip'];
+
+export const MARKETS = ['egypt', 'gulf', 'both', 'global'];
+const BrandId = z.string().regex(/^[a-z0-9-]{1,40}$/);
 
 /** What Claude returns for a video script. Visual assets are attached later by the render pipeline. */
 export const AiScriptSchema = z.object({
@@ -46,8 +50,9 @@ export const ScriptRequest = z.object({
   language: z.enum(['ar', 'en']).default('ar'),
   // 40–60s normally; a reference video may ask for 15–90s.
   durationSec: z.number().min(15).max(90).default(45),
-  market: z.enum(['egypt', 'gulf', 'both']).default('both'),
-  // Blueprint from /api/video/reference: rebuild that video's structure and style for Qudra.
+  market: z.enum(MARKETS).default('both'),
+  brandId: BrandId.optional(),
+  // Blueprint from /api/video/reference: rebuild that video's structure and style for the brand.
   reference: z.lazy(() => ReferenceInput).nullable().optional(),
 });
 
@@ -108,6 +113,7 @@ export const VideoScript = z.object({
   caption: z.string().max(3000).default(''),
   hashtags: z.array(z.string().max(60)).max(10).default([]),
   topic: z.string().max(4000).default(''),
+  brandId: BrandId.optional(),
 });
 
 export const RenderRequest = z.object({
@@ -132,7 +138,8 @@ export const PlanRequest = z.object({
   weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   platforms: z.array(z.enum(PLATFORM_KEYS)).min(1).default(PLATFORM_KEYS),
   language: z.enum(['ar', 'en']).default('ar'),
-  market: z.enum(['egypt', 'gulf', 'both']).default('both'),
+  market: z.enum(MARKETS).default('both'),
+  brandId: BrandId.optional(),
   focus: z.string().max(1500).default(''),
   durationSec: z.number().min(40).max(60).default(45),
 });
@@ -146,3 +153,62 @@ export const PostUpdate = z.object({
   format: z.string().max(100),
   bestTime: z.string().max(100),
 });
+
+const Hex = z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+const Bilingual = (max) => z.object({ ar: z.string().max(max).default(''), en: z.string().max(max).default('') });
+const Lines = (n, max) => z.array(z.string().max(max)).max(n).default([]);
+
+export const BrandVisual = z.object({
+  primary: Hex,
+  secondary: Hex,
+  accent: Hex,
+  dark: Hex,
+  light: Hex,
+  look: z.enum(LOOKS).default('gradient'),
+  fontLatin: z.enum(LATIN_FONTS.map((f) => f.id)).default('poppins'),
+  fontArabic: z.enum(ARABIC_FONTS.map((f) => f.id)).default('plex'),
+});
+
+/** A brand as the Brands tab saves it: identity, product, voice and visuals. */
+export const BrandInput = z
+  .object({
+    name: Bilingual(80),
+    tagline: Bilingual(200),
+    category: z.string().max(300).default(''),
+    website: z.string().max(120).default(''),
+    contact: z.string().max(120).default(''),
+    description: z.string().max(3000).default(''),
+    audience: z.string().max(1500).default(''),
+    features: z.string().max(4000).default(''),
+    voice: z.string().max(3000).default(''),
+    glossary: z.string().max(1500).default(''),
+    rules: z.string().max(2000).default(''),
+    ctas: z.object({ ar: Lines(6, 120), en: Lines(6, 120) }).default({ ar: [], en: [] }),
+    hashtags: Lines(10, 60),
+    banned: Lines(60, 80),
+    visual: BrandVisual,
+  })
+  .refine((b) => b.name.ar.trim() || b.name.en.trim(), { message: 'Give the brand a name', path: ['name'] });
+
+/** What the AI returns when drafting a brand from a website or a description. */
+export const AiBrandDraftSchema = z.object({
+  name: z.object({ ar: z.string(), en: z.string() }),
+  tagline: z.object({ ar: z.string(), en: z.string() }),
+  category: z.string(),
+  description: z.string(),
+  audience: z.string(),
+  features: z.string(),
+  voice: z.string(),
+  glossary: z.string(),
+  rules: z.string(),
+  ctas: z.object({ ar: z.array(z.string()), en: z.array(z.string()) }),
+  hashtags: z.array(z.string()),
+  colors: z.object({ primary: z.string(), secondary: z.string(), accent: z.string(), dark: z.string(), light: z.string() }),
+  look: z.enum(LOOKS),
+  fontLatin: z.enum(LATIN_FONTS.map((f) => f.id)),
+  fontArabic: z.enum(ARABIC_FONTS.map((f) => f.id)),
+});
+
+export const BrandDraftRequest = z
+  .object({ url: z.string().max(2000).default(''), notes: z.string().max(3000).default(''), language: z.enum(['ar', 'en']).default('ar') })
+  .refine((v) => v.url.trim() || v.notes.trim(), { message: 'Add a website or a short description' });

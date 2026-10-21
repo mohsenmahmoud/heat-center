@@ -6,7 +6,7 @@ import { errors, AppError } from '../lib/errors.js';
 import { toStrictJsonSchema } from './ai/json-schema.js';
 import { SCENE_TYPES, TRANSITIONS } from './schemas.js';
 
-/** What we learn from a reference video: its structure and style, to rebuild for Qudra. */
+/** What we learn from a reference video: its structure and style, to rebuild for any brand. */
 export const BlueprintSchema = z.object({
   summary: z.string(),
   durationSec: z.number(),

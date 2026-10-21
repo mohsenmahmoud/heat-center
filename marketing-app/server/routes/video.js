@@ -5,7 +5,8 @@ import { config } from '../config.js';
 import { plansRepo, uploadsRepo, videosRepo } from '../db.js';
 import { errors } from '../lib/errors.js';
 import { downloadToDir } from '../lib/net.js';
-import { lintBrand } from '../brand/qudra.js';
+import { lintBrand } from '../brand/index.js';
+import { resolveBrand } from '../services/brands.js';
 import { totalSeconds } from '../../video/timing.js';
 import { finalizeScript } from '../services/scripts.js';
 import { ReferenceRequest, RenderRequest, ScriptRequest, VoicePreviewRequest } from '../services/schemas.js';
@@ -61,7 +62,9 @@ videoRouter.post(
     const pageImages = page && uploads.length === 0 ? await importPageImages(page.images) : [];
     const allImages = [...uploads.map((u) => ({ id: u.id, mime: u.mime })), ...pageImages];
 
+    const brand = resolveBrand(input.brandId);
     const ai = await writeVideoScript({
+      brand,
       topic: input.topic.trim(),
       page,
       images: imageBlocks([...uploads, ...pageImages.map((p) => uploadsRepo.get(p.id))]),
@@ -72,8 +75,8 @@ videoRouter.post(
     });
 
     const imageIds = allImages.filter((i) => i.mime.startsWith('image/')).map((i) => i.id);
-    const script = finalizeScript(ai, { language: input.language, durationSec: input.durationSec, topic: input.topic || page?.title || '', imageIds });
-    res.json({ script, durationSec: totalSeconds(script.scenes), warnings: lintBrand(script), pageImages });
+    const script = finalizeScript(ai, { brand, language: input.language, durationSec: input.durationSec, topic: input.topic || page?.title || '', imageIds });
+    res.json({ script, durationSec: totalSeconds(script.scenes), warnings: lintBrand(script, brand), pageImages });
   }),
 );
 
@@ -136,14 +139,14 @@ videoRouter.get('/jobs/:id/events', (req, res, next) => {
   });
 });
 
-videoRouter.get('/history', (_req, res) => res.json({ items: videosRepo.list() }));
+videoRouter.get('/history', (req, res) => res.json({ items: videosRepo.list(typeof req.query.brandId === 'string' ? req.query.brandId : undefined) }));
 
 videoRouter.get('/:id/download', (req, res, next) => {
   const video = videosRepo.get(req.params.id);
   if (!video) return next(errors.notFound('Video'));
   const file = path.join(config.paths.videos, video.fileName);
   if (!fs.existsSync(file)) return next(errors.notFound('Video file'));
-  const safeName = (video.title || 'qudra-video').replace(/[^\p{L}\p{N}\- ]+/gu, '').trim().slice(0, 60) || 'qudra-video';
+  const safeName = (video.title || 'video').replace(/[^\p{L}\p{N}\- ]+/gu, '').trim().slice(0, 60) || 'video';
   res.download(file, `${safeName}.mp4`);
 });
 

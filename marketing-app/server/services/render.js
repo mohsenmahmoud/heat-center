@@ -11,6 +11,7 @@ import { orientation } from '../lib/image-size.js';
 import { fitDurations, totalSeconds, FPS, HARD_MIN_SEC, HARD_MAX_SEC, TRANSITION_FRAMES } from '../../video/timing.js';
 import { findStock, generateImage, synthesizeSpeech } from './media.js';
 import { updateJob } from './jobs.js';
+import { brandProps, logoUrl, resolveBrand } from './brands.js';
 
 let bundlePromise = null;
 /** Webpack-bundles the Remotion project once per server run. */
@@ -20,11 +21,6 @@ function getBundle() {
     throw err;
   });
   return bundlePromise;
-}
-
-export function findLogo() {
-  const file = fs.existsSync(config.paths.brand) && fs.readdirSync(config.paths.brand).find((f) => /^logo\.(png|svg|webp|jpe?g)$/i.test(f));
-  return file ? `/brand/${file}` : null;
 }
 
 export function listMusic() {
@@ -45,7 +41,7 @@ async function audioSeconds(filePath) {
 /**
  * Attaches a visual to every scene:
  *   scenes the user pinned an uploaded image to → device mockup with that image
- *   otherwise (mix style) → stock footage/photo, then AI image, then the brand gradient.
+ *   otherwise (mix style) → stock footage/photo, then AI image, then the brand background.
  */
 async function prepareVisuals(script, options, report) {
   const scenes = [];
@@ -139,10 +135,12 @@ export async function runRenderJob(jobId, { script, options }) {
     scenes = await prepareVisuals({ ...script, scenes }, options, (p, msg) => stage('assets', 0.1 + p * 0.1, msg));
 
     const music = options.music && listMusic().includes(options.music) ? `/music/${encodeURIComponent(options.music)}` : null;
+    const brand = resolveBrand(script.brandId);
     const inputProps = {
       script: { ...script, scenes },
       mediaBase: `http://127.0.0.1:${config.port}`,
-      logoSrc: findLogo(),
+      brand: brandProps(brand),
+      logoSrc: logoUrl(brand),
       musicSrc: music,
       voiceSrc: voice?.src || null,
       captions: options.captions,
@@ -151,7 +149,7 @@ export async function runRenderJob(jobId, { script, options }) {
     stage('bundle', 0.2, null);
     const serveUrl = await getBundle();
     const common = { serveUrl, inputProps, browserExecutable: config.browserExecutable, logLevel: 'warn' };
-    const composition = await selectComposition({ ...common, id: 'QudraVideo' });
+    const composition = await selectComposition({ ...common, id: 'BrandVideo' });
 
     const id = newId();
     const fileName = `${id}.mp4`;
@@ -174,7 +172,8 @@ export async function runRenderJob(jobId, { script, options }) {
       title: script.title,
       language: script.language,
       topic: script.topic,
-      script: { ...script, scenes: scenes.map(({ visual, voice, ...s }) => s), options },
+      brandId: brand.id,
+      script: { ...script, brandId: brand.id, scenes: scenes.map(({ visual, voice, ...s }) => s), options },
       fileName,
       thumbName,
       durationSec: composition.durationInFrames / composition.fps,

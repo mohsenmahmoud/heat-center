@@ -24,7 +24,21 @@ export function getDb() {
       id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
       week_start TEXT, language TEXT, settings_json TEXT NOT NULL, posts_json TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS brands (
+      id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, data_json TEXT NOT NULL
+    );
   `);
+  // Videos and plans made before brands existed belong to Qudra.
+  for (const table of ['videos', 'plans']) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+    if (columns.includes('brand_id')) continue;
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'qudra'`);
+    } catch (err) {
+      // Another process sharing this database added it first.
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+  }
   return db;
 }
 
@@ -54,6 +68,7 @@ const videoFromRow = (r) =>
     thumbName: r.thumb_name,
     durationSec: r.duration_sec,
     sizeBytes: r.size_bytes,
+    brandId: r.brand_id,
   };
 
 export const videosRepo = {
@@ -69,15 +84,20 @@ export const videosRepo = {
       thumb_name: v.thumbName || null,
       duration_sec: v.durationSec,
       size_bytes: v.sizeBytes || 0,
+      brand_id: v.brandId || 'qudra',
     };
     getDb()
       .prepare(
-        'INSERT INTO videos VALUES (:id, :created_at, :title, :language, :topic, :script_json, :file_name, :thumb_name, :duration_sec, :size_bytes)',
+        'INSERT INTO videos (id, created_at, title, language, topic, script_json, file_name, thumb_name, duration_sec, size_bytes, brand_id) VALUES (:id, :created_at, :title, :language, :topic, :script_json, :file_name, :thumb_name, :duration_sec, :size_bytes, :brand_id)',
       )
       .run(row);
     return videoFromRow(row);
   },
-  list: () => getDb().prepare('SELECT * FROM videos ORDER BY created_at DESC LIMIT 100').all().map(videoFromRow),
+  list: (brandId) =>
+    (brandId
+      ? getDb().prepare('SELECT * FROM videos WHERE brand_id = ? ORDER BY created_at DESC LIMIT 100').all(brandId)
+      : getDb().prepare('SELECT * FROM videos ORDER BY created_at DESC LIMIT 100').all()
+    ).map(videoFromRow),
   get: (id) => videoFromRow(getDb().prepare('SELECT * FROM videos WHERE id = ?').get(id)),
   remove: (id) => getDb().prepare('DELETE FROM videos WHERE id = ?').run(id).changes > 0,
 };
@@ -89,12 +109,13 @@ const planFromRow = (r) =>
     updatedAt: r.updated_at,
     weekStart: r.week_start,
     language: r.language,
+    brandId: r.brand_id,
     settings: JSON.parse(r.settings_json),
     posts: JSON.parse(r.posts_json),
   };
 
 export const plansRepo = {
-  add({ weekStart, language, settings, posts }) {
+  add({ weekStart, language, settings, posts, brandId }) {
     const t = now();
     const row = {
       id: newId(),
@@ -104,9 +125,12 @@ export const plansRepo = {
       language,
       settings_json: JSON.stringify(settings),
       posts_json: JSON.stringify(posts),
+      brand_id: brandId || 'qudra',
     };
     getDb()
-      .prepare('INSERT INTO plans VALUES (:id, :created_at, :updated_at, :week_start, :language, :settings_json, :posts_json)')
+      .prepare(
+        'INSERT INTO plans (id, created_at, updated_at, week_start, language, settings_json, posts_json, brand_id) VALUES (:id, :created_at, :updated_at, :week_start, :language, :settings_json, :posts_json, :brand_id)',
+      )
       .run(row);
     return planFromRow(row);
   },
@@ -123,11 +147,34 @@ export const plansRepo = {
     plansRepo.updatePosts(planId, plan.posts);
     return plan.posts[index];
   },
-  list: () =>
-    getDb()
-      .prepare('SELECT * FROM plans ORDER BY created_at DESC LIMIT 50')
-      .all()
-      .map(planFromRow),
+  list: (brandId) =>
+    (brandId
+      ? getDb().prepare('SELECT * FROM plans WHERE brand_id = ? ORDER BY created_at DESC LIMIT 50').all(brandId)
+      : getDb().prepare('SELECT * FROM plans ORDER BY created_at DESC LIMIT 50').all()
+    ).map(planFromRow),
   get: (id) => planFromRow(getDb().prepare('SELECT * FROM plans WHERE id = ?').get(id)),
   remove: (id) => getDb().prepare('DELETE FROM plans WHERE id = ?').run(id).changes > 0,
+};
+
+const brandFromRow = (r) => r && { ...JSON.parse(r.data_json), id: r.id, createdAt: r.created_at, updatedAt: r.updated_at };
+
+export const brandsRepo = {
+  /** `seed` skips the insert when the id already exists (two processes starting on one database). */
+  add(data, id = newId(), { seed = false } = {}) {
+    const t = now();
+    const { id: _id, createdAt, updatedAt, ...rest } = data;
+    getDb()
+      .prepare(`INSERT ${seed ? 'OR IGNORE ' : ''}INTO brands VALUES (?, ?, ?, ?)`)
+      .run(id, t, t, JSON.stringify(rest));
+    return brandsRepo.get(id);
+  },
+  update(id, data) {
+    const { id: _id, createdAt, updatedAt, ...rest } = data;
+    getDb().prepare('UPDATE brands SET data_json = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(rest), now(), id);
+    return brandsRepo.get(id);
+  },
+  list: () => getDb().prepare('SELECT * FROM brands ORDER BY created_at ASC').all().map(brandFromRow),
+  get: (id) => brandFromRow(getDb().prepare('SELECT * FROM brands WHERE id = ?').get(id)),
+  count: () => getDb().prepare('SELECT COUNT(*) AS n FROM brands').get().n,
+  remove: (id) => getDb().prepare('DELETE FROM brands WHERE id = ?').run(id).changes > 0,
 };

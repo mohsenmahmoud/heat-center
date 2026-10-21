@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { plansRepo } from '../db.js';
 import { errors } from '../lib/errors.js';
-import { lintBrand } from '../brand/qudra.js';
+import { lintBrand } from '../brand/index.js';
+import { resolveBrand } from '../services/brands.js';
 import { PlanRequest, PostUpdate } from '../services/schemas.js';
 import { rewritePost, writeDayScript, writeWeekPlan } from '../services/ai/index.js';
 import { finalizeScript } from '../services/scripts.js';
@@ -27,16 +28,18 @@ plannerRouter.post(
   '/generate',
   wrap(async (req, res) => {
     const input = PlanRequest.parse(req.body);
+    const brand = resolveBrand(input.brandId);
     const slots = buildSlots(input);
-    const contents = await writeWeekPlan({ slots, language: input.language, market: input.market, focus: input.focus });
-    const posts = slots.map((slot, i) => toPost(slot, contents[i]));
-    const plan = plansRepo.add({ weekStart: input.weekStart, language: input.language, settings: input, posts });
+    const contents = await writeWeekPlan({ brand, slots, language: input.language, market: input.market, focus: input.focus });
+    const posts = slots.map((slot, i) => toPost(slot, contents[i], brand));
+    const plan = plansRepo.add({ weekStart: input.weekStart, language: input.language, settings: { ...input, brandId: brand.id }, posts, brandId: brand.id });
     res.status(201).json(plan);
   }),
 );
 
-plannerRouter.get('/', (_req, res) => {
-  res.json({ items: plansRepo.list().map(({ posts, ...p }) => ({ ...p, postCount: posts.length })) });
+plannerRouter.get('/', (req, res) => {
+  const brandId = typeof req.query.brandId === 'string' ? req.query.brandId : undefined;
+  res.json({ items: plansRepo.list(brandId).map(({ posts, ...p }) => ({ ...p, postCount: posts.length })) });
 });
 
 plannerRouter.get('/:id', wrap(async (req, res) => res.json(loadPlan(req.params.id))));
@@ -47,7 +50,7 @@ plannerRouter.put(
     const plan = loadPlan(req.params.id);
     const index = findPost(plan, req.params.postId);
     const update = PostUpdate.parse(req.body);
-    plan.posts[index] = { ...plan.posts[index], ...update, warnings: lintBrand(update) };
+    plan.posts[index] = { ...plan.posts[index], ...update, warnings: lintBrand(update, resolveBrand(plan.brandId)) };
     res.json(plansRepo.updatePosts(plan.id, plan.posts).posts[index]);
   }),
 );
@@ -59,7 +62,9 @@ plannerRouter.post(
     const index = findPost(plan, req.params.postId);
     const old = plan.posts[index];
     const slot = slotFromPost(old, plan.language);
+    const brand = resolveBrand(plan.brandId);
     const content = await rewritePost({
+      brand,
       slot: { ...slot, currentHook: old.hook },
       language: plan.language,
       market: plan.settings.market,
@@ -67,7 +72,7 @@ plannerRouter.post(
       otherHooks: plan.posts.filter((_, i) => i !== index).map((p) => p.hook),
       instruction: String(req.body?.instruction || '').slice(0, 500),
     });
-    plan.posts[index] = { ...toPost(slot, content), id: old.id };
+    plan.posts[index] = { ...toPost(slot, content, brand), id: old.id };
     res.json(plansRepo.updatePosts(plan.id, plan.posts).posts[index]);
   }),
 );
@@ -81,7 +86,9 @@ plannerRouter.post(
     const post = plan.posts[index];
     const slot = slotFromPost(post, plan.language);
     const durationSec = plan.settings.durationSec || 45;
+    const brand = resolveBrand(plan.brandId);
     const ai = await writeDayScript({
+      brand,
       post,
       pillar: slot.pillar,
       platform: post.platform,
@@ -91,7 +98,7 @@ plannerRouter.post(
       otherHooks: plan.posts.filter((_, i) => i !== index).map((p) => p.hook),
       durationSec,
     });
-    const script = finalizeScript(ai, { language: plan.language, durationSec, topic: post.hook });
+    const script = finalizeScript(ai, { brand, language: plan.language, durationSec, topic: post.hook });
     // A new script means any earlier video no longer matches it.
     res.json(plansRepo.patchPost(plan.id, post.id, { script, videoId: null }));
   }),
@@ -110,15 +117,17 @@ plannerRouter.get(
   '/:id/export',
   wrap(async (req, res) => {
     const plan = loadPlan(req.params.id);
-    const base = `qudra-plan-${plan.weekStart}`;
+    const brand = resolveBrand(plan.brandId);
+    const slug = (brand.name?.en || 'brand').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'brand';
+    const base = `${slug}-plan-${plan.weekStart}`;
     if (req.query.format === 'docx') {
-      const buffer = await planToDocx(plan);
+      const buffer = await planToDocx(plan, brand);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       res.setHeader('Content-Disposition', `attachment; filename="${base}.docx"`);
       return res.send(buffer);
     }
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${base}.md"`);
-    res.send(planToMarkdown(plan));
+    res.send(planToMarkdown(plan, brand));
   }),
 );

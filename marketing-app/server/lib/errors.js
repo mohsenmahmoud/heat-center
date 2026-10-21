@@ -53,7 +53,7 @@ export const errors = {
   unauthorized: () => new AppError('UNAUTHORIZED', 401, 'يجب تسجيل الدخول أولاً.', 'Please sign in first.'),
   badPassword: () => new AppError('BAD_PASSWORD', 401, 'كلمة المرور غير صحيحة.', 'Wrong password.'),
   scrapeFailed: (en) =>
-    new AppError('SCRAPE_FAILED', 422, 'تعذّر قراءة الرابط. تأكد أنه صحيح ومتاح للعامة، أو انسخ النص في خانة الموضوع.', `Could not read the URL (${en}). Paste its text into the topic field instead.`),
+    new AppError('SCRAPE_FAILED', 422, 'تعذّر قراءة الرابط. تأكد أنه صحيح ومتاح للعامة، أو انسخ النص بنفسك (في خانة الموضوع أو وصف البراند).', `Could not read the URL (${en}). Paste its text yourself (topic field or brand brief).`),
   blockedUrl: () =>
     new AppError('BLOCKED_URL', 400, 'هذا الرابط غير مسموح (عنوان داخلي أو محلي).', 'This URL points to a local/private address and is not allowed.'),
   providerFailed: (name, en) =>

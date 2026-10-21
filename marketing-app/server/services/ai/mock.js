@@ -1,8 +1,11 @@
 /**
  * Demo mode (MOCK_AI=true): deterministic, on-brand content without calling any API.
  * Lets you try the whole UI and the render pipeline before adding a Claude key; also used by tests.
+ * Qudra has its own sample copy; other brands get a generic sample built from their profile.
  */
-const T = {
+import { DEFAULT_VISUAL, isHex, mix } from '../../../video/brand-theme.js';
+
+const QUDRA_DEMO = {
   ar: {
     title: (t) => `قدرة: ${t}`,
     scenes: (t) => [
@@ -69,8 +72,69 @@ const T = {
   },
 };
 
-export function mockScript({ topic, language, reference = null }) {
-  const t = T[language];
+function genericDemo(brand) {
+  const ar = brand.name?.ar || brand.name?.en || 'منتجنا';
+  const en = brand.name?.en || brand.name?.ar || 'Our product';
+  const tagAr = brand.tagline?.ar || 'كل اللي تحتاجه في مكان واحد';
+  const tagEn = brand.tagline?.en || 'Everything you need in one place';
+  const ctaAr = brand.ctas?.ar?.[0] || 'تواصل معنا الآن';
+  const ctaEn = brand.ctas?.en?.[0] || 'Get in touch';
+  const tags = brand.hashtags?.length ? brand.hashtags.slice(0, 4) : [`#${en.replace(/\s+/g, '')}`];
+  const format = (platform) => (platform === 'linkedin' ? 'LinkedIn video 9:16' : platform === 'tiktok' ? 'Short 9:16' : 'Reel 9:16');
+  return {
+    ar: {
+      title: (t) => `${ar}: ${t}`,
+      scenes: (t) => [
+        { type: 'hook', headline: 'نفس المشكلة كل يوم… لحد إمتى؟', subtext: t, bullets: [], stockQuery: 'frustrated person phone', transition: 'fade' },
+        { type: 'pain', headline: 'وقت ضايع ونتيجة مش مضمونة', subtext: 'وكل مرة بتبدأ من الأول.', bullets: ['مجهود يدوي', 'نتائج متفرقة', 'قرارات بالتخمين'], stockQuery: 'messy desk', transition: 'slide' },
+        { type: 'solution', headline: `${ar}: ${tagAr}`, subtext: 'حل واضح يوفّر وقتك من أول يوم.', bullets: [], stockQuery: 'modern workspace', transition: 'wipe' },
+        { type: 'feature', headline: 'كل حاجة قدامك في مكان واحد', subtext: 'تشوف الصورة كاملة بدل ما تجمعها بنفسك.', bullets: ['أسرع', 'أوضح', 'أسهل'], stockQuery: 'dashboard laptop', transition: 'slide' },
+        { type: 'proof', headline: 'قبل: ساعات من المتابعة', subtext: `مع ${ar}: دقائق وخلاص.`, bullets: [], stockQuery: 'happy customer', transition: 'fade' },
+        { type: 'cta', headline: `جرّب ${ar}`, subtext: ctaAr, bullets: [], stockQuery: '', transition: 'fade' },
+      ],
+      cta: { headline: ctaAr, button: ctaAr.split(' ').slice(0, 3).join(' ') },
+      caption: `${tagAr}. شوف إزاي ${ar} بيوفّر وقتك من أول يوم.`,
+      hashtags: tags,
+      post: (pillar, platform, i) => ({
+        hook: ['لو المشكلة دي بتتكرر معاك كل أسبوع… كمّل.', 'الوقت اللي بيضيع هنا أغلى مما تتخيل.', 'سؤال واحد: إمتى آخر مرة خلصت ده في دقائق؟', 'الطريقة القديمة شغالة… بس لحد إمتى؟', `يوم كامل مع ${ar}.`, 'تلات حاجات بتفرق بين الفوضى والنظام.', 'قبل وبعد: نفس الشغل، نتيجة مختلفة.'][i % 7],
+        caption: `${pillar.ar}: موقف بيتكرر كل يوم.\n\n${ar} بيخلّيه أبسط وأوضح. ${tagAr}.`,
+        visualIdea: `فيديو موشن بألوان ${ar} يعرض المنتج وهو بيحل المشكلة.`,
+        hashtags: tags,
+        cta: ctaAr,
+        format: format(platform),
+        bestTime: platform === 'linkedin' ? '09:00' : '20:00',
+      }),
+    },
+    en: {
+      title: (t) => `${en}: ${t}`,
+      scenes: (t) => [
+        { type: 'hook', headline: 'Same problem, every single day?', subtext: t, bullets: [], stockQuery: 'frustrated person phone', transition: 'fade' },
+        { type: 'pain', headline: 'Lost time, uncertain results', subtext: 'And every time you start over.', bullets: ['Manual work', 'Scattered results', 'Guesswork'], stockQuery: 'messy desk', transition: 'slide' },
+        { type: 'solution', headline: `${en}: ${tagEn}`, subtext: 'A clear fix that saves time from day one.', bullets: [], stockQuery: 'modern workspace', transition: 'wipe' },
+        { type: 'feature', headline: 'Everything in one place', subtext: 'See the full picture instead of piecing it together.', bullets: ['Faster', 'Clearer', 'Simpler'], stockQuery: 'dashboard laptop', transition: 'slide' },
+        { type: 'proof', headline: 'Before: hours of follow-up', subtext: `With ${en}: minutes.`, bullets: [], stockQuery: 'happy customer', transition: 'fade' },
+        { type: 'cta', headline: `Try ${en}`, subtext: ctaEn, bullets: [], stockQuery: '', transition: 'fade' },
+      ],
+      cta: { headline: ctaEn, button: ctaEn.split(' ').slice(0, 3).join(' ') },
+      caption: `${tagEn}. See how ${en} saves you time from day one.`,
+      hashtags: tags,
+      post: (pillar, platform, i) => ({
+        hook: ['If this keeps happening every week, keep watching.', 'The time lost here costs more than you think.', 'When did you last get this done in minutes?', 'The old way works. Until it does not.', `A full day with ${en}.`, 'Three things separate chaos from a system.', 'Before and after: same work, different result.'][i % 7],
+        caption: `${pillar.en}: a moment that happens every day.\n\n${en} makes it simpler and clearer. ${tagEn}.`,
+        visualIdea: `Motion video in ${en} colours showing the product solving the problem.`,
+        hashtags: tags,
+        cta: ctaEn,
+        format: format(platform),
+        bestTime: platform === 'linkedin' ? '09:00' : '20:00',
+      }),
+    },
+  };
+}
+
+const demoFor = (brand, language) => (!brand || brand.id === 'qudra' ? QUDRA_DEMO : genericDemo(brand))[language];
+
+export function mockScript({ brand, topic, language, reference = null }) {
+  const t = demoFor(brand, language);
   if (reference) {
     // Demo of "rebuild this reference": same scenes, types, timing and transitions.
     return {
@@ -91,6 +155,36 @@ export function mockScript({ topic, language, reference = null }) {
   };
 }
 
-export function mockPosts({ slots, language }) {
-  return slots.map((slot, i) => T[language].post(slot.pillar, slot.platform, i + (slot.seed || 0)));
+export function mockPosts({ brand, slots, language }) {
+  return slots.map((slot, i) => demoFor(brand, language).post(slot.pillar, slot.platform, i + (slot.seed || 0)));
+}
+
+/** A brand draft from the page or brief, without AI: name from the title, colours from the site. */
+export function mockBrandDraft({ page, notes }) {
+  const name = (page?.title || notes || 'New brand').split(/[|\-–:·\n]/)[0].trim().slice(0, 40) || 'New brand';
+  const colors = (page?.colors || []).filter(isHex);
+  const primary = colors[0] || '#3B5BDB';
+  return {
+    name: { ar: name, en: name },
+    tagline: { ar: 'كل اللي تحتاجه في مكان واحد', en: 'Everything you need in one place' },
+    category: 'Product (demo draft: add a Gemini or Claude key for a real analysis)',
+    description: (page?.text || notes || '').split('\n')[0].slice(0, 300),
+    audience: 'Business owners and decision makers.',
+    features: '- Feature one\n- Feature two',
+    voice: '1. Clear and concrete.\n2. Short sentences.\n3. Show a real result instead of adjectives.',
+    glossary: '',
+    rules: '',
+    ctas: { ar: ['احجز ديمو', 'تواصل معنا'], en: ['Book a demo', 'Contact us'] },
+    hashtags: [`#${name.replace(/\s+/g, '')}`],
+    colors: {
+      primary,
+      secondary: colors[1] || mix(primary, '#000000', 0.35),
+      accent: colors[2] || primary,
+      dark: DEFAULT_VISUAL.dark,
+      light: mix(primary, '#FFFFFF', 0.88),
+    },
+    look: 'gradient',
+    fontLatin: 'poppins',
+    fontArabic: 'cairo',
+  };
 }

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { capabilities, config } from '../config.js';
 import { checkPassword, clearSessionCookie, isAuthenticated, setSessionCookie } from '../lib/auth.js';
 import { errors } from '../lib/errors.js';
-import { findLogo, listMusic } from '../services/render.js';
+import { listMusic } from '../services/render.js';
 import { GEMINI_VOICES } from '../services/media.js';
 
 export const publicRouter = Router();
@@ -39,7 +39,5 @@ systemRouter.get('/status', (_req, res) => {
     defaultVoice: config.geminiVoice,
     voiceRate: config.voiceRate,
     music: listMusic(),
-    logo: findLogo(),
-    brand: config.brand,
   });
 });

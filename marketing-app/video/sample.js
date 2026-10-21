@@ -1,3 +1,5 @@
+import { DEFAULT_VISUAL } from './brand-theme.js';
+
 // Default props for `npm run studio` so the composition can be previewed on its own.
 export const sampleProps = {
   mediaBase: '',
@@ -5,6 +7,7 @@ export const sampleProps = {
   musicSrc: null,
   voiceSrc: null,
   captions: false,
+  brand: { name: { ar: 'قُدرة', en: 'Qudra' }, website: 'qudratms.com', visual: DEFAULT_VISUAL },
   script: {
     title: 'Sample',
     language: 'ar',

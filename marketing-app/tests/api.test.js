@@ -17,7 +17,6 @@ describe('system', () => {
     const res = await agent().get('/api/status');
     expect(res.status).toBe(200);
     expect(res.body.capabilities.writer).toBe('mock');
-    expect(res.body.logo).toBe('/brand/logo.png');
   });
 
   it('rejects requests that do not come from localhost (DNS rebinding guard)', async () => {

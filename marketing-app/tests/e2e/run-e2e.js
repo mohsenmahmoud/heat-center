@@ -2,6 +2,7 @@
  * End-to-end check of both tabs in a real browser, against the built app in demo mode:
  *   Tab 1: upload image → write script → edit → preview → render MP4 → download → history
  *   Tab 2: generate week → edit (autosave) → regenerate a day → export Markdown/Word → copy all
+ *   Tab 3: draft a new brand with AI → restyle → logo → save → video in that brand → switch back
  * Usage: npm run test:e2e   (needs a Chromium: `npx playwright-core install chromium`,
  * or point E2E_BROWSER at any Chrome/Chromium binary).
  */
@@ -44,7 +45,7 @@ const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning',
   stdio: ['ignore', 'pipe', 'inherit'],
 });
 await new Promise((resolve, reject) => {
-  server.stdout.on('data', (d) => d.toString().includes('Qudra Marketing Studio') && resolve());
+  server.stdout.on('data', (d) => d.toString().includes('Marketing Studio') && resolve());
   server.on('exit', (code) => reject(new Error(`server exited with ${code}`)));
 });
 
@@ -85,7 +86,7 @@ try {
     await page.locator('img[alt="dashboard.png"]').waitFor();
   });
   await step('writes a script from a topic', async () => {
-    await page.getByPlaceholder('مثال: تذكير الأقساط').fill('تذكير الأقساط التلقائي');
+    await page.getByPlaceholder('مثال: الميزة الجديدة').fill('تذكير الأقساط التلقائي');
     await page.locator('[data-testid=write-script]').click();
     await page.locator('[data-testid=scene]').first().waitFor({ timeout: 60000 });
     const n = await page.locator('[data-testid=scene]').count();
@@ -184,6 +185,45 @@ try {
     await page.getByRole('button', { name: 'نسخ الكل' }).click();
     const text = await page.evaluate(() => navigator.clipboard.readText());
     assert(text.includes('هوك معدّل للاختبار') && text.split('———').length === 7, 'clipboard does not contain the plan');
+  });
+
+  console.log('\nTab 3: Brands');
+  let brandId;
+  await step('drafts a new brand from a brief, restyles it and saves it with a logo', async () => {
+    await page.getByRole('tab', { name: 'البراندات' }).click();
+    await page.locator('[data-testid=brand-list] button').first().waitFor();
+    await page.locator('[data-testid=draft-notes]').fill('لومن: إضاءة ذكية للكافيهات والمطاعم');
+    await page.locator('[data-testid=draft-brand]').click();
+    await page.waitForFunction(() => document.querySelector('[data-testid=brand-name-ar]')?.value === 'لومن', null, { timeout: 30000 });
+    await page.getByRole('button', { name: 'داكن فخم' }).click();
+    await page.locator('[data-testid=logo-input]').setInputFiles(path.join(dataDir, 'dashboard.png'));
+    await page.locator('[data-testid=save-brand]').click();
+    await page.getByText('تم حفظ البراند').waitFor({ timeout: 10000 });
+    const brands = await (await fetch(`${BASE}/api/brands`)).json();
+    assert(brands.items.length === 2, `expected 2 brands, got ${brands.items.length}`);
+    const lumen = brands.items.find((b) => b.name.ar === 'لومن');
+    assert(lumen.visual.look === 'dark' && lumen.logoUrl, 'look or logo not saved');
+    brandId = lumen.id;
+    assert((await page.locator('[data-testid=brand-switcher]').inputValue()) === brandId, 'new brand should become the current brand');
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: path.join(shots, '06-brands.png') });
+  });
+  await step('writes and renders a video in the new brand, with its own history', async () => {
+    await page.getByRole('tab', { name: 'مولّد الفيديو' }).click();
+    await page.locator('[data-testid=history] article').first().waitFor({ state: 'detached', timeout: 10000 });
+    await page.getByPlaceholder('مثال: الميزة الجديدة').fill('إضاءة الكافيه بالليل');
+    await page.locator('[data-testid=write-script]').click();
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid=scene] input')].some((i) => i.value.includes('لومن')), null, { timeout: 60000 });
+    await page.locator('[data-testid=render]').click();
+    await page.locator('[data-testid=render-result], [role=alert]').first().waitFor({ timeout: 6 * 60 * 1000 });
+    assert(!(await page.locator('[role=alert]').count()), 'render in the new brand failed');
+    await page.screenshot({ path: path.join(shots, '07-brand-video.png') });
+    const mine = await (await fetch(`${BASE}/api/video/history?brandId=${brandId}`)).json();
+    assert(mine.items.length === 1 && mine.items[0].script.brandId === brandId, 'video not stored under the new brand');
+  });
+  await step('switches back to Qudra and sees its own videos', async () => {
+    await page.locator('[data-testid=brand-switcher]').selectOption('qudra');
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid=history] article').length === 2, null, { timeout: 10000 });
   });
 
   assert(consoleErrors.length === 0, `browser errors: ${consoleErrors.join(' | ')}`);

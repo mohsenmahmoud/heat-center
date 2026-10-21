@@ -3,6 +3,7 @@ import { CalendarDays, CalendarRange, Copy, FileDown, FileText, Film, Trash2, Wa
 import { api, copyText } from '../lib/api.js';
 import { useI18n } from '../lib/i18n.jsx';
 import { useToast } from '../components/Toasts.jsx';
+import { useBrands } from '../lib/brands.jsx';
 import { ErrorBox, Field, SectionTitle, Segmented, Spinner } from '../components/ui.jsx';
 import { PLATFORM_LABEL, PostCard, postToText } from '../components/planner/PostCard.jsx';
 
@@ -29,6 +30,7 @@ const SCRIPT_CONCURRENCY = 2;
 export default function PlannerTab({ status, onOpenInVideo }) {
   const { t, lang } = useI18n();
   const toast = useToast();
+  const { activeId } = useBrands();
   const [form, setForm] = useState({ weekStart: nextSaturday(), platforms: PLATFORMS.map((p) => p.key), language: lang, market: 'both', focus: '', durationSec: 45 });
   const [plan, setPlan] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -42,16 +44,26 @@ export default function PlannerTab({ status, onOpenInVideo }) {
     planIdRef.current = plan?.id ?? null;
   }, [plan?.id]);
 
-  const loadPlans = useCallback(() => api.get('/api/planner').then((d) => setPlans(d.items)).catch(() => {}), []);
+  const loadPlans = useCallback(() => {
+    if (!activeId) return;
+    api
+      .get(`/api/planner?brandId=${encodeURIComponent(activeId)}`)
+      .then((d) => setPlans(d.items))
+      .catch(() => {});
+  }, [activeId]);
   useEffect(() => {
     loadPlans();
   }, [loadPlans]);
+  // Another brand: its own plans, and the open plan (if any) stays with its brand.
+  useEffect(() => {
+    setPlan((p) => (p && p.brandId !== activeId ? null : p));
+  }, [activeId]);
 
   const generate = async () => {
     setBusy(true);
     setError(null);
     try {
-      const created = await api.post('/api/planner/generate', form);
+      const created = await api.post('/api/planner/generate', { ...form, brandId: activeId });
       setPlan(created);
       planIdRef.current = created.id;
       loadPlans();
@@ -168,6 +180,7 @@ export default function PlannerTab({ status, onOpenInVideo }) {
               <option value="both">{t('both')}</option>
               <option value="egypt">{t('egypt')}</option>
               <option value="gulf">{t('gulf')}</option>
+              <option value="global">{t('global')}</option>
             </select>
           </Field>
         </div>

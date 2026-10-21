@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Player } from '@remotion/player';
 import { Clapperboard, Download, MonitorPlay } from 'lucide-react';
-import { QudraVideo } from '../../../../video/QudraVideo.jsx';
+import { BrandVideo } from '../../../../video/BrandVideo.jsx';
 import { DIMENSIONS, FPS, totalFrames } from '../../../../video/timing.js';
 import { api } from '../../lib/api.js';
 import { useI18n } from '../../lib/i18n.jsx';
+import { brandVideoProps } from '../../lib/brands.jsx';
 import { ErrorBox, SectionTitle, Spinner } from '../ui.jsx';
 
 /** Same props the server renders with, minus stock/AI media (those are fetched at render time). */
-function previewProps(script, images, form, logo) {
+function previewProps(script, images, form, brand) {
   const byId = Object.fromEntries(images.map((i) => [i.id, i]));
   return {
     script: {
@@ -19,21 +20,22 @@ function previewProps(script, images, form, logo) {
       }),
     },
     mediaBase: '',
-    logoSrc: logo,
+    brand: brandVideoProps(brand),
+    logoSrc: brand?.logoUrl || null,
     musicSrc: form.music ? `/music/${encodeURIComponent(form.music)}` : null,
     voiceSrc: form.voiceMode === 'upload' && form.voiceUpload ? form.voiceUpload.url : null,
     captions: form.captions,
   };
 }
 
-export function PreviewPanel({ script, images, form, logo, source, onRendered }) {
+export function PreviewPanel({ script, images, form, brand, source, onRendered }) {
   const { t } = useI18n();
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const sourceRef = useRef(null);
 
-  const props = useMemo(() => (script ? previewProps(script, images, form, logo) : null), [script, images, form, logo]);
+  const props = useMemo(() => (script ? previewProps(script, images, form, brand) : null), [script, images, form, brand]);
   const dims = DIMENSIONS[script?.aspect] || DIMENSIONS['9:16'];
   const rendering = job && (job.status === 'queued' || job.status === 'running');
 
@@ -91,7 +93,7 @@ export function PreviewPanel({ script, images, form, logo, source, onRendered })
       <div dir="ltr" className="overflow-hidden rounded-xl border border-line bg-black">
         {props ? (
           <Player
-            component={QudraVideo}
+            component={BrandVideo}
             inputProps={props}
             durationInFrames={totalFrames(props.script.scenes)}
             fps={FPS}
@@ -103,7 +105,10 @@ export function PreviewPanel({ script, images, form, logo, source, onRendered })
             acknowledgeRemotionLicense
           />
         ) : (
-          <div className="flex aspect-[9/16] max-h-[62vh] w-full items-center justify-center bg-gradient-to-br from-[#40A664] via-[#2C894D] to-[#226E3D]">
+          <div
+            className="flex aspect-[9/16] max-h-[62vh] w-full items-center justify-center"
+            style={{ background: brand ? `linear-gradient(135deg, ${brand.visual.primary}, ${brand.visual.secondary})` : undefined }}
+          >
             <Clapperboard className="h-10 w-10 text-white/70" />
           </div>
         )}

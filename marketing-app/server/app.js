@@ -10,9 +10,12 @@ import { publicRouter, systemRouter } from './routes/system.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { videoRouter } from './routes/video.js';
 import { plannerRouter } from './routes/planner.js';
+import { brandsRouter } from './routes/brands.js';
+import { ensureBrands } from './services/brands.js';
 
 export function createApp() {
   getDb();
+  ensureBrands();
   const app = express();
   app.disable('x-powered-by');
   app.use(localHostOnly);
@@ -28,7 +31,7 @@ export function createApp() {
   const media = { fallthrough: false, maxAge: '1d' };
   app.use('/media', express.static(config.paths.media, media));
   app.use('/uploads', express.static(config.paths.uploads, media));
-  app.use('/brand', express.static(config.paths.brand, media));
+  app.use('/brands', express.static(config.paths.brands, media));
   app.use('/music', express.static(config.paths.music, media));
   app.use('/videos', requireAuth, express.static(config.paths.videos, media));
 
@@ -37,6 +40,7 @@ export function createApp() {
   app.use('/api/uploads', requireAuth, uploadsRouter);
   app.use('/api/video', requireAuth, videoRouter);
   app.use('/api/planner', requireAuth, plannerRouter);
+  app.use('/api/brands', requireAuth, brandsRouter);
   app.use('/api', (_req, _res, next) => next(errors.notFound('Endpoint')));
 
   // Built web UI (npm start). In development Vite serves it instead.
@@ -52,7 +56,8 @@ export function createApp() {
       const where = first?.path?.join('.') || 'input';
       err = errors.validation(`${where}: ${first?.message}`, `قيمة غير صحيحة في الحقل "${where}".`);
     }
-    if (err?.status === 404 && err?.expose && !err.code) err = errors.notFound('File');
+    // express.static reports a missing file as a plain 404 error (ENOENT, not exposed).
+    if (err?.status === 404 && !err.messages) err = errors.notFound('File');
     const { status, body } = toPayload(err);
     if (status >= 500) console.error('[server]', err);
     res.status(status).json(body);

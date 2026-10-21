@@ -5,7 +5,7 @@ export const SCENE_TYPES = ['hook', 'pain', 'solution', 'feature', 'proof', 'cta
 export const TRANSITIONS = ['fade', 'slide', 'wipe', 'flip'];
 
 export const MARKETS = ['egypt', 'gulf', 'both', 'global'];
-const BrandId = z.string().regex(/^[a-z0-9-]{1,40}$/);
+const BrandId = z.string().regex(/^[a-z0-9-]{1,40}$/).nullable().transform((v) => v ?? undefined);
 
 /** What Claude returns for a video script. Visual assets are attached later by the render pipeline. */
 export const AiScriptSchema = z.object({

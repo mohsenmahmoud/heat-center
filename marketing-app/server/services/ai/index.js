@@ -1,4 +1,5 @@
-import { config } from '../../config.js';
+import { config, writerProvider } from '../../config.js';
+import { errors } from '../../lib/errors.js';
 import { ARABIC_FONTS, LATIN_FONTS, LOOKS } from '../../../video/brand-theme.js';
 import { brandName, brandSystemPrompt, PLATFORMS } from '../../brand/index.js';
 import { AiBrandDraftSchema, AiScriptSchema, AiPlanSchema, PostSchema } from '../schemas.js';
@@ -70,17 +71,28 @@ For each post return: hook (the video's opening line, ≤ 12 words, stops the ta
 export async function writeWeekPlan({ brand, slots, language, market, focus }) {
   if (config.mockAi) return mockPosts({ brand, slots, language });
 
-  const text = `Create a 7-day social media content plan for ${audienceFor(brand, market)}.
+  const ask = (wanted, written) =>
+    generateJson({
+      system: brandSystemPrompt(brand, language),
+      content: `Create ${wanted.length === slots.length ? 'a 7-day social media content plan' : `the remaining ${wanted.length} day(s) of a 7-day social media content plan`} for ${audienceFor(brand, market)}.
 ${focus ? `Campaign focus / notes from the marketing team: ${focus}\n` : ''}
-Slots (keep this exact order, one post each):
-${slots.map(slotLine).join('\n')}
-
+Slots (keep this exact order, exactly one post each, ${wanted.length} posts in total):
+${wanted.map(slotLine).join('\n')}
+${written.length ? `\nDays already written use these hooks; do not repeat their angle: ${written.map((p) => `"${p.hook}"`).join(', ')}\n` : ''}
 ${POST_RULES}
-Each day must take a different angle; do not repeat hooks or scenes across the week.`;
+Each day must take a different angle; do not repeat hooks or scenes across the week.`,
+      schema: AiPlanSchema,
+      effort: 'medium',
+    });
 
-  const result = await generateJson({ system: brandSystemPrompt(brand, language), content: text, schema: AiPlanSchema, effort: 'medium' });
-  if (result.posts.length < slots.length) throw new Error('Claude returned fewer posts than requested');
-  return result.posts.slice(0, slots.length);
+  let posts = (await ask(slots, [])).posts.slice(0, slots.length);
+  // Models sometimes stop early: ask once more for just the missing days.
+  if (posts.length < slots.length) {
+    const more = await ask(slots.slice(posts.length), posts);
+    posts = [...posts, ...more.posts].slice(0, slots.length);
+  }
+  if (posts.length < slots.length) throw errors.aiBadOutput(writerProvider() === 'gemini' ? 'Gemini' : 'Claude');
+  return posts;
 }
 
 /** Rewrites one day of a plan, aware of the other days so it stays distinct. */

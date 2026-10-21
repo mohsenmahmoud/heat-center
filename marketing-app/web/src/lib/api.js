@@ -1,7 +1,8 @@
 export class ApiError extends Error {
-  constructor(code, message, status) {
+  constructor(code, message, status, details) {
     super(typeof message === 'string' ? message : message?.en);
     this.code = code;
+    this.details = typeof details === 'string' ? details : null;
     this.messages = typeof message === 'string' ? { ar: message, en: message } : message;
     this.status = status;
   }
@@ -28,7 +29,7 @@ async function request(method, url, body) {
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     if (res.status === 401) window.dispatchEvent(new Event('qms:unauthorized'));
-    throw new ApiError(data?.error?.code || 'HTTP_' + res.status, data?.error?.message || NETWORK, res.status);
+    throw new ApiError(data?.error?.code || 'HTTP_' + res.status, data?.error?.message || NETWORK, res.status, data?.error?.details);
   }
   return data;
 }

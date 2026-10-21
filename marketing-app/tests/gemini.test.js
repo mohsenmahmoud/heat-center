@@ -75,6 +75,23 @@ describe('Gemini as the writer', () => {
     expect(day.body.script.scenes.length).toBeGreaterThan(5);
   });
 
+  it('asks again for the missing days when the model returns a short week', async () => {
+    const post = (hook) => ({ hook, caption: 'c', visualIdea: 'v', hashtags: ['#x'], cta: 'احجز', format: 'Reel 9:16', bestTime: '20:00' });
+    const replies = [reply({ posts: [1, 2, 3, 4].map((i) => post(`h${i}`)) }), reply({ posts: [5, 6, 7].map((i) => post(`h${i}`)) })];
+    nextReply = () => replies.shift()();
+    const plan = await request(app).post('/api/planner/generate').send({ weekStart: '2026-10-24', language: 'ar' });
+    expect(plan.status).toBe(201);
+    expect(plan.body.posts.map((p) => p.hook)).toEqual(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7']);
+    expect(calls[1].params.contents[0].parts[0].text).toContain('remaining 3 day(s)');
+    expect(calls[1].params.contents[0].parts[0].text).toContain('"h4"');
+
+    // Still short after the retry: a clear, friendly error instead of "unexpected error".
+    nextReply = reply({ posts: [post('a')] });
+    const short = await request(app).post('/api/planner/generate').send({ weekStart: '2026-10-24', language: 'ar' });
+    expect(short.status).toBe(502);
+    expect(short.body.error.code).toBe('AI_BAD_OUTPUT');
+  });
+
   it.each([
     ['a rejected key', () => { throw new (globalThis.__ApiError)({ status: 400, message: 'API key not valid. Please pass a valid API key.' }); }, 'INVALID_GEMINI_KEY'],
     ['an unknown model', () => { throw new (globalThis.__ApiError)({ status: 404, message: 'models/x is not found' }); }, 'GEMINI_MODEL_NOT_FOUND'],

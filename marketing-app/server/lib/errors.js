@@ -75,6 +75,7 @@ export function toPayload(err) {
   }
   return {
     status: 500,
-    body: { error: { code: 'INTERNAL', message: { ar: 'حدث خطأ غير متوقع. حاول مرة أخرى.', en: 'Unexpected error. Please try again.' } } },
+    // Localhost-only app: the technical reason helps the user report the problem.
+    body: { error: { code: 'INTERNAL', message: { ar: 'حدث خطأ غير متوقع. حاول مرة أخرى.', en: 'Unexpected error. Please try again.' }, details: String(err?.message || err || '').split('\n')[0].slice(0, 300) } },
   };
 }

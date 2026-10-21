@@ -36,7 +36,14 @@ export function ErrorBox({ error, onRetry }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm" role="alert">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
-      <span className="flex-1">{pick(error.messages || error.message)}</span>
+      <span className="flex-1">
+        {pick(error.messages || error.message)}
+        {error.code === 'INTERNAL' && error.details && (
+          <span className="mt-1 block font-mono text-[11px] text-muted" dir="ltr">
+            {error.details}
+          </span>
+        )}
+      </span>
       {onRetry && (
         <button className="btn-ghost !px-2.5 !py-1 text-xs" onClick={onRetry}>
           <RotateCcw className="h-3.5 w-3.5" />

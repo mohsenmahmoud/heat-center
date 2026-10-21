@@ -6,19 +6,25 @@ import { DIMENSIONS, FPS, totalFrames } from '../../../../video/timing.js';
 import { api } from '../../lib/api.js';
 import { useI18n } from '../../lib/i18n.jsx';
 import { brandVideoProps } from '../../lib/brands.jsx';
+import { orientationFromSize } from './SourceForm.jsx';
 import { ErrorBox, SectionTitle, Spinner } from '../ui.jsx';
 
-/** Same props the server renders with, minus stock/AI media (those are fetched at render time). */
+/** How a scene's pinned image is shown: same rules as the renderer (server/services/render.js). */
+function sceneVisual(scene, byId) {
+  const img = scene.imageId && byId[scene.imageId];
+  const url = img?.url || scene.imageUrl;
+  if (!scene.imageId || !url) return { kind: 'gradient' };
+  const mode = scene.imageMode || (scene.imageSource === 'ai' || scene.shot?.kind === 'photo' ? 'photo' : 'screen');
+  if (mode === 'photo') return { kind: 'image', src: url, focus: scene.shot?.focus || null };
+  const size = img?.width ? { w: img.width, h: img.height } : scene.imageSize || null;
+  return { kind: 'mockup', src: url, orientation: img?.orientation || orientationFromSize(size?.w, size?.h) || 'landscape', size, shot: scene.shot || null };
+}
+
+/** Same props the server renders with, minus stock footage (fetched at render time). */
 function previewProps(script, images, form, brand) {
   const byId = Object.fromEntries(images.map((i) => [i.id, i]));
   return {
-    script: {
-      ...script,
-      scenes: script.scenes.map((s) => {
-        const img = s.imageId && byId[s.imageId];
-        return { ...s, visual: img ? { kind: 'mockup', src: img.url, orientation: img.orientation } : { kind: 'gradient' } };
-      }),
-    },
+    script: { ...script, scenes: script.scenes.map((s) => ({ ...s, visual: sceneVisual(s, byId) })) },
     mediaBase: '',
     brand: brandVideoProps(brand),
     logoSrc: brand?.logoUrl || null,

@@ -92,6 +92,22 @@ try {
     const n = await page.locator('[data-testid=scene]').count();
     assert(n >= 6, `expected ≥6 scenes, got ${n}`);
   });
+  await step('gives every scene a picture: AI images, plus the uploaded screenshot framed on its scene', async () => {
+    await page.locator('[data-testid=visuals-progress]').waitFor({ state: 'detached', timeout: 60000 });
+    const kinds = await page.locator('[data-testid=visual-kind]').allInnerTexts();
+    assert(kinds.filter((k) => k === 'صورة AI').length >= 4, `expected AI images on most scenes, got ${kinds.join(' | ')}`);
+    assert(kinds.some((k) => k.startsWith('لقطة شاشة')), 'the uploaded screenshot should be pinned and shown on a device');
+    assert((await page.locator('[data-testid=screenshot-hint]').count()) >= 3, 'scenes should suggest which image to use');
+  });
+  await step('replaces one scene image with a new AI image and with the user\'s own image', async () => {
+    const card = page.locator('[data-testid=scene-visual]').first();
+    const before = await card.locator('img').getAttribute('src');
+    await card.locator('[data-testid=ai-image]').click();
+    await page.waitForFunction(([b]) => document.querySelector('[data-testid=scene-visual] img')?.getAttribute('src') !== b, [before], { timeout: 30000 });
+    await card.locator('[data-testid=scene-image-input]').setInputFiles(path.join(dataDir, 'dashboard.png'));
+    await card.locator('[data-testid=visual-kind]', { hasText: 'لقطة شاشة' }).waitFor({ timeout: 30000 });
+    await card.locator('[data-testid=callout]').fill('جدول التحصيل');
+  });
   await step('edits a scene headline and shows it in the live preview', async () => {
     const headline = page.locator('[data-testid=scene]').first().getByLabel('العنوان على الشاشة');
     await headline.fill('آخر الشهر بدون فوضى');

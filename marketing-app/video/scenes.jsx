@@ -1,6 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { Background, Chip, DeviceMockup, FadeUp, KineticHeadline, Logo, Swoosh } from './parts.jsx';
+import { Background, Chip, FadeUp, isMediaVisual, KineticHeadline, Logo, ScreenShowcase, Swoosh } from './parts.jsx';
 import { useTheme } from './theme.js';
 
 const layout = (width, height) => ({
@@ -37,11 +37,13 @@ export function HookScene({ scene, base }) {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const L = layout(width, height);
-  const surface = useTheme().alt;
+  const theme = useTheme();
+  const media = isMediaVisual(scene.visual);
+  const surface = media ? theme.media : theme.alt;
   const punch = interpolate(frame, [0, 8, 14], [1.25, 0.97, 1], { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
-      <Background visual={scene.visual} base={base} tone="alt" />
+      <Background visual={scene.visual} base={base} tone="alt" scrim="center" />
       <AbsoluteFill style={{ justifyContent: 'center', padding: L.pad, transform: `scale(${punch})` }}>
         <KineticHeadline text={scene.headline} size={L.h1 * 1.2} color={surface.fg} />
         {scene.subtext && (
@@ -63,6 +65,7 @@ export function StandardScene({ scene, base, language, website }) {
   const portrait = height > width;
   const hasMockup = scene.visual?.kind === 'mockup' && scene.visual.src;
   const tone = scene.type === 'pain' ? 'alt' : 'main';
+  const surface = isMediaVisual(scene.visual) ? theme.media : theme[tone];
 
   return (
     <AbsoluteFill>
@@ -71,19 +74,32 @@ export function StandardScene({ scene, base, language, website }) {
         style={{
           padding: L.pad,
           paddingTop: portrait ? height * 0.12 : L.pad,
+          // Room above the burned-in captions.
+          paddingBottom: portrait && hasMockup ? height * 0.13 : L.pad,
           display: 'flex',
           flexDirection: portrait ? 'column' : 'row',
-          justifyContent: hasMockup ? 'space-between' : 'center',
+          // Over a photo the text sits at the top, where the scrim is darkest.
+          justifyContent: hasMockup ? 'space-between' : isMediaVisual(scene.visual) ? 'flex-start' : 'center',
           alignItems: portrait ? 'stretch' : 'center',
           gap: L.pad,
         }}
       >
         <div style={{ flex: portrait ? '0 0 auto' : 1 }}>
-          <TextBlock scene={scene} L={L} surface={theme[tone]} />
+          <TextBlock scene={scene} L={L} surface={surface} />
         </div>
         {hasMockup && (
           <div style={{ flex: 1, display: 'flex', alignItems: portrait ? 'flex-end' : 'center', justifyContent: 'center', minHeight: 0 }}>
-            <DeviceMockup src={scene.visual.src} base={base} orientation={scene.visual.orientation} rtl={language === 'ar'} website={website} width={portrait ? width * 0.84 : width * 0.42} />
+            <ScreenShowcase
+              src={scene.visual.src}
+              base={base}
+              orientation={scene.visual.orientation}
+              size={scene.visual.size}
+              shot={scene.visual.shot}
+              rtl={language === 'ar'}
+              website={website}
+              boxW={portrait ? width * 0.84 : width * 0.42}
+              boxH={portrait ? height * 0.42 : height * 0.72}
+            />
           </div>
         )}
       </AbsoluteFill>
@@ -106,7 +122,7 @@ export function ProofScene({ scene, base, language }) {
   );
   return (
     <AbsoluteFill>
-      <Background visual={scene.visual} base={base} />
+      <Background visual={scene.visual} base={base} scrim="center" />
       <AbsoluteFill style={{ justifyContent: 'center', padding: L.pad, gap: L.body }}>
         {card(labels[0], scene.headline, true, 0)}
         {scene.subtext && card(labels[1], scene.subtext, false, 18)}

@@ -19,7 +19,7 @@ export function finalizeScript(ai, { brand = null, language, durationSec, topic 
       imageId = queue.shift();
     }
     if (imageId) used.add(imageId);
-    return { id: `s${i + 1}`, ...s, imageId };
+    return { id: `s${i + 1}`, ...s, imagePrompt: s.imagePrompt || '', screenshotHint: s.screenshotHint || '', imageId, imageSource: imageId ? 'user' : null };
   });
   return {
     ...(brand?.id ? { brandId: brand.id } : {}),

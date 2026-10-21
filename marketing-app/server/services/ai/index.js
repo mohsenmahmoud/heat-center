@@ -39,6 +39,8 @@ Each scene:
 - stockQuery: 2–5 English words to search stock footage for this scene's background (people, places or objects that fit the audience and product; empty for cta).
 - visualIdea: what the motion graphic shows (brief).
 - voiceover: the spoken line for this scene, natural and conversational; short enough to say in the scene's duration at about 2 words per second (hook ≤ 9 words, other scenes ≤ 16 words).
+- imagePrompt: an English prompt (25–60 words) for a striking photorealistic image that carries this scene's idea for this audience: subject, action, setting, camera angle and mood. Real people, places and objects only; never screens with readable text, never text or logos. Empty for cta.
+- screenshotHint: in ${language === 'ar' ? 'Arabic' : 'English'}, one short line telling the marketer which product screenshot or photo would fit this scene best if they want to use their own (e.g. which screen of the product, which section). Empty for hook and cta.
 Also return: title (internal, short), cta.headline + cta.button (one CTA), caption for posting the video (≤ 80 words), 3–5 hashtags.
 - imageIndex: ${images.length ? `which attached image this scene shows, 1–${images.length} in the order attached; 0 for none. Put each image on the scene whose text describes that screen, use each image at most once, and keep hook and cta at 0.` : 'always 0 (no images attached).'}
 ${images.length ? `The user attached ${images.length} image(s) (product screenshots), in this order. Look at each one and describe what it actually shows in the scene you put it on.` : ''}`;

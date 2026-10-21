@@ -9,7 +9,8 @@ import { lintBrand } from '../brand/index.js';
 import { resolveBrand } from '../services/brands.js';
 import { totalSeconds } from '../../video/timing.js';
 import { finalizeScript } from '../services/scripts.js';
-import { ReferenceRequest, RenderRequest, ScriptRequest, VoicePreviewRequest } from '../services/schemas.js';
+import { AnalyzeImageRequest, ReferenceRequest, RenderRequest, SceneImageRequest, ScriptRequest, VoicePreviewRequest } from '../services/schemas.js';
+import { analyzeImage, makeSceneImage, uploadItem } from '../services/visuals.js';
 import { analyzeReference } from '../services/reference.js';
 import { synthesizeSpeech } from '../services/media.js';
 import { writeVideoScript } from '../services/ai/index.js';
@@ -42,7 +43,7 @@ async function importPageImages(urls) {
       const mime = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }[ext];
       if (!mime) continue;
       const row = uploadsRepo.add({ originalName: path.basename(new URL(url).pathname) || 'page-image', fileName, mime, size: fs.statSync(path.join(config.paths.uploads, fileName)).size });
-      items.push({ id: row.id, name: row.original_name, mime, size: row.size, url: `/uploads/${fileName}` });
+      items.push(uploadItem(row));
     } catch (err) {
       console.warn('[script] skipped page image', url, err.message);
     }
@@ -76,7 +77,45 @@ videoRouter.post(
 
     const imageIds = allImages.filter((i) => i.mime.startsWith('image/')).map((i) => i.id);
     const script = finalizeScript(ai, { brand, language: input.language, durationSec: input.durationSec, topic: input.topic || page?.title || '', imageIds });
+    await frameImages(script, brand);
     res.json({ script, durationSec: totalSeconds(script.scenes), warnings: lintBrand(script, brand), pageImages });
+  }),
+);
+
+/** Reviews every image pinned to a scene (a few at a time) so it is framed for that scene, not shown as-is. */
+async function frameImages(script, brand) {
+  const queue = script.scenes.filter((s) => s.imageId);
+  const worker = async () => {
+    for (let scene = queue.shift(); scene; scene = queue.shift()) {
+      const upload = uploadsRepo.get(scene.imageId);
+      if (!upload) continue;
+      const item = uploadItem(upload);
+      scene.imageUrl = item.url;
+      scene.imageSize = item.width ? { w: item.width, h: item.height } : null;
+      scene.shot = await analyzeImage({ upload, headline: scene.headline, subtext: scene.subtext, language: script.language, brand });
+      scene.imageMode = scene.shot.kind === 'photo' ? 'photo' : 'screen';
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+}
+
+// Makes an AI image for one scene (stored like an upload so it can be swapped for the user's own).
+videoRouter.post(
+  '/scene-image',
+  wrap(async (req, res) => {
+    const input = SceneImageRequest.parse(req.body);
+    res.status(201).json(await makeSceneImage({ prompt: input.prompt, brand: resolveBrand(input.brandId), market: input.market, aspect: input.aspect }));
+  }),
+);
+
+// Reviews an image the user put on a scene: screenshot or photo, useful area, focus area and a short label.
+videoRouter.post(
+  '/analyze-image',
+  wrap(async (req, res) => {
+    const input = AnalyzeImageRequest.parse(req.body);
+    const upload = uploadsRepo.get(input.uploadId);
+    if (!upload || !upload.mime.startsWith('image/')) throw errors.notFound('Image');
+    res.json({ shot: await analyzeImage({ upload, headline: input.headline, subtext: input.subtext, language: input.language, brand: resolveBrand(input.brandId) }) });
   }),
 );
 

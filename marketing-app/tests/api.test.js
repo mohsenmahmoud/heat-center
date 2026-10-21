@@ -181,3 +181,35 @@ describe('Tab 2: weekly planner', () => {
     expect((await agent().get(`/api/planner/${plan.id}`)).status).toBe(404);
   });
 });
+
+describe('scene visuals', () => {
+  it('makes an AI image for a scene and stores it like an upload', async () => {
+    const res = await agent().post('/api/video/scene-image').send({ prompt: 'academy owner at a desk, realistic photo', brandId: 'qudra' });
+    expect(res.status).toBe(201);
+    expect(res.body.source).toBe('ai');
+    expect(res.body.url).toMatch(/^\/uploads\/[a-f0-9]{32}\.png$/);
+    expect(res.body.height / res.body.width).toBeCloseTo(16 / 9, 1);
+    expect((await agent().get(res.body.url)).status).toBe(200);
+    expect((await agent().post('/api/video/scene-image').send({ prompt: '' })).status).toBe(400);
+  });
+
+  it('reviews a pinned image and frames it for its scene', async () => {
+    const up = await agent().post('/api/uploads').attach('files', PNG, { filename: 'dash.png', contentType: 'image/png' });
+    expect(up.body.items[0].width).toBe(2);
+    const res = await agent().post('/api/video/analyze-image').send({ uploadId: up.body.items[0].id, headline: 'جدول التحصيل' });
+    expect(res.status).toBe(200);
+    expect(res.body.shot.kind).toBe('screenshot');
+    expect(res.body.shot.content).toEqual({ x: 0, y: 0, w: 1, h: 1 });
+    expect(res.body.shot.focus.w).toBeGreaterThan(0);
+
+    const script = await agent().post('/api/video/script').send({ topic: 'x', imageIds: [up.body.items[0].id] });
+    const pinned = script.body.script.scenes.find((s) => s.imageId);
+    expect(pinned.imageMode).toBe('screen');
+    expect(pinned.imageUrl).toBe(up.body.items[0].url);
+    expect(pinned.shot.kind).toBe('screenshot');
+    // Every scene but the CTA carries an image prompt, and the edited script still validates for rendering.
+    expect(script.body.script.scenes.filter((s) => s.type !== 'cta').every((s) => s.imagePrompt)).toBe(true);
+    const { RenderRequest } = await import('../server/services/schemas.js');
+    expect(RenderRequest.safeParse({ script: script.body.script }).success).toBe(true);
+  });
+});

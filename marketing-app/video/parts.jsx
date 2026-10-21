@@ -1,29 +1,42 @@
 import React from 'react';
 import { AbsoluteFill, Easing, Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { resolveSrc, useTheme } from './theme.js';
+import { rgba } from './brand-theme.js';
 
-/** Scene background: the brand surface (gradient, flat colour, dark or light), or stock/AI media under a brand-tinted overlay. */
-export function Background({ visual, base, tone = 'main' }) {
+/**
+ * Scene background: the brand surface (gradient, flat colour, dark or light), or a photo/footage with slow camera
+ * motion toward its focus, a scrim where the text sits and a light brand tint.
+ */
+export function Background({ visual, base, tone = 'main', scrim = 'top' }) {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const surface = useTheme()[tone];
-  const zoom = interpolate(frame, [0, durationInFrames], [1.08, 1.0]);
+  const theme = useTheme();
+  const surface = theme[tone];
   const drift = Math.sin(frame / 40) * 60;
   const src = resolveSrc(base, visual?.src);
   const isMedia = src && (visual.kind === 'video' || visual.kind === 'image');
+  const zoom = interpolate(frame, [0, durationInFrames], isMedia ? [1.02, 1.14] : [1.08, 1.0]);
+  const focus = visual?.focus;
+  const origin = focus ? `${(focus.x + focus.w / 2) * 100}% ${(focus.y + focus.h / 2) * 100}%` : '50% 40%';
 
-  return (
-    <AbsoluteFill style={{ background: surface.bg, overflow: 'hidden' }}>
-      {isMedia && (
-        <AbsoluteFill style={{ transform: `scale(${zoom})` }}>
+  if (isMedia) {
+    return (
+      <AbsoluteFill style={{ background: theme.media.bg, overflow: 'hidden' }}>
+        <AbsoluteFill style={{ transform: `scale(${zoom})`, transformOrigin: origin }}>
           {visual.kind === 'video' ? (
             <OffthreadVideo src={src} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <Img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: origin }} />
           )}
         </AbsoluteFill>
-      )}
-      <AbsoluteFill style={{ background: isMedia ? surface.overlay : 'transparent' }} />
+        <AbsoluteFill style={{ background: theme.media.tint }} />
+        <AbsoluteFill style={{ background: theme.media.scrim(scrim) }} />
+      </AbsoluteFill>
+    );
+  }
+
+  return (
+    <AbsoluteFill style={{ background: surface.bg, overflow: 'hidden' }}>
       {/* soft light blobs keep plain backgrounds alive */}
       <div style={{ position: 'absolute', width: '90%', aspectRatio: '1', borderRadius: '50%', top: '-25%', left: `${-20 + drift / 20}%`, background: `radial-gradient(circle, ${surface.glow}, transparent 65%)` }} />
       <div style={{ position: 'absolute', width: '80%', aspectRatio: '1', borderRadius: '50%', bottom: '-30%', right: `${-25 - drift / 25}%`, background: `radial-gradient(circle, ${surface.glow}, transparent 60%)`, opacity: 0.75 }} />
@@ -31,6 +44,9 @@ export function Background({ visual, base, tone = 'main' }) {
     </AbsoluteFill>
   );
 }
+
+/** True when a scene's visual is a photo or footage shown full screen. */
+export const isMediaVisual = (visual) => !!visual?.src && (visual.kind === 'image' || visual.kind === 'video');
 
 function Grid({ color }) {
   const frame = useCurrentFrame();
@@ -102,45 +118,134 @@ export function Chip({ children, size, surface, variant = 'mark', delay = 0 }) {
   );
 }
 
-/**
- * Uploaded screenshot inside a browser frame (desktop screens) or a phone frame (phone screenshots).
- * Wide screens slowly zoom into the top corner where KPIs live; tall pages scroll, so details stay readable on a phone.
- */
-export function DeviceMockup({ src, base, orientation, width, rtl, website, delay = 6 }) {
-  const frame = useCurrentFrame();
-  const theme = useTheme();
-  const { fps, durationInFrames } = useVideoConfig();
-  const s = spring({ frame: frame - delay, fps, config: { damping: 15, stiffness: 90 } });
-  const float = Math.sin(frame / 18) * 6;
-  const progress = interpolate(frame, [delay + 18, durationInFrames - 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic) });
-  const url = resolveSrc(base, src);
-  const common = { transform: `translateY(${(1 - s) * 300 + float}px) rotate(${(1 - s) * -6}deg)`, opacity: s, boxShadow: '0 40px 90px rgba(0,0,0,0.35)', background: '#FFFFFF', overflow: 'hidden' };
+const FULL = { x: 0, y: 0, w: 1, h: 1 };
+const FALLBACK_SIZE = { phone: { w: 900, h: 1950 }, portrait: { w: 1000, h: 1600 }, landscape: { w: 1600, h: 1000 } };
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, lo, hi) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
 
-  if (orientation === 'phone') {
-    return (
-      <div style={{ ...common, height: '100%', maxWidth: width * 0.62, aspectRatio: '9 / 19', borderRadius: 56, border: `14px solid ${theme.frame}` }}>
-        <Img src={url} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', objectPosition: `50% ${progress * 100}%` }} />
-      </div>
-    );
+/**
+ * A screenshot, presented rather than pasted: inside a phone or browser frame that tilts in, cropped to its useful
+ * content, then a slow camera move into the area that proves the scene, a spotlight on it and a short label.
+ * `shot` comes from the AI review of the image (see server/services/visuals.js); without it, a sensible default.
+ * `boxW` × `boxH` is the room the scene leaves for the device, in pixels.
+ */
+export function ScreenShowcase({ src, base, orientation = 'landscape', size, shot, rtl, website, boxW, boxH, delay = 6 }) {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  const theme = useTheme();
+  const url = resolveSrc(base, src);
+  const img = size?.w && size?.h ? size : FALLBACK_SIZE[orientation] || FALLBACK_SIZE.landscape;
+  const C = shot?.content || FULL;
+  const aiFocus = shot?.focus || null;
+  const F = aiFocus || (orientation === 'landscape' ? { x: rtl ? 0.4 : 0, y: 0, w: 0.6, h: 0.6 } : { x: 0, y: 0, w: 1, h: 0.45 });
+  const contentRatio = (C.h * img.h) / (C.w * img.w);
+  const phone = orientation === 'phone' || contentRatio >= 1.7;
+
+  // Frame and viewport sizes in pixels.
+  const border = phone ? Math.round(boxW * 0.018) + 6 : 0;
+  const bar = phone ? 0 : Math.round(boxW * 0.055);
+  let Vw;
+  let Vh;
+  if (phone) {
+    Vh = Math.min(boxH - border * 2, ((boxW * 0.62 - border * 2) * 19.5) / 9);
+    Vw = (Vh * 9) / 19.5;
+  } else {
+    Vw = boxW;
+    Vh = Math.min(boxH - bar, Vw * clamp(contentRatio, 0.62, 1.25));
   }
-  const tall = orientation === 'portrait';
+
+  // Camera: cover the content, then move in on the focus and hold.
+  const zoomEnd = Math.max(delay + 40, delay + 20 + (durationInFrames - delay - 30) * 0.55);
+  const p = interpolate(frame, [delay + 20, zoomEnd], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic) });
+  const s0 = Math.max(Vw / (C.w * img.w), Vh / (C.h * img.h));
+  const s1 = clamp(Math.min(Vw / (F.w * img.w), Vh / (F.h * img.h)) * 0.84, s0, s0 * 2.6);
+  const sc = lerp(s0, s1, p) * (1 + 0.015 * Math.sin(frame / 30));
+  const cx = lerp(C.x + C.w / 2, F.x + F.w / 2, p);
+  const cy = lerp(C.y + C.h / 2, F.y + F.h / 2, p);
+  const W = img.w * sc;
+  const H = img.h * sc;
+  const left = clamp(Vw / 2 - cx * W, Vw - (C.x + C.w) * W, -C.x * W);
+  const top = clamp(Vh / 2 - cy * H, Vh - (C.y + C.h) * H, -C.y * H);
+
+  // Entrance: tilts up from below, then floats.
+  const enter = spring({ frame: frame - delay, fps, config: { damping: 16, stiffness: 80 } });
+  const float = Math.sin(frame / 22) * 5;
+  const glowIn = interpolate(p, [0.55, 0.85], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const label = spring({ frame: frame - zoomEnd + 6, fps, config: { damping: 12 } });
+  const r = Math.round(Vw * 0.02) + 4;
+
+  const viewport = (
+    <div style={{ position: 'relative', width: Vw, height: Vh, overflow: 'hidden', background: '#FFFFFF' }}>
+      <Img src={url} style={{ position: 'absolute', left, top, width: W, height: H, maxWidth: 'none' }} />
+      {aiFocus && glowIn > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: left + F.x * W - 6,
+            top: top + F.y * H - 6,
+            width: F.w * W + 12,
+            height: F.h * H + 12,
+            borderRadius: r,
+            border: `${Math.max(3, Vw * 0.006)}px solid ${theme.spotlight}`,
+            boxShadow: `0 0 0 4000px rgba(0,0,0,${0.38 * glowIn}), 0 0 ${Vw * 0.04}px ${theme.spotlight}`,
+            opacity: glowIn,
+          }}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <div style={{ ...common, width, borderRadius: 22, display: 'flex', flexDirection: 'column', ...(tall ? { height: '100%' } : {}) }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', background: theme.barBg, direction: 'ltr', flexShrink: 0 }}>
-        {['#EC736C', '#E0A54D', '#3DAA63'].map((c) => (
-          <span key={c} style={{ width: 14, height: 14, borderRadius: 7, background: c }} />
-        ))}
-        <span style={{ marginLeft: 16, flex: 1, padding: '6px 16px', borderRadius: 10, background: '#FFFFFF', color: '#868C87', fontSize: 20, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{website || ''}</span>
-      </div>
-      {tall ? (
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-          <Img src={url} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', objectPosition: `50% ${progress * 100}%` }} />
-        </div>
-      ) : (
-        <div style={{ overflow: 'hidden', aspectRatio: '4 / 3' }}>
-          <Img src={url} style={{ width: '100%', display: 'block', transform: `scale(${1 + progress * 0.6})`, transformOrigin: rtl ? 'top right' : 'top left' }} />
+    <div style={{ position: 'relative', perspective: 1800, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {shot?.callout && (
+        <div
+          style={{
+            position: 'relative',
+            marginBottom: -Vw * 0.045,
+            zIndex: 2,
+            transform: `scale(${label})`,
+            opacity: label,
+            background: theme.calloutBg,
+            color: theme.calloutFg,
+            fontWeight: 800,
+            fontSize: Math.max(26, boxW * 0.042),
+            padding: `${boxW * 0.014}px ${boxW * 0.04}px`,
+            borderRadius: 999,
+            boxShadow: '0 18px 40px rgba(0,0,0,0.3)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {shot.callout}
         </div>
       )}
+      {/* brand-coloured glow behind the device */}
+      <div style={{ position: 'absolute', inset: '-12%', background: `radial-gradient(ellipse at center, ${rgba(theme.spotlight, 0.33)} 0%, transparent 62%)`, filter: 'blur(30px)', opacity: enter }} />
+      <div
+        style={{
+          position: 'relative',
+          transform: `translateY(${(1 - enter) * 260 + float}px) rotateX(${(1 - enter) * 22}deg) rotateY(${(1 - enter) * (rtl ? 10 : -10)}deg) scale(${0.9 + enter * 0.1})`,
+          opacity: Math.min(1, enter * 1.4),
+          boxShadow: '0 40px 90px rgba(0,0,0,0.38)',
+          borderRadius: phone ? Vw * 0.13 : r,
+          overflow: 'hidden',
+          background: phone ? theme.frame : '#FFFFFF',
+          padding: phone ? border : 0,
+        }}
+      >
+        {phone ? (
+          <div style={{ borderRadius: Vw * 0.1, overflow: 'hidden' }}>{viewport}</div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: bar * 0.18, height: bar, padding: `0 ${bar * 0.36}px`, background: theme.barBg, direction: 'ltr' }}>
+              {['#EC736C', '#E0A54D', '#3DAA63'].map((c) => (
+                <span key={c} style={{ width: bar * 0.24, height: bar * 0.24, borderRadius: bar, background: c }} />
+              ))}
+              <span style={{ marginLeft: bar * 0.3, flex: 1, padding: `${bar * 0.1}px ${bar * 0.3}px`, borderRadius: bar * 0.2, background: '#FFFFFF', color: '#868C87', fontSize: bar * 0.36, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{website || ''}</span>
+            </div>
+            {viewport}
+          </>
+        )}
+      </div>
     </div>
   );
 }

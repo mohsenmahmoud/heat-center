@@ -35,7 +35,9 @@ export const config = {
   // claude | gemini. Empty = whichever has a key (Claude first).
   aiProvider: (env.AI_PROVIDER || '').toLowerCase(),
 
-  imageProvider: (env.IMAGE_PROVIDER || 'none').toLowerCase(),
+  // gemini | openai | replicate | off. Empty (or the old default "none") = automatic: Gemini when a Gemini key exists.
+  imageProviderSetting: (env.IMAGE_PROVIDER || '').toLowerCase(),
+  geminiImageModel: env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image',
   openaiKey: env.OPENAI_API_KEY || '',
   replicateKey: env.REPLICATE_API_TOKEN || '',
   replicateModel: env.REPLICATE_IMAGE_MODEL || 'black-forest-labs/flux-schnell',
@@ -83,6 +85,16 @@ for (const dir of [config.paths.data, config.paths.uploads, config.paths.media, 
   fs.mkdirSync(dir, { recursive: true });
 }
 
+/** Which image generator scene images use: 'mock' in demo mode, else the configured/available provider, or null. */
+export function imageProvider() {
+  if (config.mockAi) return 'mock';
+  const set = config.imageProviderSetting;
+  const ready = { gemini: !!config.geminiKey, openai: !!config.openaiKey, replicate: !!config.replicateKey };
+  if (set === 'off') return null;
+  if (ready[set]) return set;
+  return ready.gemini ? 'gemini' : null;
+}
+
 /** Which text-to-speech provider AI voiceovers use, or null when none is usable. */
 export function ttsProvider() {
   const set = config.ttsProviderSetting;
@@ -109,13 +121,10 @@ export function writerProvider() {
 export function capabilities() {
   const provider = writerProvider();
   const hasKey = provider === 'mock' || (provider === 'claude' && !!config.anthropicKey) || (provider === 'gemini' && !!config.geminiKey);
-  const imageReady =
-    (config.imageProvider === 'openai' && !!config.openaiKey) ||
-    (config.imageProvider === 'replicate' && !!config.replicateKey);
   return {
     writer: hasKey ? provider : null,
     model: { mock: 'mock', claude: config.claudeModel, gemini: config.geminiModel }[provider] || null,
-    images: imageReady ? config.imageProvider : null,
+    images: imageProvider(),
     tts: ttsProvider(),
     // Gemini can watch reference videos (used even when Claude writes the scripts).
     reference: !!config.geminiKey,

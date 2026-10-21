@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { config } from '../config.js';
 import { uploadsRepo } from '../db.js';
 import { errors } from '../lib/errors.js';
+import { uploadItem } from '../services/visuals.js';
 
 const TYPES = {
   'image/png': '.png',
@@ -57,7 +58,7 @@ uploadsRouter.post('/', upload.array('files', 10), (req, res, next) => {
   if (!req.files?.length) return next(errors.validation('No files received', 'لم يتم استلام أي ملف.'));
   const items = req.files.map((f) => {
     const row = uploadsRepo.add({ originalName: f.originalname, fileName: f.filename, mime: f.mimetype, size: f.size });
-    return { id: row.id, name: f.originalname, mime: f.mimetype, size: f.size, url: `/uploads/${f.filename}` };
+    return uploadItem(row, { source: 'user' });
   });
   res.status(201).json({ items });
 });

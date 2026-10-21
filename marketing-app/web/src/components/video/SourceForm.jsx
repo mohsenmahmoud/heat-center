@@ -19,11 +19,14 @@ function orientationOf(url) {
   });
 }
 
+/** Same rule as the server, from a known pixel size. */
+export const orientationFromSize = (w, h) => (!w || !h ? null : h / w >= 1.8 ? 'phone' : h / w > 1 ? 'portrait' : 'landscape');
+
 export async function uploadFiles(files) {
   const body = new FormData();
   for (const f of files) body.append('files', f);
   const { items } = await api.post('/api/uploads', body);
-  return Promise.all(items.map(async (i) => (i.mime.startsWith('image/') ? { ...i, orientation: await orientationOf(i.url) } : i)));
+  return Promise.all(items.map(async (i) => (i.mime.startsWith('image/') ? { ...i, orientation: orientationFromSize(i.width, i.height) || (await orientationOf(i.url)) } : i)));
 }
 
 export function SourceForm({ form, setForm, images, setImages, status, onWrite, writing, error, hasScript, reference, setReference }) {
@@ -35,11 +38,13 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
   const [dragging, setDragging] = useState(false);
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
   const caps = status?.capabilities;
+  // AI-made scene images live in the script editor, not in this list of the user's own images.
+  const ownImages = images.filter((i) => i.source !== 'ai');
 
   const addImages = async (fileList) => {
     const files = [...fileList].filter((f) => f.type.startsWith('image/'));
     if (!files.length) return;
-    if (images.length + files.length > 10) return toast.error({ ar: 'الحد الأقصى 10 صور.', en: 'Maximum 10 images.' });
+    if (ownImages.length + files.length > 10) return toast.error({ ar: 'الحد الأقصى 10 صور.', en: 'Maximum 10 images.' });
     setUploading(true);
     try {
       const items = await uploadFiles(files);
@@ -64,7 +69,7 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
     }
   };
 
-  const canWrite = !writing && !uploading && (form.topic.trim() || form.url.trim() || images.length || reference) && caps?.writer;
+  const canWrite = !writing && !uploading && (form.topic.trim() || form.url.trim() || ownImages.length || reference) && caps?.writer;
 
   return (
     <section className="card space-y-5 p-5">
@@ -100,9 +105,9 @@ export function SourceForm({ form, setForm, images, setImages, status, onWrite, 
           <span className="text-xs text-muted">{t('imagesHint')}</span>
         </button>
         <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" multiple hidden onChange={(e) => addImages(e.target.files).finally(() => (e.target.value = ''))} data-testid="image-input" />
-        {images.length > 0 && (
+        {ownImages.length > 0 && (
           <div className="mt-3 grid grid-cols-5 gap-2">
-            {images.map((img, i) => (
+            {ownImages.map((img, i) => (
               <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg border border-line">
                 <img src={img.url} alt={img.name} className="h-full w-full object-cover" />
                 <span className="absolute bottom-0.5 start-0.5 rounded bg-black/60 px-1 text-[10px] text-white">{i + 1}</span>

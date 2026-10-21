@@ -9,6 +9,7 @@ import { toStrictJsonSchema } from '../server/services/ai/json-schema.js';
 import { assertPublicUrl } from '../server/lib/net.js';
 import { buildSlots } from '../server/services/planner.js';
 import { imageSize } from '../server/lib/image-size.js';
+import { boxFrom } from '../server/services/visuals.js';
 import { AiPlanSchema, AiScriptSchema, PostSchema } from '../server/services/schemas.js';
 
 describe('video timing', () => {
@@ -102,5 +103,15 @@ describe('scene images', () => {
     const { finalizeScript } = await import('../server/services/scripts.js');
     const script = finalizeScript(ai([0, 0, 0, 0, 0]), { language: 'ar', durationSec: 40, imageIds: ['a', 'b'] });
     expect(script.scenes.map((s) => s.imageId)).toEqual([null, 'a', 'b', null, null]);
+  });
+});
+
+describe('image framing boxes', () => {
+  it('turns [ymin, xmin, ymax, xmax] on 0–1000 into a normalized box, kept inside the content', () => {
+    expect(boxFrom([100, 200, 500, 800])).toEqual({ x: 0.2, y: 0.1, w: 0.6, h: 0.4 });
+    expect(boxFrom([0, 0, 1000, 1000], { x: 0.1, y: 0.1, w: 0.5, h: 0.5 })).toEqual({ x: 0.1, y: 0.1, w: 0.5, h: 0.5 });
+    expect(boxFrom([500, 500, 505, 505])).toBeNull();
+    expect(boxFrom([1, 2, 3])).toBeNull();
+    expect(boxFrom([900, 0, 100, 1000])).toBeNull();
   });
 });

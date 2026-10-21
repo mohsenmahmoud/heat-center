@@ -21,6 +21,10 @@ export const AiScriptSchema = z.object({
       stockQuery: z.string(),
       visualIdea: z.string(),
       voiceover: z.string(),
+      // English prompt for an AI image of this scene (photo, no text).
+      imagePrompt: z.string(),
+      // In the content language: which screenshot or photo the user could upload for this scene.
+      screenshotHint: z.string(),
       // 1-based index of the attached image this scene shows; 0 = no image.
       imageIndex: z.number().int().default(0),
     }),
@@ -90,6 +94,16 @@ export const VoicePreviewRequest = z.object({
   voiceName: z.string().max(40).nullable().optional(),
 });
 
+const Box = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().min(0).max(1), h: z.number().min(0).max(1) });
+
+/** How a pinned image is framed: the AI's review of it (see services/visuals.js). */
+export const Shot = z.object({
+  kind: z.enum(['screenshot', 'photo']),
+  content: Box,
+  focus: Box.nullable().default(null),
+  callout: z.string().max(80).default(''),
+});
+
 const SceneInput = z.object({
   id: z.string().max(40),
   type: z.enum(SCENE_TYPES),
@@ -101,7 +115,16 @@ const SceneInput = z.object({
   stockQuery: z.string().max(200).default(''),
   visualIdea: z.string().max(600).default(''),
   voiceover: z.string().max(1000).default(''),
+  imagePrompt: z.string().max(1500).default(''),
+  screenshotHint: z.string().max(400).default(''),
   imageId: z.string().regex(/^[a-f0-9]{16}$/).nullable().optional(),
+  // screen: inside a device, cropped and zoomed on the focus · photo: full-screen background
+  imageMode: z.enum(['screen', 'photo']).nullable().optional(),
+  imageSource: z.enum(['ai', 'user']).nullable().optional(),
+  // Where the pinned image is served and its pixel size, so a reused script previews without the upload list.
+  imageUrl: z.string().regex(/^\/uploads\/[a-f0-9]{32}\.(png|jpe?g|webp)$/).nullable().optional(),
+  imageSize: z.object({ w: z.number().int().positive(), h: z.number().int().positive() }).nullable().optional(),
+  shot: Shot.nullable().optional(),
 });
 
 export const VideoScript = z.object({
@@ -212,3 +235,20 @@ export const AiBrandDraftSchema = z.object({
 export const BrandDraftRequest = z
   .object({ url: z.string().max(2000).default(''), notes: z.string().max(3000).default(''), language: z.enum(['ar', 'en']).default('ar') })
   .refine((v) => v.url.trim() || v.notes.trim(), { message: 'Add a website or a short description' });
+
+const Id = z.string().regex(/^[a-f0-9]{16}$/);
+
+export const SceneImageRequest = z.object({
+  prompt: z.string().trim().min(3).max(1500),
+  brandId: BrandId.optional(),
+  market: z.enum(MARKETS).default('both'),
+  aspect: z.enum(['9:16', '1:1', '4:5', '16:9']).default('9:16'),
+});
+
+export const AnalyzeImageRequest = z.object({
+  uploadId: Id,
+  headline: z.string().max(300).default(''),
+  subtext: z.string().max(600).default(''),
+  language: z.enum(['ar', 'en']).default('ar'),
+  brandId: BrandId.optional(),
+});

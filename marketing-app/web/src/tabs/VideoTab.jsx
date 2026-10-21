@@ -8,6 +8,7 @@ import { SourceForm } from '../components/video/SourceForm.jsx';
 import { ScriptEditor } from '../components/video/ScriptEditor.jsx';
 import { PreviewPanel } from '../components/video/PreviewPanel.jsx';
 import { VideoHistory } from '../components/video/VideoHistory.jsx';
+import { useSceneVisuals } from '../components/video/useSceneVisuals.js';
 
 const DEFAULT_FORM = {
   topic: '',
@@ -39,6 +40,12 @@ export default function VideoTab({ status, handoff }) {
   const [source, setSource] = useState(null);
   const [reference, setReference] = useState(null);
   const voiceTouched = useRef(false);
+  const visuals = useSceneVisuals({ setScript, setImages, brandId: activeId, market: form.market, toast });
+  // Videos should not come out empty: give every scene an image unless the user chose motion graphics only.
+  const autoFill = (next) => {
+    visuals.cancel();
+    if (status?.capabilities?.images && form.visualStyle === 'mix') visuals.fillAll(next);
+  };
 
   // Videos should come out complete: default to the AI voice whenever one is available.
   useEffect(() => {
@@ -55,6 +62,7 @@ export default function VideoTab({ status, handoff }) {
   useEffect(() => {
     if (!handoff?.script) return;
     setScript(handoff.script);
+    autoFill(handoff.script);
     setWarnings([]);
     setScriptError(null);
     setSource(handoff.source);
@@ -80,7 +88,7 @@ export default function VideoTab({ status, handoff }) {
       const data = await api.post('/api/video/script', {
         topic: form.topic,
         url: form.url,
-        imageIds: images.map((i) => i.id),
+        imageIds: images.filter((i) => i.source !== 'ai').map((i) => i.id),
         language: form.language,
         durationSec: form.durationSec,
         market: form.market,
@@ -89,6 +97,7 @@ export default function VideoTab({ status, handoff }) {
       });
       if (data.pageImages?.length) setImages((prev) => [...prev, ...data.pageImages]);
       setScript(data.script);
+      autoFill(data.script);
       setWarnings(data.warnings);
     } catch (err) {
       setScriptError(err);
@@ -98,6 +107,7 @@ export default function VideoTab({ status, handoff }) {
   };
 
   const reuse = (video) => {
+    visuals.cancel();
     const { options, ...rest } = video.script;
     setScript(rest);
     setSource(null);
@@ -124,7 +134,7 @@ export default function VideoTab({ status, handoff }) {
       )}
       <div className="grid gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)_minmax(320px,400px)]">
         <SourceForm form={form} setForm={setFormTracked} images={images} setImages={setImages} status={status} onWrite={writeScript} writing={writing} error={scriptError} hasScript={!!script} reference={reference} setReference={setReference} />
-        <ScriptEditor script={script} setScript={setScript} images={images} voiceMode={form.voiceMode} voiceName={form.voiceName || status?.defaultVoice} voiceRate={status?.voiceRate} warnings={warnings} writing={writing} />
+        <ScriptEditor script={script} setScript={setScript} images={images} visuals={visuals} imagesOn={!!status?.capabilities?.images} voiceMode={form.voiceMode} voiceName={form.voiceName || status?.defaultVoice} voiceRate={status?.voiceRate} warnings={warnings} writing={writing} />
         <PreviewPanel script={script} images={images} form={form} brand={byId(script?.brandId)} source={source} onRendered={loadHistory} />
       </div>
       <VideoHistory items={history} onReuse={reuse} onChanged={loadHistory} />

@@ -161,9 +161,37 @@ export function makeTheme(visual) {
     light: { main: lightSurface, alt: brandSurface(gradient, middle) },
   }[v.look];
 
+  // Text over a photo or footage (with a dark scrim behind it): always light text, brand accents.
+  const accentOnDark = contrast(dark, accent) >= 2.2 ? accent : light;
+  const media = {
+    bg: dark,
+    base: dark,
+    fg: WHITE,
+    soft: mix(light, WHITE, 0.35),
+    line: accentOnDark,
+    glow: 'rgba(255,255,255,0)',
+    grid: WHITE,
+    chipBg: 'rgba(255,255,255,0.16)',
+    chipFg: WHITE,
+    mark: accentOnDark,
+    pillBg: light,
+    pillFg: readableOn(light, dark, deep),
+    buttonBg: WHITE,
+    buttonFg: readableOn(WHITE, deep, dark),
+    scrim: (kind) =>
+      kind === 'center'
+        ? `radial-gradient(ellipse at center, ${rgba(dark, 0.45)} 0%, ${rgba(dark, 0.78)} 100%)`
+        : `linear-gradient(180deg, ${rgba(dark, 0.82)} 0%, ${rgba(dark, 0.5)} 34%, ${rgba(dark, 0.08)} 58%, ${rgba(dark, 0.6)} 100%)`,
+    tint: `linear-gradient(160deg, ${rgba(primary, 0.16)} 0%, ${rgba(secondary, 0.22)} 100%)`,
+  };
+
   return {
     visual: v,
     ...surfaces,
+    media,
+    spotlight: accentOnDark,
+    calloutBg: accent,
+    calloutFg: readableOn(accent, WHITE, dark),
     frame: dark,
     barBg: light,
     captionBg: rgba(dark, 0.74),

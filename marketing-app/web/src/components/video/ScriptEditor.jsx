@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Clock, Copy, FileText, Plus, Trash2, Volume2 } from 'lucide-react';
+import { SceneVisual } from './SceneVisual.jsx';
 import { totalSeconds, MIN_TOTAL_SEC, MAX_TOTAL_SEC } from '../../../../video/timing.js';
 import { api, copyText } from '../../lib/api.js';
 import { useI18n } from '../../lib/i18n.jsx';
@@ -9,7 +10,7 @@ import { Field, SectionTitle, Spinner, Warnings } from '../ui.jsx';
 const TYPES = ['hook', 'pain', 'solution', 'feature', 'proof', 'cta'];
 const TRANSITIONS = ['fade', 'slide', 'wipe', 'flip'];
 
-export function ScriptEditor({ script, setScript, images, voiceMode, voiceName, voiceRate = 1.1, warnings, writing }) {
+export function ScriptEditor({ script, setScript, images, visuals, imagesOn, voiceMode, voiceName, voiceRate = 1.1, warnings, writing }) {
   const { t } = useI18n();
   const toast = useToast();
   const [speaking, setSpeaking] = useState(null);
@@ -77,6 +78,12 @@ export function ScriptEditor({ script, setScript, images, voiceMode, voiceName, 
       </SectionTitle>
 
       <input className="input font-semibold" value={script.title} onChange={(e) => update({ title: e.target.value })} aria-label="title" />
+      {visuals?.progress && (
+        <div className="flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-xs" data-testid="visuals-progress">
+          <Spinner className="h-3.5 w-3.5 text-accent" />
+          {t('makingImages')} {visuals.progress.done}/{visuals.progress.total}
+        </div>
+      )}
       <Warnings items={warnings} />
 
       <ol className="space-y-3">
@@ -127,20 +134,8 @@ export function ScriptEditor({ script, setScript, images, voiceMode, voiceName, 
               <Field label={t('subtext')} className="sm:col-span-2">
                 <textarea className="input min-h-[52px] resize-y" rows={2} value={scene.subtext} onChange={(e) => updateScene(i, { subtext: e.target.value })} />
               </Field>
-              <Field label={t('bullets')}>
+              <Field label={t('bullets')} className="sm:col-span-2">
                 <input className="input" value={scene.bullets.join('، ')} onChange={(e) => updateScene(i, { bullets: e.target.value.split(/[,،]/).map((b) => b.trim()).filter(Boolean).slice(0, 6) })} />
-              </Field>
-              <Field label={t('image')}>
-                <select className="input" value={scene.imageId || ''} onChange={(e) => updateScene(i, { imageId: e.target.value || null })}>
-                  <option value="">{t('noImage')}</option>
-                  {images
-                    .filter((im) => im.mime.startsWith('image/'))
-                    .map((im, n) => (
-                      <option key={im.id} value={im.id}>
-                        #{n + 1} {im.name.slice(0, 24)}
-                      </option>
-                    ))}
-                </select>
               </Field>
               {voiceMode !== 'none' && (
                 <Field label={t('voiceover')} className="sm:col-span-2">
@@ -148,6 +143,7 @@ export function ScriptEditor({ script, setScript, images, voiceMode, voiceName, 
                 </Field>
               )}
             </div>
+            {scene.type !== 'cta' && <SceneVisual scene={scene} images={images} visuals={visuals} imagesOn={imagesOn} language={script.language} />}
           </li>
         ))}
       </ol>

@@ -139,7 +139,7 @@ export function mockScript({ brand, topic, language, reference = null }) {
     // Demo of "rebuild this reference": same scenes, types, timing and transitions.
     return {
       title: t.title((topic || '').slice(0, 60)),
-      scenes: reference.scenes.map((s) => ({ type: s.type, headline: (s.onScreenText || s.purpose).slice(0, 90), subtext: '', bullets: [], durationSec: s.durationSec, transition: s.transition, stockQuery: '', visualIdea: s.visual, voiceover: s.voiceover })),
+      scenes: reference.scenes.map((s) => ({ type: s.type, headline: (s.onScreenText || s.purpose).slice(0, 90), subtext: '', bullets: [], durationSec: s.durationSec, transition: s.transition, stockQuery: '', visualIdea: s.visual, voiceover: s.voiceover, imagePrompt: s.type === 'cta' ? '' : s.visual, screenshotHint: '' })),
       cta: t.cta,
       caption: t.caption,
       hashtags: t.hashtags,
@@ -148,7 +148,17 @@ export function mockScript({ brand, topic, language, reference = null }) {
   const shortTopic = (topic || (language === 'ar' ? 'إدارة أكاديميتك' : 'running your academy')).slice(0, 80);
   return {
     title: t.title(shortTopic),
-    scenes: t.scenes(shortTopic).map((s) => ({ ...s, durationSec: 7, visualIdea: s.stockQuery, voiceover: [s.headline, s.subtext].filter(Boolean).map((x) => (/[.!?؟…]$/.test(x) ? x : `${x}.`)).join(' ') })),
+    scenes: t.scenes(shortTopic).map((s) => ({
+      ...s,
+      durationSec: 7,
+      visualIdea: s.stockQuery,
+      imagePrompt: s.stockQuery ? `${s.stockQuery}, realistic photo` : '',
+      screenshotHint: ['hook', 'cta'].includes(s.type) ? '' : language === 'ar' ? `لقطة شاشة توضّح: ${s.headline}` : `A screenshot showing: ${s.headline}`,
+      voiceover: [s.headline, s.subtext]
+        .filter(Boolean)
+        .map((x) => (/[.!?؟…]$/.test(x) ? x : `${x}.`))
+        .join(' '),
+    })),
     cta: t.cta,
     caption: t.caption,
     hashtags: t.hashtags,

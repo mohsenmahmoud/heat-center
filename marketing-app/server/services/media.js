@@ -1,18 +1,23 @@
 /**
  * Optional media providers behind one small interface each:
  *   findStock(query, kind)  → { fileName, kind: 'video' | 'image' } | null
- *   generateImage(prompt)   → fileName | null
+ *   generateImage(prompt, { dir, aspect, style }) → fileName | null
  *   synthesizeSpeech(text, { language, voiceName }) → { fileName, seconds }
  * Add a provider by adding a branch here and its key to .env / config.js.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { config, ttsProvider } from '../config.js';
+import zlib from 'node:zlib';
+import { ApiError, GoogleGenAI } from '@google/genai';
+import { config, imageProvider, ttsProvider } from '../config.js';
 import { errors } from '../lib/errors.js';
 import { downloadToDir, saveBuffer } from '../lib/net.js';
 
 const mediaDir = () => config.paths.media;
+
+let geminiClient;
+const gemini = () => (geminiClient ??= new GoogleGenAI({ apiKey: config.geminiKey }));
 
 async function json(url, init, providerName) {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(init?.timeoutMs || 30000) });
@@ -63,39 +68,110 @@ export async function findStock(query) {
 
 // ---------- AI images (flexible provider) ----------
 
-export async function generateImage(prompt) {
-  const full = `${prompt}. Vertical 9:16 background photo for a B2B training-center marketing video, soft natural light, green and white tones, no text, no logos.`;
-  if (config.imageProvider === 'openai' && config.openaiKey) {
+const IMAGE_SIZES = { '9:16': '1024x1536', '1:1': '1024x1024', '16:9': '1536x1024', '4:5': '1024x1280' };
+const FALLBACK_IMAGE_MODEL = 'gemini-2.5-flash-image';
+
+async function geminiImage(prompt, aspect) {
+  const ai = gemini();
+  const ask = (model) => ai.models.generateContent({ model, contents: prompt, config: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: aspect } } });
+  let res;
+  try {
+    res = await ask(config.geminiImageModel);
+  } catch (err) {
+    // Image models get renamed often: fall back to a long-lived one.
+    if (err instanceof ApiError && err.status === 404 && config.geminiImageModel !== FALLBACK_IMAGE_MODEL) res = await ask(FALLBACK_IMAGE_MODEL);
+    else throw err;
+  }
+  const part = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
+  if (!part) throw errors.providerFailed('Gemini', `no image returned (${res.candidates?.[0]?.finishReason || 'blocked'})`);
+  const ext = /jpe?g/.test(part.inlineData.mimeType) ? '.jpg' : '.png';
+  return { buffer: Buffer.from(part.inlineData.data, 'base64'), ext };
+}
+
+/**
+ * Makes one image for a scene and saves it in `dir`; returns the file name.
+ * `prompt` describes the picture; `style` adds brand look (colours, region) and the no-text rule.
+ */
+export async function generateImage(prompt, { dir = mediaDir(), aspect = '9:16', style = '' } = {}) {
+  const provider = imageProvider();
+  const full = `${prompt}${style ? `. ${style}` : ''}`;
+  if (provider === 'mock') return saveBuffer(mockPng(full, aspect), dir, '.png');
+  if (provider === 'gemini') {
+    try {
+      const { buffer, ext } = await geminiImage(full, aspect);
+      return saveBuffer(buffer, dir, ext);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        console.error(`[images] Gemini error ${err.status}:`, err.message);
+        if (err.status === 429) throw errors.rateLimited('Gemini');
+        throw errors.providerFailed('Gemini', `image ${err.status}`);
+      }
+      throw err;
+    }
+  }
+  if (provider === 'openai') {
     const data = await json(
       'https://api.openai.com/v1/images/generations',
       {
         method: 'POST',
         headers: { Authorization: `Bearer ${config.openaiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1', prompt: full, size: '1024x1536', n: 1 }),
+        body: JSON.stringify({ model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1', prompt: full, size: IMAGE_SIZES[aspect] || IMAGE_SIZES['9:16'], n: 1 }),
         timeoutMs: 120000,
       },
       'OpenAI Images',
     );
     const b64 = data.data?.[0]?.b64_json;
-    if (b64) return saveBuffer(Buffer.from(b64, 'base64'), mediaDir(), '.png');
-    if (data.data?.[0]?.url) return downloadToDir(data.data[0].url, mediaDir());
+    if (b64) return saveBuffer(Buffer.from(b64, 'base64'), dir, '.png');
+    if (data.data?.[0]?.url) return downloadToDir(data.data[0].url, dir);
     return null;
   }
-  if (config.imageProvider === 'replicate' && config.replicateKey) {
+  if (provider === 'replicate') {
     const data = await json(
       `https://api.replicate.com/v1/models/${config.replicateModel}/predictions`,
       {
         method: 'POST',
         headers: { Authorization: `Bearer ${config.replicateKey}`, 'Content-Type': 'application/json', Prefer: 'wait' },
-        body: JSON.stringify({ input: { prompt: full, aspect_ratio: '9:16' } }),
+        body: JSON.stringify({ input: { prompt: full, aspect_ratio: aspect } }),
         timeoutMs: 120000,
       },
       'Replicate',
     );
     const out = Array.isArray(data.output) ? data.output[0] : data.output;
-    return out ? downloadToDir(out, mediaDir()) : null;
+    return out ? downloadToDir(out, dir) : null;
   }
   return null;
+}
+
+/** Demo-mode image: a soft two-colour gradient PNG (no API needed), so the whole flow can be tried offline. */
+function mockPng(seed, aspect) {
+  const [aw, ah] = aspect.split(':').map(Number);
+  const width = 270;
+  const height = Math.round((width * ah) / aw);
+  const hash = crypto.createHash('sha1').update(seed).digest();
+  const a = [hash[0], hash[1], hash[2]];
+  const b = [hash[3] >> 1, hash[4] >> 1, hash[5] >> 1];
+  const raw = Buffer.alloc((width * 3 + 1) * height);
+  for (let y = 0; y < height; y++) {
+    const row = y * (width * 3 + 1);
+    for (let x = 0; x < width; x++) {
+      const t = (x / width + y / height) / 2;
+      for (let c = 0; c < 3; c++) raw[row + 1 + x * 3 + c] = Math.round(a[c] + (b[c] - a[c]) * t);
+    }
+  }
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(zlib.crc32(body));
+    return Buffer.concat([len, body, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
 // ---------- Text to speech (flexible provider) ----------

@@ -7,6 +7,8 @@ process.env.GEMINI_API_KEY = 'test-gemini-key';
 delete process.env.ANTHROPIC_API_KEY;
 delete process.env.AI_PROVIDER;
 
+const TINY_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGNgYPj/n4GBgQEADvoB/1vQ4z8AAAAASUVORK5CYII=';
+
 // Stand-in for Google's API: records each request and answers with whatever the test queues.
 const calls = [];
 let nextReply;
@@ -19,6 +21,9 @@ vi.mock('@google/genai', async (importOriginal) => {
         generateContent: async (params) => {
           calls.push({ opts: this.opts, params });
           // Text-to-speech requests get 0.5s of silent 24 kHz PCM, like the real API.
+          if (params.config?.responseModalities?.includes('IMAGE')) {
+            return { candidates: [{ finishReason: 'STOP', content: { parts: [{ inlineData: { mimeType: 'image/png', data: TINY_PNG } }] } }] };
+          }
           if (params.config?.responseModalities?.includes('AUDIO')) {
             return { candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;codec=pcm;rate=24000', data: Buffer.alloc(24000).toString('base64') } }] } }] };
           }
@@ -90,6 +95,32 @@ describe('Gemini as the writer', () => {
     const short = await request(app).post('/api/planner/generate').send({ weekStart: '2026-10-24', language: 'ar' });
     expect(short.status).toBe(502);
     expect(short.body.error.code).toBe('AI_BAD_OUTPUT');
+  });
+
+  it('makes scene images in the brand style and reviews uploaded screenshots', async () => {
+    const img = await request(app).post('/api/video/scene-image').send({ prompt: 'academy owner smiling at a laptop', market: 'egypt' });
+    expect(img.status).toBe(201);
+    const call = calls.find((c) => c.params.config?.responseModalities?.includes('IMAGE'));
+    expect(call.params.model).toBe('gemini-3.1-flash-image');
+    expect(call.params.config.imageConfig.aspectRatio).toBe('9:16');
+    expect(call.params.contents).toContain('academy owner smiling at a laptop');
+    expect(call.params.contents).toMatch(/no text/i);
+    expect(call.params.contents).toContain('Egyptian');
+
+    const up = await request(app).post('/api/uploads').attach('files', Buffer.from(TINY_PNG, 'base64'), { filename: 'shot.png', contentType: 'image/png' });
+    calls.length = 0;
+    nextReply = reply({ kind: 'screenshot', content: [0, 0, 1000, 1000], focus: [100, 500, 400, 1000], callout: 'تذكير الأقساط' });
+    const res = await request(app).post('/api/video/analyze-image').send({ uploadId: up.body.items[0].id, headline: 'تذكير تلقائي بكل قسط' });
+    expect(res.body.shot).toEqual({ kind: 'screenshot', content: { x: 0, y: 0, w: 1, h: 1 }, focus: { x: 0.5, y: 0.1, w: 0.5, h: 0.3 }, callout: 'تذكير الأقساط' });
+    const parts = calls[0].params.contents[0].parts;
+    expect(parts[0].inlineData.mimeType).toBe('image/png');
+    expect(parts[1].text).toContain('تذكير تلقائي بكل قسط');
+
+    // A failed review never blocks the scene: it falls back to default framing.
+    nextReply = () => ({ text: '{oops', candidates: [{ finishReason: 'STOP' }] });
+    const fallback = await request(app).post('/api/video/analyze-image').send({ uploadId: up.body.items[0].id });
+    expect(fallback.status).toBe(200);
+    expect(fallback.body.shot.kind).toBe('screenshot');
   });
 
   it.each([

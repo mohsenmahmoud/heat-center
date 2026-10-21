@@ -55,6 +55,14 @@ GEMINI_API_KEY=AIza...
 - اللوجو والألوان والخطوط بتيجي من البراند المختار (تبويب **البراندات**).
 - مع "موشن + صور + Stock + AI": لو أضفت مفتاح Pexels أو Pixabay (مجاني)، خلفيات المشاهد تصبح لقطات حقيقية بلمسة من ألوان البراند.
 
+### 4.0) صور المشاهد (تلقائي + صورك)
+- بعد ما السكريبت يتكتب، **كل مشهد بياخد صورة AI** مناسبة له بهوية البراند (Gemini، مفيش مفتاح إضافي). هتلاقي "بنجهّز صور المشاهد…" فوق المشاهد.
+- في كل مشهد هتلاقي **صورة مقترحة**: سطر بيقولك أنهي لقطة شاشة أو صورة تناسب المشهد لو حابب تحط صورتك.
+- الأزرار في كل مشهد: **صورة AI تانية**، **ارفع صورتك**، **من صورك…** (صورة رفعتها قبل كده)، و ✕ للمسح.
+- لما تحط صورة من عندك، الذكاء الاصطناعي **بيراجعها الأول**: لو لقطة شاشة بيقصّ الأطراف الفاضية، ويحدد الجزء المهم للمشهد، والفيديو بيعرضها على جهاز ويقرّب عليه ويسلّط عليه الضوء، وبيكتب عليه عنوان صغير (تقدر تعدّله). ولو صورة عادية بتتعرض خلفية كاملة بحركة كاميرا هادية.
+- تقدر تبدّل طريقة العرض في أي مشهد: **على جهاز** أو **خلفية كاملة**.
+- لو اخترت "موشن جرافيك فقط" مش هيتعمل صور. ولو عاوز تقفل الصور خالص: `IMAGE_PROVIDER=off` في `.env`.
+
 ### 4.1) صوت AI (فويس أوفر تلقائي)
 - لو `GEMINI_API_KEY` موجود، الصوت بيشتغل لوحده من غير أي مفتاح إضافي.
 - في **الصوت** اختار **صوت AI**، وبعدين اختار **صوت المعلّق** (رجالي أو نسائي).
@@ -140,6 +148,7 @@ marketing-app/
 │       ├── ai/gemini.js        Google GenAI SDK, JSON-schema output, friendly errors
 │       ├── ai/index.js         prompts for script / week plan / single-post rewrite / brand draft (all take the brand)
 │       ├── brands.js           Qudra seed, brand lookup with fallback, props for the video
+│       ├── visuals.js          scene images in the brand style; AI review of user images (kind, content box, focus box, label)
 │       ├── ai/mock.js          demo mode (MOCK_AI=true)
 │       ├── media.js            stock (Pexels, Pixabay), AI images (OpenAI, Replicate), TTS (Gemini, ElevenLabs, OpenAI; cached per line)
 │       ├── scraper.js          URL → title, text, images (+ the site's colours for brand drafts)
@@ -164,7 +173,7 @@ marketing-app/
 2. The UI edits the script; the Remotion **Player** previews the exact composition the server renders.
 3. `POST /api/video/render` starts a job:
    - voiceover: AI voice is synthesized per scene and each scene lasts as long as its line (voice, captions and visuals stay in sync); an uploaded recording stretches the whole video;
-   - per-scene visuals: pinned screenshot → device mockup, else stock footage, else AI image, else the brand background;
+   - per-scene visuals: a pinned image is framed from its AI review (screenshot → device, cropped to content, camera move + spotlight on the focus box, label; photo → full screen); otherwise an AI image in the brand style (Gemini image model, `GEMINI_IMAGE_MODEL`), then stock footage, then the brand background. The UI usually makes the scene images right after the script (`POST /api/video/scene-image`) and reviews user images with `POST /api/video/analyze-image`;
    - the script's `brandId` picks the brand: colours, look, fonts, logo and name go to the composition as props;
    - `renderMedia` → H.264 MP4, plus a thumbnail.
 4. `GET /api/video/jobs/:id/events` streams progress. Results are stored in `data/` and SQLite.
